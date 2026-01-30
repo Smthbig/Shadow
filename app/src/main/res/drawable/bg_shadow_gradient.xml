@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="utf-8"?>
+<layer-list xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <!-- Base vignette background -->
+    <item>
+        <shape android:shape="rectangle">
+            <gradient
+                android:type="radial"
+                android:gradientRadius="900dp"
+                android:centerX="0.52"
+                android:centerY="0.5"
+                android:startColor="#1A1A1A"
+                android:endColor="#0B0B0B" />
+        </shape>
+    </item>
+
+    <!-- Vertical light slit (main highlight) -->
+    <item
+        android:width="3dp"
+        android:gravity="center_horizontal">
+        <shape android:shape="rectangle">
+            <gradient
+                android:type="linear"
+                android:angle="0"
+                android:startColor="#00FFFFFF"
+                android:centerColor="#55FFFFFF"
+                android:endColor="#00FFFFFF" />
+        </shape>
+    </item>
+
+    <!-- Right-side glow bleed -->
+    <item
+        android:width="24dp"
+        android:gravity="center_horizontal|right">
+        <shape android:shape="rectangle">
+            <gradient
+                android:type="linear"
+                android:angle="0"
+                android:startColor="#22FFFFFF"
+                android:endColor="#00FFFFFF" />
+        </shape>
+    </item>
+
+    <!-- Left-side shadow falloff -->
+    <item
+        android:width="40dp"
+        android:gravity="center_horizontal|left">
+        <shape android:shape="rectangle">
+            <gradient
+                android:type="linear"
+                android:angle="0"
+                android:startColor="#00000000"
+                android:endColor="#33000000" />
+        </shape>
+    </item>
+
+</layer-list>

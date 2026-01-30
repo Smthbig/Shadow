@@ -1,0 +1,81 @@
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <!-- ============================= -->
+    <!-- Package visibility (MANDATORY) -->
+    <!-- ============================= -->
+    <queries>
+        <!-- Allow querying all launchable apps -->
+        <intent>
+            <action android:name="android.intent.action.MAIN" />
+            <category android:name="android.intent.category.LAUNCHER" />
+        </intent>
+
+        <!-- Optional: system settings -->
+        <package android:name="com.android.settings" />
+    </queries>
+
+    <!-- Required for behavioral tracking -->
+    <uses-permission android:name="android.permission.PACKAGE_USAGE_STATS" />
+
+    <application
+        android:allowBackup="false"
+        android:label="Shadow"
+        android:icon="@mipmap/ic_launcher"
+        android:roundIcon="@mipmap/ic_launcher_round"
+        android:supportsRtl="true"
+        android:theme="@style/Theme.Shadow">
+
+        <!-- ============================= -->
+        <!-- App drawer / setup entry -->
+        <!-- ============================= -->
+        <activity
+            android:name=".launcher.PermissionActivity"
+            android:exported="true"
+            android:excludeFromRecents="true"
+            android:theme="@style/Theme.Shadow">
+
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+
+        </activity>
+
+        <!-- ============================= -->
+        <!-- HOME launcher (actual launcher) -->
+        <!-- ============================= -->
+        <activity
+            android:name=".launcher.HomeActivity"
+            android:exported="true"
+            android:launchMode="singleTask"
+            android:excludeFromRecents="true"
+            android:taskAffinity=""
+            android:stateNotNeeded="true"
+            android:windowSoftInputMode="stateAlwaysHidden">
+
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.HOME" />
+                <category android:name="android.intent.category.DEFAULT" />
+            </intent-filter>
+
+        </activity>
+
+        <!-- ============================= -->
+        <!-- Delay / Pause Overlay -->
+        <!-- ============================= -->
+        <activity
+            android:name=".delay.DelayOverlayActivity"
+            android:exported="false"
+            android:theme="@style/Theme.Shadow.Delay"
+            android:excludeFromRecents="true"
+            android:finishOnTaskLaunch="true"
+            android:launchMode="singleTop" />
+        <activity
+            android:name=".launcher.AppLimitActivity"
+            android:exported="false" />
+
+    </application>
+
+</manifest>

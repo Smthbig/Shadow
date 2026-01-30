@@ -1,0 +1,30 @@
+com.smthbig.shadow
+│
+├── launcher/
+│   ├── HomeActivity.java
+│   ├── LauncherController.java
+│   └── LauncherState.java
+│   └── PermissionActivity.java
+│
+├── behavior/
+│   ├── UsageTracker.java
+│   ├── LoopDetector.java
+│   ├── LoopState.java
+│   └── BehaviorPolicy.java
+│
+├── delay/
+│   ├── DelayOverlayActivity.java
+│   ├── DelayController.java
+│   └── ExplainProvider.java
+│
+├── system/
+│   ├── AppLauncher.java
+│   ├── TimeProvider.java
+│   └── UsagePermissionHelper.java
+│
+├── data/
+│   ├── BehaviorStore.java
+│   └── PreferencesStore.java
+│
+└── utils/
+    └── SimpleLogger.java
