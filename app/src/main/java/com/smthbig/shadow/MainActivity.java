@@ -1,8 +1,9 @@
-
 package com.smthbig.shadow;
 
-import androidx.appcompat.app.AppCompatActivity;
 import android.os.Bundle;
+
+import androidx.appcompat.app.AppCompatActivity;
+
 import com.smthbig.shadow.databinding.ActivityMainBinding;
 
 public class MainActivity extends AppCompatActivity {

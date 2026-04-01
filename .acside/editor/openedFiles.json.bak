@@ -1,0 +1,20 @@
+{
+  "allFiles": [
+    {
+      "file": "/storage/emulated/0/coder/.aproject/Shadow/app/build.gradle.kts",
+      "selection": {
+        "end": {
+          "column": 0,
+          "index": 5357,
+          "line": 147
+        },
+        "start": {
+          "column": 0,
+          "index": 5357,
+          "line": 147
+        }
+      }
+    }
+  ],
+  "selectedFile": "/storage/emulated/0/coder/.aproject/Shadow/app/build.gradle.kts"
+}
