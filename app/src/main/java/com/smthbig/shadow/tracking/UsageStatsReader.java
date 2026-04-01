@@ -3,7 +3,6 @@ package com.smthbig.shadow.tracking;
 import android.app.usage.UsageEvents;
 import android.app.usage.UsageStatsManager;
 import android.content.Context;
-import android.os.Build;
 
 import java.util.Calendar;
 import java.util.HashMap;
@@ -27,50 +26,46 @@ public final class UsageStatsReader {
             return 0L;
         }
 
-        long startOfDay = startOfTodayMillis();
+        long start = startOfTodayMillis();
         long now = System.currentTimeMillis();
 
         UsageEvents events =
-                usageStatsManager.queryEvents(startOfDay, now);
+                usageStatsManager.queryEvents(start, now);
 
         if (events == null) return 0L;
 
-        long totalTime = 0L;
-        Long lastForegroundStart = null;
+        UsageEvents.Event event = new UsageEvents.Event();
+
+        long total = 0L;
+        Long lastResume = null;
 
         while (events.hasNextEvent()) {
-            UsageEvents.Event event = new UsageEvents.Event();
             events.getNextEvent(event);
 
-            if (!packageName.equals(event.getPackageName())) {
-                continue;
-            }
+            if (!packageName.equals(event.getPackageName())) continue;
 
             int type = event.getEventType();
 
-            if (isMoveToForeground(type)) {
-                lastForegroundStart = event.getTimeStamp();
-            } else if (isMoveToBackground(type)) {
-                if (lastForegroundStart != null) {
-                    long delta =
-                            event.getTimeStamp() - lastForegroundStart;
-                    if (delta > 0) {
-                        totalTime += delta;
-                    }
-                    lastForegroundStart = null;
+            if (type == UsageEvents.Event.ACTIVITY_RESUMED) {
+                lastResume = event.getTimeStamp();
+            }
+
+            if (type == UsageEvents.Event.ACTIVITY_PAUSED) {
+                if (lastResume != null) {
+                    long delta = event.getTimeStamp() - lastResume;
+                    if (delta > 0) total += delta;
+                    lastResume = null;
                 }
             }
         }
 
-        // App still in foreground
-        if (lastForegroundStart != null) {
-            long delta = now - lastForegroundStart;
-            if (delta > 0) {
-                totalTime += delta;
-            }
+        // App still active
+        if (lastResume != null) {
+            long delta = now - lastResume;
+            if (delta > 0) total += delta;
         }
 
-        return totalTime;
+        return Math.max(0L, total);
     }
 
     /**
@@ -81,29 +76,32 @@ public final class UsageStatsReader {
 
         if (usageStatsManager == null) return result;
 
-        long startOfDay = startOfTodayMillis();
+        long start = startOfTodayMillis();
         long now = System.currentTimeMillis();
 
         UsageEvents events =
-                usageStatsManager.queryEvents(startOfDay, now);
+                usageStatsManager.queryEvents(start, now);
 
         if (events == null) return result;
 
-        Map<String, Long> activeSessions = new HashMap<>();
+        UsageEvents.Event event = new UsageEvents.Event();
+
+        Map<String, Long> active = new HashMap<>();
 
         while (events.hasNextEvent()) {
-            UsageEvents.Event event = new UsageEvents.Event();
             events.getNextEvent(event);
 
             String pkg = event.getPackageName();
             int type = event.getEventType();
 
-            if (isMoveToForeground(type)) {
-                activeSessions.put(pkg, event.getTimeStamp());
-            } else if (isMoveToBackground(type)) {
-                Long start = activeSessions.remove(pkg);
-                if (start != null) {
-                    long delta = event.getTimeStamp() - start;
+            if (type == UsageEvents.Event.ACTIVITY_RESUMED) {
+                active.put(pkg, event.getTimeStamp());
+            }
+
+            if (type == UsageEvents.Event.ACTIVITY_PAUSED) {
+                Long startTime = active.remove(pkg);
+                if (startTime != null) {
+                    long delta = event.getTimeStamp() - startTime;
                     if (delta > 0) {
                         result.put(
                                 pkg,
@@ -115,8 +113,7 @@ public final class UsageStatsReader {
         }
 
         // Still running apps
-        for (Map.Entry<String, Long> entry
-                : activeSessions.entrySet()) {
+        for (Map.Entry<String, Long> entry : active.entrySet()) {
             long delta = now - entry.getValue();
             if (delta > 0) {
                 result.put(
@@ -127,23 +124,6 @@ public final class UsageStatsReader {
         }
 
         return result;
-    }
-
-    /* ---------- Helpers ---------- */
-
-    private boolean isMoveToForeground(int type) {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
-            return type == UsageEvents.Event.MOVE_TO_FOREGROUND;
-        }
-        return type == UsageEvents.Event.ACTIVITY_RESUMED;
-    }
-
-    private boolean isMoveToBackground(int type) {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
-            return type == UsageEvents.Event.MOVE_TO_BACKGROUND;
-        }
-        return type == UsageEvents.Event.ACTIVITY_PAUSED
-                || type == UsageEvents.Event.ACTIVITY_STOPPED;
     }
 
     private long startOfTodayMillis() {

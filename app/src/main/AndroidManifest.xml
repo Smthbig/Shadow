@@ -72,10 +72,21 @@
             android:excludeFromRecents="true"
             android:finishOnTaskLaunch="true"
             android:launchMode="singleTop" />
+        
+        <activity
+            android:name=".extension.ExtensionGrantActivity"
+            android:exported="false"
+            android:theme="@style/Theme.Shadow.Delay" />
+        <activity
+            android:name=".launcher.AppItem"
+            android:exported="false"
+            android:theme="@style/Theme.Shadow.Delay" />
         <activity
             android:name=".launcher.AppLimitActivity"
-            android:exported="false" />
+            android:exported="false"
+            android:theme="@style/Theme.Shadow.Delay" />
 
     </application>
+
 
 </manifest>

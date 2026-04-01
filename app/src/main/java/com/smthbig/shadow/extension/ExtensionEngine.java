@@ -10,80 +10,71 @@ public final class ExtensionEngine {
     private static final String PREFS = "shadow_extensions";
 
     private static final String KEY_DAY = "day";
-    private static final String KEY_GRANTED_MS = "granted_ms";
-    private static final String KEY_USED_MS = "used_ms";
 
-    private static final long MAX_DAILY_EXTENSION_MS =
-            TimeUnit.MINUTES.toMillis(30);
+    private static final long MAX_DAILY_EXTENSION_MS = TimeUnit.MINUTES.toMillis(30);
 
     private final SharedPreferences prefs;
 
     public ExtensionEngine(Context context) {
         this.prefs =
-                context.getApplicationContext()
-                        .getSharedPreferences(
-                                PREFS,
-                                Context.MODE_PRIVATE
-                        );
+                context.getApplicationContext().getSharedPreferences(PREFS, Context.MODE_PRIVATE);
         resetIfNewDay();
     }
 
-    /* ---------- Public API ---------- */
-
-    public synchronized boolean canGrant(long ms) {
+    /* ---------- Public API (PER APP) ---------- */
+    public synchronized boolean canGrant(String pkg, long ms) {
         resetIfNewDay();
-        return getGrantedMs() + ms <= MAX_DAILY_EXTENSION_MS;
+
+        long used = getUsedMs(pkg);
+
+        return used + ms <= MAX_DAILY_EXTENSION_MS;
     }
 
-    public synchronized boolean grant(long ms) {
+    public synchronized boolean grant(String pkg, long ms) {
         resetIfNewDay();
 
-        long granted = getGrantedMs();
-        if (granted + ms > MAX_DAILY_EXTENSION_MS) {
+        long used = getUsedMs(pkg);
+
+        if (used + ms > MAX_DAILY_EXTENSION_MS) {
             return false;
         }
 
-        prefs.edit()
-                .putLong(KEY_GRANTED_MS, granted + ms)
-                .apply();
+        long granted = getGrantedMs(pkg);
+
+        prefs.edit().putLong(keyGranted(pkg), granted + ms).apply();
 
         return true;
     }
 
-    /**
-     * Remaining extension time available (ms)
-     */
-    public synchronized long getRemainingMs() {
+    public synchronized long getRemainingMs(String pkg) {
         resetIfNewDay();
-        return Math.max(
-                0,
-                getGrantedMs() - getUsedMs()
-        );
+
+        return Math.max(0, getGrantedMs(pkg) - getUsedMs(pkg));
     }
 
-    /**
-     * Consume extension time based on real foreground usage.
-     * Must be called with deltaMs (not absolute).
-     */
-    public synchronized void consume(long deltaMs) {
+    public synchronized void consume(String pkg, long deltaMs) {
         if (deltaMs <= 0) return;
 
         resetIfNewDay();
 
-        long used = getUsedMs();
-        long granted = getGrantedMs();
+        long used = getUsedMs(pkg);
+        long granted = getGrantedMs(pkg);
 
-        long newUsed =
-                Math.min(
-                        granted,
-                        used + deltaMs
-                );
+        long newUsed = Math.min(granted, used + deltaMs);
 
         if (newUsed != used) {
-            prefs.edit()
-                    .putLong(KEY_USED_MS, newUsed)
-                    .apply();
+            prefs.edit().putLong(keyUsed(pkg), newUsed).apply();
         }
+    }
+
+    /* ---------- Key Helpers ---------- */
+
+    private String keyGranted(String pkg) {
+        return "granted_" + pkg;
+    }
+
+    private String keyUsed(String pkg) {
+        return "used_" + pkg;
     }
 
     /* ---------- Internals ---------- */
@@ -95,25 +86,20 @@ public final class ExtensionEngine {
         if (storedDay != today) {
             prefs.edit()
                     .putLong(KEY_DAY, today)
-                    .putLong(KEY_GRANTED_MS, 0)
-                    .putLong(KEY_USED_MS, 0)
+                    .clear() // clear all per-app data
                     .apply();
         }
     }
 
-    private long getGrantedMs() {
-        return prefs.getLong(KEY_GRANTED_MS, 0);
+    private long getGrantedMs(String pkg) {
+        return prefs.getLong(keyGranted(pkg), 0);
     }
 
-    private long getUsedMs() {
-        return prefs.getLong(KEY_USED_MS, 0);
+    private long getUsedMs(String pkg) {
+        return prefs.getLong(keyUsed(pkg), 0);
     }
 
-    /**
-     * Day key aligned to local midnight
-     */
     private long todayKey() {
-        return System.currentTimeMillis()
-                / TimeUnit.DAYS.toMillis(1);
+        return System.currentTimeMillis() / TimeUnit.DAYS.toMillis(1);
     }
 }

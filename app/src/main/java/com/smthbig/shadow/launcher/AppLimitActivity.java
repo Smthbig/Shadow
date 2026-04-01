@@ -4,15 +4,11 @@ import android.app.Activity;
 import android.app.AlertDialog;
 import android.content.pm.ApplicationInfo;
 import android.content.pm.PackageManager;
-import android.graphics.Color;
 import android.os.Bundle;
-import android.view.Gravity;
-import android.view.View;
-import android.widget.ArrayAdapter;
+import android.widget.AdapterView;
 import android.widget.ListView;
-import android.widget.NumberPicker;
-import android.widget.TextView;
 
+import com.smthbig.shadow.R;
 import com.smthbig.shadow.data.limits.AppLimitStore;
 
 import java.util.ArrayList;
@@ -26,46 +22,35 @@ public final class AppLimitActivity extends Activity {
     private AppLimitStore limitStore;
     private PackageManager pm;
 
-    private final List<String> labels = new ArrayList<>();
-    private final List<String> packages = new ArrayList<>();
+    private final List<AppItem> appList = new ArrayList<>();
+    private AppLimitAdapter adapter;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
+        setContentView(R.layout.activity_app_limit);
+
         limitStore = new AppLimitStore(this);
         pm = getPackageManager();
 
-        setContentView(createList());
-    }
-
-    private View createList() {
-        ListView listView = new ListView(this);
-        listView.setBackgroundColor(Color.BLACK);
+        ListView listView = findViewById(R.id.app_list);
 
         loadApps();
 
-        ArrayAdapter<String> adapter =
-                new ArrayAdapter<>(
-                        this,
-                        android.R.layout.simple_list_item_1,
-                        labels
-                );
-
+        adapter = new AppLimitAdapter(this, appList);
         listView.setAdapter(adapter);
 
-        listView.setOnItemClickListener(
-                (p, v, i, id) ->
-                        showLimitPicker(
-                                labels.get(i),
-                                packages.get(i)
-                        )
+        listView.setOnItemClickListener((AdapterView<?> p, android.view.View v, int i, long id) ->
+                showLimitPicker(appList.get(i).packageName)
         );
-
-        return listView;
     }
 
+    /* ---------- LOAD APPS ---------- */
+
     private void loadApps() {
+        appList.clear();
+
         List<ApplicationInfo> apps =
                 pm.getInstalledApplications(0);
 
@@ -88,51 +73,79 @@ public final class AppLimitActivity extends Activity {
             String label =
                     pm.getApplicationLabel(app).toString();
 
-            long limitMin =
-                    TimeUnit.MILLISECONDS.toMinutes(
-                            limitStore.getLimitMs(app.packageName)
-                    );
+            long limit = limitStore.getLimitMs(app.packageName);
 
-            labels.add(label + "  (" + limitMin + " min)");
-            packages.add(app.packageName);
+            appList.add(new AppItem(label, app.packageName, limit));
         }
     }
 
-    private void showLimitPicker(String label, String pkg) {
-        NumberPicker picker = new NumberPicker(this);
-        picker.setMinValue(5);     // safety floor
-        picker.setMaxValue(240);   // 4 hours
-        picker.setWrapSelectorWheel(false);
+    /* ---------- PICKER ---------- */
 
-        picker.setValue(
-                (int) TimeUnit.MILLISECONDS.toMinutes(
-                        limitStore.getLimitMs(pkg)
-                )
-        );
+    private void showLimitPicker(String pkg) {
 
-        TextView title = new TextView(this);
-        title.setText(label);
-        title.setTextColor(Color.WHITE);
-        title.setTextSize(18f);
-        title.setGravity(Gravity.CENTER);
-        title.setPadding(0, 32, 0, 32);
+        String[] options = {
+                "Unlimited",
+                "15 min",
+                "30 min",
+                "60 min",
+                "120 min",
+                "Custom"
+        };
 
         new AlertDialog.Builder(this)
-                .setCustomTitle(title)
+                .setTitle("Set limit")
+                .setItems(options, (d, which) -> {
+
+                    switch (which) {
+                        case 0:
+                            limitStore.setLimitMs(pkg, -1);
+                            break;
+                        case 1:
+                            save(pkg, 15);
+                            break;
+                        case 2:
+                            save(pkg, 30);
+                            break;
+                        case 3:
+                            save(pkg, 60);
+                            break;
+                        case 4:
+                            save(pkg, 120);
+                            break;
+                        case 5:
+                            showCustomPicker(pkg);
+                            return;
+                    }
+
+                    refresh();
+                })
+                .show();
+    }
+
+    private void showCustomPicker(String pkg) {
+        android.widget.NumberPicker picker = new android.widget.NumberPicker(this);
+        picker.setMinValue(1);
+        picker.setMaxValue(300);
+        picker.setValue(60);
+
+        new AlertDialog.Builder(this)
+                .setTitle("Custom limit")
                 .setView(picker)
-                .setPositiveButton(
-                        "Save",
-                        (d, w) -> {
-                            limitStore.setLimitMs(
-                                    pkg,
-                                    TimeUnit.MINUTES.toMillis(
-                                            picker.getValue()
-                                    )
-                            );
-                            recreate(); // refresh list labels
-                        }
-                )
+                .setPositiveButton("Save", (d, w) -> {
+                    save(pkg, picker.getValue());
+                    refresh();
+                })
                 .setNegativeButton("Cancel", null)
                 .show();
+    }
+
+    private void save(String pkg, int minutes) {
+        limitStore.setLimitMs(pkg,
+                TimeUnit.MINUTES.toMillis(minutes));
+    }
+
+    private void refresh() {
+        loadApps();
+        adapter.notifyDataSetChanged();
     }
 }

@@ -3,17 +3,18 @@ package com.smthbig.shadow.delay;
 import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
-import android.graphics.Color;
-import android.graphics.drawable.GradientDrawable;
+import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
-import android.view.Gravity;
 import android.view.View;
 import android.view.Window;
 import android.view.WindowManager;
-import android.widget.FrameLayout;
+import android.widget.Button;
 import android.widget.TextView;
+
+import com.smthbig.shadow.R;
+import com.smthbig.shadow.extension.ExtensionGrantActivity;
 
 public final class DelayOverlayActivity extends Activity {
 
@@ -25,20 +26,13 @@ public final class DelayOverlayActivity extends Activity {
 
     /* ---------- Intent builders ---------- */
 
-    // ✅ NEW: backward-compatible overload
     public static Intent delay(
             Context context,
             Intent target,
             long delayMs,
             String reason
     ) {
-        return delay(
-                context,
-                target,
-                delayMs,
-                reason,
-                false
-        );
+        return delay(context, target, delayMs, reason, false);
     }
 
     public static Intent delay(
@@ -59,11 +53,13 @@ public final class DelayOverlayActivity extends Activity {
 
     public static Intent block(
             Context context,
+            Intent target,
             String reason
     ) {
         Intent i = new Intent(context, DelayOverlayActivity.class);
         i.putExtra(EXTRA_BLOCK, true);
         i.putExtra(EXTRA_REASON, reason);
+        i.putExtra(EXTRA_TARGET_INTENT, target);
         i.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
         return i;
     }
@@ -74,24 +70,28 @@ public final class DelayOverlayActivity extends Activity {
 
     private Intent target;
     private long remainingMs;
+    private long endTime;
+
     private boolean usingExtension;
     private boolean launched;
 
     private TextView text;
+    private Button extendBtn;
 
     private final Runnable tickRunnable = new Runnable() {
         @Override
         public void run() {
             if (launched) return;
 
-            remainingMs -= 1000;
+            long now = System.currentTimeMillis();
+            long remaining = endTime - now;
 
-            if (remainingMs <= 0) {
+            if (remaining <= 0) {
                 launchSafely();
                 return;
             }
 
-            updateText();
+            updateText(remaining);
             handler.postDelayed(this, 1000);
         }
     };
@@ -103,6 +103,14 @@ public final class DelayOverlayActivity extends Activity {
         super.onCreate(savedInstanceState);
         prepareWindow();
 
+        setContentView(R.layout.activity_delay_overlay);
+
+        text = findViewById(R.id.text);
+        extendBtn = findViewById(R.id.btn_extend);
+
+        findViewById(R.id.root)
+                .setBackgroundResource(R.drawable.bg_shadow_gradient);
+
         Intent intent = getIntent();
 
         boolean isBlocked =
@@ -111,30 +119,24 @@ public final class DelayOverlayActivity extends Activity {
         String reason =
                 intent.getStringExtra(EXTRA_REASON);
 
-        if (isBlocked) {
-            setupUI();
-            text.setText(
-                    reason != null
-                            ? reason
-                            : "Daily limit reached"
-            );
-            return;
+        if (Build.VERSION.SDK_INT >= 33) {
+            target = intent.getParcelableExtra(EXTRA_TARGET_INTENT, Intent.class);
+        } else {
+            target = intent.getParcelableExtra(EXTRA_TARGET_INTENT);
         }
 
-        target =
-                intent.getParcelableExtra(EXTRA_TARGET_INTENT);
-
-        remainingMs =
-                Math.max(
-                        0,
-                        intent.getLongExtra(EXTRA_DELAY_MS, 0)
-                );
+        remainingMs = Math.max(
+                0,
+                intent.getLongExtra(EXTRA_DELAY_MS, 0)
+        );
 
         usingExtension =
-                intent.getBooleanExtra(
-                        EXTRA_USING_EXTENSION,
-                        false
-                );
+                intent.getBooleanExtra(EXTRA_USING_EXTENSION, false);
+
+        if (isBlocked) {
+            handleBlock(reason);
+            return;
+        }
 
         if (target == null) {
             finish();
@@ -146,53 +148,41 @@ public final class DelayOverlayActivity extends Activity {
             return;
         }
 
-        setupUI();
-        updateText();
+        endTime = System.currentTimeMillis() + remainingMs;
+
+        updateText(remainingMs);
         handler.postDelayed(tickRunnable, 1000);
     }
 
-    /* ---------- UI ---------- */
-
-    private void setupUI() {
-        FrameLayout root = new FrameLayout(this);
-
-        GradientDrawable bg =
-                new GradientDrawable(
-                        GradientDrawable.Orientation.LEFT_RIGHT,
-                        new int[]{
-                                Color.parseColor("#0E0E0E"),
-                                Color.parseColor("#1A1A1A"),
-                                Color.parseColor("#121212")
-                        }
-                );
-
-        root.setBackground(bg);
-
-        text = new TextView(this);
-        text.setTextColor(Color.parseColor("#EDEDED"));
-        text.setTextSize(18f);
-        text.setGravity(Gravity.CENTER);
-        text.setLineSpacing(0f, 1.3f);
-
-        root.addView(
-                text,
-                new FrameLayout.LayoutParams(
-                        FrameLayout.LayoutParams.MATCH_PARENT,
-                        FrameLayout.LayoutParams.MATCH_PARENT
-                )
+    private void handleBlock(String reason) {
+        text.setText(
+                reason != null
+                        ? reason
+                        : "Daily limit reached"
         );
 
-        setContentView(root);
+        if (target != null && target.getComponent() != null) {
+            extendBtn.setVisibility(View.VISIBLE);
+
+            extendBtn.setOnClickListener(v -> {
+                Intent i = new Intent(this, ExtensionGrantActivity.class);
+                i.putExtra(
+                        "pkg",
+                        target.getComponent().getPackageName()
+                );
+                startActivity(i);
+                finish();
+            });
+        }
     }
 
-    private void updateText() {
-        String reason =
-                getIntent().getStringExtra(EXTRA_REASON);
-
-        int seconds =
-                (int) Math.ceil(remainingMs / 1000f);
+    private void updateText(long remainingMs) {
+        int seconds = (int) Math.ceil(remainingMs / 1000f);
 
         StringBuilder sb = new StringBuilder();
+
+        String reason =
+                getIntent().getStringExtra(EXTRA_REASON);
 
         if (reason != null && !reason.isEmpty()) {
             sb.append(reason).append("\n\n");
@@ -208,8 +198,6 @@ public final class DelayOverlayActivity extends Activity {
 
         text.setText(sb.toString());
     }
-
-    /* ---------- Launch ---------- */
 
     private void launchSafely() {
         if (launched) return;
@@ -228,8 +216,6 @@ public final class DelayOverlayActivity extends Activity {
         }
     }
 
-    /* ---------- Window ---------- */
-
     private void prepareWindow() {
         Window w = getWindow();
         w.addFlags(
@@ -242,11 +228,6 @@ public final class DelayOverlayActivity extends Activity {
                         | View.SYSTEM_UI_FLAG_HIDE_NAVIGATION
                         | View.SYSTEM_UI_FLAG_FULLSCREEN
         );
-    }
-
-    @Override
-    public void onBackPressed() {
-        // intentionally blocked
     }
 
     @Override

@@ -11,13 +11,15 @@ public final class DelayController {
         this.appContext = context.getApplicationContext();
     }
 
+    /* ---------- DELAY / LAUNCH ---------- */
+
     public void launchWithDelay(
             Intent target,
             long delayMs,
             String reason,
             boolean usingExtension
     ) {
-        if (target == null) return;
+        if (target == null || target.getComponent() == null) return;
 
         if (delayMs <= 0) {
             target.addFlags(
@@ -39,10 +41,18 @@ public final class DelayController {
         );
     }
 
-    public void block(String reason) {
+    /* ---------- BLOCK ---------- */
+
+    public void block(
+            Intent target,
+            String reason
+    ) {
+        if (target == null || target.getComponent() == null) return;
+
         appContext.startActivity(
                 DelayOverlayActivity.block(
                         appContext,
+                        target, // 🔥 REQUIRED FIX
                         reason
                 )
         );

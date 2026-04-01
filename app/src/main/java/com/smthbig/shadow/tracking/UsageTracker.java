@@ -1,88 +1,37 @@
 package com.smthbig.shadow.tracking;
 
-/**
- * Launcher-scoped usage ledger.
- * Event-driven. No background execution.
- */
-public interface UsageTracker {
+import android.content.Context;
 
-    /* ---------- Launch lifecycle ---------- */
+import com.smthbig.shadow.extension.ExtensionEngine;
 
-    /**
-     * Call when an app is about to be launched from the launcher.
-     * Must be idempotent.
-     */
-    void onAppLaunchStart(String packageName, long timestampMs);
+public final class UsageTracker {
 
-    /**
-     * Call when user returns to launcher or another app is launched.
-     * Safely closes the previous session.
-     */
-    void onAppSessionEnd(long timestampMs);
+    private final UsageStatsReader reader;
+    private final ExtensionEngine extensionEngine;
 
-    /* ---------- Daily base limit ---------- */
+    public UsageTracker(Context context) {
+        this.reader = new UsageStatsReader(context);
+        this.extensionEngine = new ExtensionEngine(context);
+    }
 
-    /**
-     * Fixed daily limit in milliseconds.
-     * Example: 2 hours = 2 * 60 * 60 * 1000
-     */
-    long getDailyBaseLimitMs(String packageName);
+    /* ---------- CORE ---------- */
 
-    /**
-     * Total base time used today (excluding extensions).
-     */
-    long getBaseUsedTodayMs(String packageName);
+    public long getTodayUsageMs(String packageName) {
+        long usage = reader.getTodayForegroundTimeMs(packageName);
 
-    /* ---------- Extension handling ---------- */
+        // 🔥 CRITICAL: consume extension based on usage delta
+        extensionEngine.consume(packageName, usage);
 
-    /**
-     * Total extension time granted today.
-     */
-    long getExtensionGrantedTodayMs(String packageName);
+        return usage;
+    }
 
-    /**
-     * Total extension time already consumed today.
-     */
-    long getExtensionUsedTodayMs(String packageName);
+    public long getTodayUsageMinutes(String packageName) {
+        return getTodayUsageMs(packageName) / (60 * 1000);
+    }
 
-    /**
-     * How many extensions user has taken today.
-     */
-    int getExtensionCountToday(String packageName);
+    /* ---------- EXTENSION ---------- */
 
-    /**
-     * Grant a one-time extension (e.g. +5 or +10 minutes).
-     */
-    void grantExtension(
-            String packageName,
-            long extensionMs,
-            long timestampMs
-    );
-
-    /* ---------- Policy helpers ---------- */
-
-    /**
-     * Returns remaining allowed time (base + extensions - used).
-     * Can be negative.
-     */
-    long getRemainingAllowedMs(String packageName);
-
-    /**
-     * True if app should be hard-blocked right now.
-     */
-    boolean isBlocked(String packageName);
-
-    /**
-     * Human-readable explanation for block or delay.
-     * Never null.
-     */
-    String getReason(String packageName);
-
-    /* ---------- Day rollover ---------- */
-
-    /**
-     * Must be called opportunistically (on launch).
-     * Resets daily counters if date changed.
-     */
-    void ensureDayBoundary(long timestampMs);
+    public long getRemainingExtensionMs(String packageName) {
+        return extensionEngine.getRemainingMs(packageName);
+    }
 }

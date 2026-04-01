@@ -1,22 +1,27 @@
 package com.smthbig.shadow.launcher;
 
 import android.app.Activity;
-import android.graphics.Color;
-import android.graphics.drawable.GradientDrawable;
+import android.content.Intent;
 import android.os.Bundle;
 import android.view.Gravity;
+import android.view.MotionEvent;
 import android.view.View;
 import android.view.Window;
 import android.view.WindowManager;
 import android.widget.FrameLayout;
+import android.widget.ImageView;
+
+import com.smthbig.shadow.R;
 
 public class HomeActivity extends Activity {
 
-    // Controller (brain entry point)
     private LauncherController launcherController;
 
-    // UI
     private IntentBarView intentBar;
+    private ImageView settingsButton;
+
+    private View blurOverlay;
+    private float downY;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -26,15 +31,17 @@ public class HomeActivity extends Activity {
 
         launcherController = new LauncherController(this);
 
-        FrameLayout root = createRootView();
-        setupTap(root);
+        setContentView(R.layout.activity_home);
 
-        setContentView(root);
+        FrameLayout root = findViewById(R.id.root);
+        blurOverlay = findViewById(R.id.blur_overlay);
+
+        setupTap(root);
     }
 
     @Override
     public void onBackPressed() {
-        // Launcher absorbs back
+        // block back
     }
 
     private void prepareWindow() {
@@ -52,49 +59,20 @@ public class HomeActivity extends Activity {
         );
     }
 
-    private FrameLayout createRootView() {
-        FrameLayout root = new FrameLayout(this);
+    /* ---------- TAP ---------- */
 
-        //  Background gradient (same family as DelayOverlay)
-        GradientDrawable bg = new GradientDrawable(
-                GradientDrawable.Orientation.LEFT_RIGHT,
-                new int[]{
-                        Color.parseColor("#0E0E0E"), // left
-                        Color.parseColor("#1A1A1A"), // center
-                        Color.parseColor("#121212")  // right
-                }
-        );
-        bg.setGradientType(GradientDrawable.LINEAR_GRADIENT);
-        root.setBackground(bg);
-
-        //  Center seam (very subtle)
-        View seam = new View(this);
-        seam.setBackgroundColor(Color.WHITE);
-        seam.setAlpha(0.05f);
-
-        FrameLayout.LayoutParams seamParams =
-                new FrameLayout.LayoutParams(
-                        2,
-                        FrameLayout.LayoutParams.MATCH_PARENT
-                );
-        seamParams.gravity = Gravity.CENTER_HORIZONTAL;
-
-        root.addView(seam, seamParams);
-
-        root.setClickable(true);
-        root.setFocusable(true);
-        root.setFocusableInTouchMode(true);
-
-        return root;
-    }
-
-    /** Tap anywhere → show intent bar */
     private void setupTap(View view) {
         view.setOnClickListener(v -> showIntentBar());
     }
 
+    /* ---------- INTENT BAR ---------- */
+
     private void showIntentBar() {
         if (intentBar != null) return;
+
+        blurOverlay.setVisibility(View.VISIBLE);
+
+        FrameLayout container = new FrameLayout(this);
 
         intentBar = new IntentBarView(
                 this,
@@ -112,8 +90,47 @@ public class HomeActivity extends Activity {
                 }
         );
 
+        // swipe down to dismiss
+        intentBar.setOnTouchListener((v, event) -> {
+            switch (event.getAction()) {
+
+                case MotionEvent.ACTION_DOWN:
+                    downY = event.getY();
+                    return true;
+
+                case MotionEvent.ACTION_MOVE:
+                    float delta = event.getY() - downY;
+
+                    if (delta > dp(80)) {
+                        hideIntentBar();
+                        return true;
+                    }
+                    return true;
+            }
+            return false;
+        });
+
+        container.addView(intentBar);
+
+        /* ---------- SETTINGS BUTTON ---------- */
+
+        settingsButton = new ImageView(this);
+        settingsButton.setImageResource(R.drawable.ic_settings_gear);
+        settingsButton.setAlpha(0.9f);
+
+        settingsButton.setOnClickListener(v -> openAppLimit());
+
+        FrameLayout.LayoutParams params =
+                new FrameLayout.LayoutParams(dp(32), dp(32));
+
+        params.gravity = Gravity.TOP | Gravity.END;
+        params.topMargin = dp(24);
+        params.rightMargin = dp(16);
+
+        container.addView(settingsButton, params);
+
         addContentView(
-                intentBar,
+                container,
                 new WindowManager.LayoutParams(
                         WindowManager.LayoutParams.MATCH_PARENT,
                         WindowManager.LayoutParams.MATCH_PARENT
@@ -122,9 +139,31 @@ public class HomeActivity extends Activity {
     }
 
     private void hideIntentBar() {
-        if (intentBar != null && intentBar.getParent() instanceof FrameLayout) {
-            ((FrameLayout) intentBar.getParent()).removeView(intentBar);
+        if (intentBar != null) {
+            View parent = (View) intentBar.getParent();
+
+            if (parent instanceof FrameLayout) {
+                ((FrameLayout) parent.getParent()).removeView(parent);
+            }
+
             intentBar = null;
+            settingsButton = null;
         }
+
+        blurOverlay.setVisibility(View.GONE);
+    }
+
+    /* ---------- SETTINGS ---------- */
+
+    private void openAppLimit() {
+        try {
+            startActivity(new Intent(this, AppLimitActivity.class));
+        } catch (Exception ignored) {}
+    }
+
+    /* ---------- UTIL ---------- */
+
+    private int dp(int v) {
+        return (int) (v * getResources().getDisplayMetrics().density);
     }
 }

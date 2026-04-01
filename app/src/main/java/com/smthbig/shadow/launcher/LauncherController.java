@@ -1,7 +1,5 @@
 package com.smthbig.shadow.launcher;
 
-import android.app.usage.UsageEvents;
-import android.app.usage.UsageStatsManager;
 import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
@@ -9,27 +7,31 @@ import android.content.pm.ResolveInfo;
 
 import com.smthbig.shadow.data.limits.AppLimitStore;
 import com.smthbig.shadow.delay.DelayOverlayActivity;
-import com.smthbig.shadow.extension.ExtensionEngine;
 import com.smthbig.shadow.policy.TimePolicyEngine;
+import com.smthbig.shadow.tracking.UsageTracker;
 
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 
 public final class LauncherController {
 
+    private static final long DEFAULT_LIMIT_MS =
+            TimeUnit.MINUTES.toMillis(60);
+
     private final Context appContext;
     private final TimePolicyEngine policyEngine;
-    private final ExtensionEngine extensionEngine;
     private final AppLimitStore appLimitStore;
+    private final UsageTracker usageTracker;
 
     public LauncherController(Context context) {
         this.appContext = context.getApplicationContext();
         this.policyEngine = new TimePolicyEngine();
-        this.extensionEngine = new ExtensionEngine(appContext);
         this.appLimitStore = new AppLimitStore(appContext);
+        this.usageTracker = new UsageTracker(appContext);
     }
 
-    /* Entry point from UI */
+    /* ---------- Entry ---------- */
+
     public void handleIntentText(String query) {
         if (query == null) return;
 
@@ -42,7 +44,8 @@ public final class LauncherController {
         handleLaunch(resolved);
     }
 
-    /* Resolve app by label */
+    /* ---------- Resolve App ---------- */
+
     private Intent resolveApp(String normalizedQuery) {
         PackageManager pm = appContext.getPackageManager();
 
@@ -65,7 +68,8 @@ public final class LauncherController {
                 break;
             }
 
-            if (chosen == null && label.startsWith(normalizedQuery)) {
+            if (chosen == null &&
+                    label.startsWith(normalizedQuery)) {
                 chosen = info;
             }
         }
@@ -87,25 +91,35 @@ public final class LauncherController {
         return intent;
     }
 
-    /* Core policy decision */
+    /* ---------- Core Logic ---------- */
+
     private void handleLaunch(Intent originalIntent) {
         if (originalIntent.getComponent() == null) return;
 
         Intent target = new Intent(originalIntent);
         String pkg = target.getComponent().getPackageName();
 
-        // 🔹 PER-APP BASE LIMIT
+        /* ---------- USAGE (also consumes extension internally) ---------- */
+
+        long usedMs =
+                usageTracker.getTodayUsageMs(pkg);
+
+        long remainingExtensionMs =
+                usageTracker.getRemainingExtensionMs(pkg);
+
+        /* ---------- BASE LIMIT ---------- */
+
         long baseLimitMs =
                 appLimitStore.getLimitMs(pkg);
 
-        long usedBaseMs =
-                getTodayForegroundTime(pkg);
+        if (baseLimitMs <= 0) {
+            baseLimitMs = DEFAULT_LIMIT_MS;
+        }
 
         long remainingBaseMs =
-                Math.max(0, baseLimitMs - usedBaseMs);
+                Math.max(0, baseLimitMs - usedMs);
 
-        long remainingExtensionMs =
-                extensionEngine.getRemainingMs();
+        /* ---------- POLICY ---------- */
 
         TimePolicyEngine.Decision decision =
                 policyEngine.evaluate(
@@ -113,10 +127,13 @@ public final class LauncherController {
                         remainingExtensionMs
                 );
 
+        /* ---------- ACTION ---------- */
+
         if (decision.blocked) {
             appContext.startActivity(
                     DelayOverlayActivity.block(
                             appContext,
+                            target,
                             decision.reason
                     )
             );
@@ -139,59 +156,7 @@ public final class LauncherController {
         appContext.startActivity(target);
     }
 
-    /* Accurate foreground time since midnight */
-    private long getTodayForegroundTime(String pkg) {
-        UsageStatsManager usm =
-                (UsageStatsManager)
-                        appContext.getSystemService(
-                                Context.USAGE_STATS_SERVICE
-                        );
-
-        if (usm == null) return 0L;
-
-        long start = startOfToday();
-        long now = System.currentTimeMillis();
-
-        UsageEvents events =
-                usm.queryEvents(start, now);
-
-        UsageEvents.Event event =
-                new UsageEvents.Event();
-
-        long total = 0L;
-        Long lastResume = null;
-
-        while (events.hasNextEvent()) {
-            events.getNextEvent(event);
-
-            if (!pkg.equals(event.getPackageName())) continue;
-
-            if (event.getEventType()
-                    == UsageEvents.Event.ACTIVITY_RESUMED) {
-                lastResume = event.getTimeStamp();
-            }
-
-            if (event.getEventType()
-                    == UsageEvents.Event.ACTIVITY_PAUSED) {
-                if (lastResume != null) {
-                    total +=
-                            (event.getTimeStamp() - lastResume);
-                    lastResume = null;
-                }
-            }
-        }
-
-        if (lastResume != null) {
-            total += (now - lastResume);
-        }
-
-        return Math.max(0L, total);
-    }
-
-    private long startOfToday() {
-        long now = System.currentTimeMillis();
-        return now - (now % TimeUnit.DAYS.toMillis(1));
-    }
+    /* ---------- Utils ---------- */
 
     private String normalize(String text) {
         return text
