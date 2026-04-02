@@ -1,139 +1,100 @@
+<div align="center">
+
 # Shadow Launcher
 
-0
+<p align="center">
+  <img src="https://img.shields.io/badge/Android-Launcher-black?style=for-the-badge&logo=android"/>
+  <img src="https://img.shields.io/badge/Focus-First-blueviolet?style=for-the-badge"/>
+  <img src="https://img.shields.io/badge/No%20Background%20Services-True-1f2937?style=for-the-badge"/>
+</p>
 
-## Focus, Without Fighting Yourself
-
-Shadow is a launcher designed to help you **use your phone intentionally** — not impulsively.
-
-Instead of tracking everything in the background, Shadow intervenes **only when you try to open an app**.
-
-That small moment is where control matters.
+### Use your phone intentionally.
 
 ---
 
-## What Makes Shadow Different
+</div>
 
-Most apps:
-- Track you constantly  
-- Drain battery  
-- Spam notifications  
+&nbsp;
 
-Shadow:
-- Works **only at app launch**
-- Uses **zero background services**
-- Adds **friction exactly when needed**
+<p align="center">
+  <img src="https://img.shields.io/badge/Download-Coming%20Soon-black?style=for-the-badge&logo=android"/>
+</p>
+
+&nbsp;
 
 ---
 
-## Core Features
+## About
 
-### App Limits (Daily Control)
-Set how long you can use each app per day.
+Shadow is a minimal Android launcher built to reduce distraction.
 
-- Social media: limit it  
-- Study apps: keep them open  
-- Full control per app  
+It does not monitor you constantly.  
+It does not run in the background.  
 
----
-
-### Launch Delay (Break Impulse)
-Before opening a distracting app, Shadow adds a short delay.
-
-This gives you a moment to reconsider:
-> “Do I really need to open this?”
+It simply controls **one critical moment** —  
+when you try to open an app.
 
 ---
 
-### Smart Blocking
-Once your daily limit is reached:
+## Features
 
-- The app won’t open
-- No hacks, no bypass loops
-- Clear boundary → better discipline
+- **App Limits**  
+  Set daily usage limits for each app
 
----
+- **Launch Delay**  
+  Adds friction before opening distracting apps
 
-### Extension Mode (Controlled Flexibility)
-Need a bit more time?
+- **Smart Blocking**  
+  Stops apps after limit is reached
 
-- Grant yourself limited extra usage
-- Still controlled, not unlimited
-- Prevents binge usage
+- **Extension Mode**  
+  Controlled extra time when needed
 
----
-
-### Zero Background Drain
-Shadow does **not run in background**
-
-- No battery drain  
-- No hidden tracking  
-- No constant monitoring  
-
-Everything happens only when you open an app.
+- **Lightweight**  
+  No tracking, no battery drain
 
 ---
 
-## How It Works (Simple)
+## Why Shadow
 
-1. You tap an app  
-2. Shadow checks your usage  
-3. One of three things happens:
-   - App opens instantly  
-   - Short delay appears  
-   - App is blocked  
-
-That’s it. No complexity.
+- Breaks impulsive app usage  
+- Encourages conscious decisions  
+- Minimal and distraction-free  
+- Works exactly when needed  
 
 ---
 
-## Why It Actually Works
-
-Shadow targets **behavior**, not data.
-
-- Interrupts habit loops  
-- Adds conscious decision-making  
-- Keeps system lightweight  
-
-You don’t need more tracking.  
-You need **better timing of control**.
-
----
-
-## Who Is It For
-
-- Students preparing for exams (especially JEE)  
-- People trying to reduce screen time  
-- Anyone struggling with distraction  
-- Minimalists who hate heavy apps  
-
----
-
-## Design Philosophy
-
-- Minimal  
-- Dark, distraction-free UI  
-- No unnecessary elements  
-- Clear feedback at every step  
-
----
-
-## Installation
+## Getting Started
 
 1. Install Shadow  
-2. Set it as your default launcher  
+2. Set it as default launcher  
 3. Grant usage access  
-4. Set your app limits  
-
-Done.
+4. Configure your limits  
 
 ---
 
-## Final Thought
+## Maintainers
 
-Shadow doesn’t try to control your entire phone.
+- **Mohan Sharma**  
+- GitHub: https://github.com/algopider  
 
-It controls **one moment** —  
-the moment you decide to open an app.
+---
 
-And that’s enough to change behavior.
+## Organization
+
+**Smthbig**
+
+---
+
+## License
+
+MIT License
+
+---
+
+<div align="center">
+
+Shadow focuses on one thing —  
+**control the moment before distraction.**
+
+</div>
