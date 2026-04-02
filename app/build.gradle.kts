@@ -6,7 +6,7 @@ plugins {
 }
 
 // -------------------------------
-// 🔐 Load Keystore Properties
+// Load keystore properties (local)
 // -------------------------------
 val keystorePropsFile = rootProject.file("release.properties")
 val keystoreProps = Properties()
@@ -22,12 +22,12 @@ val hasValidSigningProps = listOf(
     "storePassword",
     "keyAlias",
     "keyPassword"
-).all { key -> keystoreProps[key] != null }
+).all { keystoreProps[it] != null }
 
 val isCI = System.getenv("CI") == "true"
 
 // -------------------------------
-// ⚙️ Android Config
+// Android Configuration
 // -------------------------------
 android {
     namespace = "com.smthbig.shadow"
@@ -46,12 +46,15 @@ android {
     }
 
     // -------------------------------
-    // 🔐 Signing Configs (FIXED SCOPE)
+    // Signing Configuration
     // -------------------------------
     signingConfigs {
-        if (isCI) {
+
+        val keystorePath = System.getenv("KEYSTORE_FILE")
+
+        if (isCI && keystorePath != null) {
             create("release") {
-                storeFile = file(System.getenv("KEYSTORE_FILE"))
+                storeFile = rootProject.file(keystorePath)
                 storePassword = System.getenv("KEYSTORE_PASSWORD")
                 keyAlias = System.getenv("KEY_ALIAS")
                 keyPassword = System.getenv("KEY_PASSWORD")
@@ -67,42 +70,39 @@ android {
     }
 
     // -------------------------------
-    // 🏗 Build Types
+    // Build Types
     // -------------------------------
     buildTypes {
         release {
-            if (hasValidSigningProps || isCI) {
-                signingConfig = signingConfigs.getByName("release")
-            }
+            signingConfig = signingConfigs.findByName("release")
             isMinifyEnabled = false
         }
     }
 
     // -------------------------------
-    // ⚠️ Lint
+    // Lint
     // -------------------------------
     lint {
         checkReleaseBuilds = false
     }
 
     // -------------------------------
-    // ☕ Java Compatibility
+    // Java Compatibility
     // -------------------------------
     compileOptions {
-        // Java 21 not fully stable on Android toolchain yet
         sourceCompatibility = JavaVersion.VERSION_17
         targetCompatibility = JavaVersion.VERSION_17
     }
 
     // -------------------------------
-    // 🧩 Features
+    // Features
     // -------------------------------
     buildFeatures {
         viewBinding = true
     }
 
     // -------------------------------
-    // 📦 Packaging
+    // Packaging
     // -------------------------------
     packaging {
         resources {
@@ -113,23 +113,14 @@ android {
 }
 
 // -------------------------------
-// ⚠️ Dependency Resolution (Keep Minimal)
-// -------------------------------
-configurations.all {
-    resolutionStrategy {
-        // Intentionally empty
-    }
-}
-
-// -------------------------------
-// ⚙️ Compiler Options
+// Compiler Options
 // -------------------------------
 tasks.withType<JavaCompile>().configureEach {
     options.compilerArgs.add("-Xlint:deprecation")
 }
 
 // -------------------------------
-// 📚 Dependencies
+// Dependencies
 // -------------------------------
 dependencies {
     implementation("com.google.android.material:material:1.11.0")

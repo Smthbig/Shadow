@@ -3,6 +3,7 @@ name: Signed Release
 on:
   push:
     branches: [ main ]
+  workflow_dispatch:
 
 permissions:
   contents: write
@@ -11,39 +12,64 @@ jobs:
   release:
     runs-on: ubuntu-latest
 
+    env:
+      CI: true
+
     steps:
+      # -------------------------------
+      # Checkout
+      # -------------------------------
       - name: Checkout
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
 
+      # -------------------------------
+      # Java Setup
+      # -------------------------------
       - name: Setup JDK 21
         uses: actions/setup-java@v4
         with:
           distribution: temurin
           java-version: 21
+          cache: gradle
 
-      # ---------- DECODE KEYSTORE ----------
+      # -------------------------------
+      # Android SDK (explicit)
+      # -------------------------------
+      - name: Setup Android SDK
+        uses: android-actions/setup-android@v3
+
+      # -------------------------------
+      # Decode Keystore
+      # -------------------------------
       - name: Decode Keystore
         run: |
           echo "${{ secrets.KEYSTORE_BASE64 }}" | base64 -d > keystore.jks
+          ls -la
 
+      # -------------------------------
+      # Export Signing Variables
+      # -------------------------------
       - name: Export signing env
         run: |
-          echo "CI=true" >> $GITHUB_ENV
           echo "KEYSTORE_FILE=keystore.jks" >> $GITHUB_ENV
           echo "KEYSTORE_PASSWORD=${{ secrets.KEYSTORE_PASSWORD }}" >> $GITHUB_ENV
           echo "KEY_ALIAS=${{ secrets.KEY_ALIAS }}" >> $GITHUB_ENV
           echo "KEY_PASSWORD=${{ secrets.KEY_PASSWORD }}" >> $GITHUB_ENV
 
-      # ---------- VERSION ----------
+      # -------------------------------
+      # Extract Version
+      # -------------------------------
       - name: Extract version
         id: version
         run: |
-          VERSION_NAME=$(grep VERSION_NAME gradle.properties | cut -d'=' -f2)
+          VERSION_NAME=$(grep VERSION_NAME gradle.properties | cut -d'=' -f2 | tr -d '\r')
           echo "name=$VERSION_NAME" >> $GITHUB_OUTPUT
 
-      # ---------- PREVENT DUPLICATE RELEASE ----------
+      # -------------------------------
+      # Prevent Duplicate Release
+      # -------------------------------
       - name: Check if release exists
         id: check
         run: |
@@ -57,20 +83,33 @@ jobs:
 
       - name: Stop if already released
         if: steps.check.outputs.exists == 'true'
-        run: exit 0
+        run: |
+          echo "Release already exists. Skipping."
+          exit 0
 
-      # ---------- BUILD ----------
-      - name: Grant permission
+      # -------------------------------
+      # Build
+      # -------------------------------
+      - name: Grant execute permission
         run: chmod +x gradlew
 
       - name: Build Signed APK
-        run: ./gradlew assembleRelease
+        run: |
+          ./gradlew assembleRelease \
+            --no-daemon \
+            --stacktrace \
+            --warning-mode all
 
+      # -------------------------------
+      # Rename APK
+      # -------------------------------
       - name: Rename APK
         run: |
           mv app/build/outputs/apk/release/app-release.apk shadow-v${{ steps.version.outputs.name }}.apk
 
-      # ---------- CHANGELOG ----------
+      # -------------------------------
+      # Generate Changelog
+      # -------------------------------
       - name: Generate changelog
         id: changelog
         run: |
@@ -85,7 +124,9 @@ jobs:
           echo "" >> $GITHUB_OUTPUT
           echo "EOF" >> $GITHUB_OUTPUT
 
-      # ---------- RELEASE ----------
+      # -------------------------------
+      # Create GitHub Release
+      # -------------------------------
       - name: Create GitHub Release
         uses: softprops/action-gh-release@v2
         with:
