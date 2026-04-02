@@ -9,6 +9,7 @@ import android.view.View;
 import android.widget.Button;
 import android.widget.LinearLayout;
 import android.widget.TextView;
+import com.smthbig.shadow.theme.ThemeManager;
 
 import java.util.concurrent.TimeUnit;
 
@@ -21,6 +22,7 @@ public final class ExtensionGrantActivity extends Activity {
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
+        ThemeManager.apply(this);
         super.onCreate(savedInstanceState);
 
         extensionEngine = new ExtensionEngine(this);
@@ -86,7 +88,7 @@ public final class ExtensionGrantActivity extends Activity {
             return;
         }
 
-        // 🔥 Relaunch app immediately
+        //  Relaunch app immediately
         try {
             Intent launch =
                     getPackageManager()

@@ -2,38 +2,40 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
 
     <!-- ============================= -->
-    <!-- Package visibility (MANDATORY) -->
+    <!-- PACKAGE VISIBILITY -->
     <!-- ============================= -->
     <queries>
-        <!-- Allow querying all launchable apps -->
         <intent>
             <action android:name="android.intent.action.MAIN" />
             <category android:name="android.intent.category.LAUNCHER" />
         </intent>
 
-        <!-- Optional: system settings -->
         <package android:name="com.android.settings" />
     </queries>
 
-    <!-- Required for behavioral tracking -->
+    <!-- ============================= -->
+    <!-- PERMISSIONS -->
+    <!-- ============================= -->
     <uses-permission android:name="android.permission.PACKAGE_USAGE_STATS" />
 
-    <application
+    <application 
+        android:name=".App"
         android:allowBackup="false"
         android:label="Shadow"
         android:icon="@mipmap/ic_launcher"
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
-        android:theme="@style/Theme.Shadow">
+        android:theme="@style/Theme.Shadow.Base"
+        android:hardwareAccelerated="true">
 
         <!-- ============================= -->
-        <!-- App drawer / setup entry -->
+        <!-- ENTRY ACTIVITY -->
         <!-- ============================= -->
         <activity
-            android:name=".launcher.PermissionActivity"
+            android:name=".launcher.core.PermissionActivity"
             android:exported="true"
             android:excludeFromRecents="true"
-            android:theme="@style/Theme.Shadow">
+            android:theme="@style/Theme.Shadow.Base">
 
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
@@ -43,16 +45,17 @@
         </activity>
 
         <!-- ============================= -->
-        <!-- HOME launcher (actual launcher) -->
+        <!-- HOME LAUNCHER -->
         <!-- ============================= -->
         <activity
-            android:name=".launcher.HomeActivity"
+            android:name=".launcher.home.HomeActivity"
             android:exported="true"
+            android:theme="@style/Theme.Shadow.Base"
             android:launchMode="singleTask"
             android:excludeFromRecents="true"
-            android:taskAffinity=""
             android:stateNotNeeded="true"
-            android:windowSoftInputMode="stateAlwaysHidden">
+            android:windowSoftInputMode="adjustNothing"
+            android:configChanges="keyboard|keyboardHidden|orientation|screenSize|uiMode">
 
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
@@ -63,30 +66,40 @@
         </activity>
 
         <!-- ============================= -->
-        <!-- Delay / Pause Overlay -->
+        <!-- DELAY OVERLAY -->
         <!-- ============================= -->
         <activity
             android:name=".delay.DelayOverlayActivity"
             android:exported="false"
-            android:theme="@style/Theme.Shadow.Delay"
+            android:theme="@style/Theme.Shadow.Base"
             android:excludeFromRecents="true"
             android:finishOnTaskLaunch="true"
             android:launchMode="singleTop" />
-        
+
+        <!-- ============================= -->
+        <!-- EXTENSION -->
+        <!-- ============================= -->
         <activity
             android:name=".extension.ExtensionGrantActivity"
             android:exported="false"
-            android:theme="@style/Theme.Shadow.Delay" />
+            android:theme="@style/Theme.Shadow.Base" />
+
+        <!-- ============================= -->
+        <!-- APP LIMIT -->
+        <!-- ============================= -->
         <activity
-            android:name=".launcher.AppItem"
+            android:name=".launcher.apps.AppLimitActivity"
             android:exported="false"
-            android:theme="@style/Theme.Shadow.Delay" />
+            android:theme="@style/Theme.Shadow.Base" />
+
+        <!-- ============================= -->
+        <!-- SETTINGS -->
+        <!-- ============================= -->
         <activity
-            android:name=".launcher.AppLimitActivity"
+            android:name=".settings.SettingsActivity"
             android:exported="false"
-            android:theme="@style/Theme.Shadow.Delay" />
+            android:theme="@style/Theme.Shadow.Base" />
 
     </application>
-
 
 </manifest>

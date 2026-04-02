@@ -6,12 +6,20 @@
     android:layout_height="match_parent"
     android:background="@drawable/bg_shadow_gradient">
 
-    <!-- Blur layer (hidden initially) -->
+    <!-- Optional subtle depth overlay (Material elevation feel) -->
+    <View
+        android:id="@+id/base_overlay"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:background="?attr/colorSurface"
+        android:alpha="0.02"/>
+
+    <!-- Blur overlay (used when intent bar opens) -->
     <View
         android:id="@+id/blur_overlay"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:background="@drawable/bg_blur_overlay"
+        android:background="@android:color/transparent"
         android:visibility="gone"/>
 
 </FrameLayout>

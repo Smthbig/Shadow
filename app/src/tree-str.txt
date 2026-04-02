@@ -1,0 +1,97 @@
+Generated on: Thu Apr  2 10:46:18 IST 2026
+
+src/
+├── main
+│   ├── AndroidManifest.xml
+│   ├── java
+│   │   └── com
+│   │       └── smthbig
+│   │           └── shadow
+│   │               ├── behavior
+│   │               │   ├── TimePolicyEngine.java
+│   │               │   └── UsageTracker.java
+│   │               ├── data
+│   │               │   └── limits
+│   │               │       └── AppLimitStore.java
+│   │               ├── delay
+│   │               │   ├── DelayController.java
+│   │               │   └── DelayOverlayActivity.java
+│   │               ├── extension
+│   │               │   ├── ExtensionEngine.java
+│   │               │   └── ExtensionGrantActivity.java
+│   │               ├── launcher
+│   │               │   ├── AppItem.java
+│   │               │   ├── AppLimitActivity.java
+│   │               │   ├── AppLimitAdapter.java
+│   │               │   ├── HomeActivity.java
+│   │               │   ├── IntentBarView.java
+│   │               │   ├── LauncherController.java
+│   │               │   └── PermissionActivity.java
+│   │               ├── policy
+│   │               │   ├── ExtensionManager.java
+│   │               │   └── TimePolicyEngine.java
+│   │               ├── settings
+│   │               │   ├── SettingsActivity.java
+│   │               │   └── ThemeAdapter.java
+│   │               ├── system
+│   │               │   ├── AppLauncher.java
+│   │               │   └── UsagePermissionHelper.java
+│   │               ├── theme
+│   │               │   ├── ThemeManager.java
+│   │               │   └── ThemeMode.java
+│   │               └── tracking
+│   │                   ├── UsageStatsReader.java
+│   │                   └── UsageTracker.java
+│   └── res
+│       ├── drawable
+│       │   ├── bg_blur_overlay.xml
+│       │   ├── bg_shadow_gradient.xml
+│       │   ├── ic_launcher_background.xml
+│       │   └── ic_settings_gear.xml
+│       ├── drawable-v24
+│       │   └── ic_launcher_foreground.xml
+│       ├── font
+│       ├── layout
+│       │   ├── activity_app_limit.xml
+│       │   ├── activity_delay_overlay.xml
+│       │   ├── activity_home.xml
+│       │   ├── activity_permission.xml
+│       │   ├── activity_settings.xml
+│       │   ├── item_app_limit.xml
+│       │   ├── item_theme_option.xml
+│       │   └── view_intent_bar.xml
+│       ├── mipmap-anydpi-v26
+│       │   ├── ic_launcher.xml
+│       │   └── ic_launcher_round.xml
+│       ├── mipmap-hdpi
+│       │   ├── ic_launcher.png
+│       │   ├── ic_launcher_foreground.png
+│       │   └── ic_launcher_round.png
+│       ├── mipmap-mdpi
+│       │   ├── ic_launcher.png
+│       │   ├── ic_launcher_foreground.png
+│       │   └── ic_launcher_round.png
+│       ├── mipmap-xhdpi
+│       │   ├── ic_launcher.png
+│       │   ├── ic_launcher_foreground.png
+│       │   └── ic_launcher_round.png
+│       ├── mipmap-xxhdpi
+│       │   ├── ic_launcher.png
+│       │   ├── ic_launcher_foreground.png
+│       │   └── ic_launcher_round.png
+│       ├── mipmap-xxxhdpi
+│       │   ├── ic_launcher.png
+│       │   ├── ic_launcher_foreground.png
+│       │   └── ic_launcher_round.png
+│       ├── values
+│       │   ├── attrs.xml
+│       │   ├── colors.xml
+│       │   ├── strings.xml
+│       │   └── themes.xml
+│       ├── values-night
+│       │   ├── colors.xml
+│       │   └── themes.xml
+│       └── xml
+│           ├── backup_rules.xml
+│           └── data_extraction_rules.xml
+└── tree-str.txt

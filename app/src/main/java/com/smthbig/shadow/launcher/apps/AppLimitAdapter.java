@@ -1,4 +1,4 @@
-package com.smthbig.shadow.launcher;
+package com.smthbig.shadow.launcher.apps;
 
 import android.content.Context;
 import android.view.LayoutInflater;

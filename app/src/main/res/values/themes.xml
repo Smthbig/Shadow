@@ -1,50 +1,90 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
 
-    <!-- ========================= -->
-    <!-- Main Launcher Theme -->
-    <!-- ========================= -->
-    <style name="Theme.Shadow" parent="android:Theme.DeviceDefault.NoActionBar">
-        <!-- Identity: silence & negative space -->
-        <item name="android:windowBackground">@android:color/black</item>
+    <!-- ================= BASE ================= -->
+    <style
+        name="Theme.Shadow.Base"
+        parent="Theme.Material3.DayNight.NoActionBar">
 
-        <!-- No bars, no chrome -->
-        <item name="android:windowFullscreen">true</item>
-        <item name="android:windowNoTitle">true</item>
-        <item name="android:windowDrawsSystemBarBackgrounds">true</item>
+        <!--  IMPORTANT: remove fixed drawable -->
+        <item name="android:windowBackground">@color/md_background</item>
+        <item name="android:colorBackground">@color/md_background</item>
 
-        <!-- Status & navigation bars blend into void -->
-        <item name="android:statusBarColor">@android:color/black</item>
-        <item name="android:navigationBarColor">@android:color/black</item>
+        <!-- PRIMARY -->
+        <item name="colorPrimary">@color/md_primary</item>
+        <item name="colorOnPrimary">@color/md_on_primary</item>
+        <item name="colorPrimaryContainer">@color/md_primary_container</item>
+        <item name="colorOnPrimaryContainer">@color/md_on_primary_container</item>
 
-        <!-- No transitions = no stimulation -->
-        <item name="android:windowAnimationStyle">@null</item>
+        <!-- SECONDARY -->
+        <item name="colorSecondary">@color/md_secondary</item>
+        <item name="colorOnSecondary">@color/md_on_secondary</item>
+
+        <!-- SURFACE -->
+        <item name="colorSurface">@color/md_surface</item>
+        <item name="colorOnSurface">@color/md_on_surface</item>
+
+        <item name="colorSurfaceVariant">@color/md_surface_variant</item>
+        <item name="colorOnSurfaceVariant">@color/md_on_surface_variant</item>
+
+        <item name="elevationOverlayEnabled">true</item>
+
+        <!-- OUTLINE -->
+        <item name="colorOutline">@color/md_outline</item>
+
+        <!-- GLASS SYSTEM -->
+        <item name="shadowGlass">@color/shadow_glass</item>
+        <item name="shadowGlassStrong">@color/shadow_glass_strong</item>
+        <item name="shadowGlassSoft">@color/shadow_glass_soft</item>
+
+        <!-- SYSTEM UI -->
+        <item name="android:statusBarColor">@android:color/transparent</item>
+        <item name="android:navigationBarColor">@android:color/transparent</item>
+
     </style>
 
+    <!-- ================= LIGHT ================= -->
+    <style name="Theme.Shadow.Light" parent="Theme.Shadow.Base">
+        <item name="android:windowLightStatusBar">true</item>
+    </style>
 
-    <!-- ========================= -->
-    <!-- Delay Overlay Theme -->
-    <!-- ========================= -->
-    <style name="Theme.Shadow.Delay" parent="android:Theme.DeviceDefault.NoActionBar">
-        <!-- Semi-transparent pause -->
+    <!-- ================= DARK ================= -->
+    <style name="Theme.Shadow.Dark" parent="Theme.Shadow.Base">
+        <item name="android:windowLightStatusBar">false</item>
+    </style>
+
+    <!-- ================= GLASS ================= -->
+    <style name="Theme.Shadow.Glass" parent="Theme.Shadow.Dark">
+
+        <!-- 🔥 REAL GLASS -->
         <item name="android:windowBackground">@android:color/transparent</item>
 
-        <!-- Overlay behavior -->
-        <item name="android:windowIsTranslucent">true</item>
-        <item name="android:windowCloseOnTouchOutside">false</item>
-        <item name="android:windowNoTitle">true</item>
-        <item name="android:windowFullscreen">true</item>
+        <!-- Glass colors -->
+        <item name="shadowGlass">@color/shadow_glass_strong</item>
+        <item name="shadowGlassSoft">@color/shadow_glass_soft</item>
 
-        <!-- Dim the world slightly -->
-        <item name="android:backgroundDimEnabled">true</item>
-        <item name="android:backgroundDimAmount">0.35</item>
+        <!-- Reduce noise -->
+        <item name="colorOutline">@android:color/transparent</item>
 
-        <!-- No animation = no reward -->
-        <item name="android:windowAnimationStyle">@null</item>
+        <!-- Slight lift -->
+        <item name="colorSurface">@color/md_surface_variant</item>
 
-        <!-- System bars stay dark -->
-        <item name="android:statusBarColor">@android:color/black</item>
-        <item name="android:navigationBarColor">@android:color/black</item>
+    </style>
+
+    <!-- ================= SHADOW (LEGACY) ================= -->
+    <style name="Theme.Shadow.Legacy" parent="Theme.Shadow.Dark">
+
+        <item name="colorSurface">@color/md_surface</item>
+        <item name="colorSurfaceVariant">@color/md_surface_variant</item>
+
+    </style>
+
+    <!-- ================= DYNAMIC ================= -->
+    <style name="Theme.Shadow.Dynamic" parent="Theme.Shadow.Base">
+
+        <!-- 🔥 IMPORTANT: no hardcoded colors -->
+        <item name="android:windowBackground">@color/md_background</item>
+
     </style>
 
 </resources>

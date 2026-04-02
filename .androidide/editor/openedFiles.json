@@ -1,51 +1,21 @@
 {
   "allFiles": [
     {
-      "file": "/storage/emulated/0/coder/.aproject/Shadow/app/src/main/java/com/smthbig/shadow/launcher/HomeActivity.java",
+      "file": "/storage/emulated/0/coder/.aproject/Shadow/app/src/main/java/com/smthbig/shadow/delay/DelayController.java",
       "selection": {
         "end": {
-          "column": 1,
-          "index": 4585,
-          "line": 168
+          "column": 36,
+          "index": 135,
+          "line": 5
         },
         "start": {
-          "column": 1,
-          "index": 4585,
-          "line": 168
-        }
-      }
-    },
-    {
-      "file": "/storage/emulated/0/coder/.aproject/Shadow/app/src/main/res/drawable/ic_settings_gear.xml",
-      "selection": {
-        "end": {
-          "column": 9,
-          "index": 1173,
-          "line": 9
-        },
-        "start": {
-          "column": 9,
-          "index": 1173,
-          "line": 9
-        }
-      }
-    },
-    {
-      "file": "/storage/emulated/0/coder/.aproject/Shadow/app/src/main/res/drawable/bg_shadow_gradient.xml",
-      "selection": {
-        "end": {
-          "column": 0,
-          "index": 0,
-          "line": 0
-        },
-        "start": {
-          "column": 0,
-          "index": 0,
-          "line": 0
+          "column": 36,
+          "index": 135,
+          "line": 5
         }
       }
     }
   ],
   "projectPath": "/storage/emulated/0/coder/.aproject/Shadow",
-  "selectedFile": "/storage/emulated/0/coder/.aproject/Shadow/app/src/main/res/drawable/bg_shadow_gradient.xml"
+  "selectedFile": "/storage/emulated/0/coder/.aproject/Shadow/app/src/main/java/com/smthbig/shadow/delay/DelayController.java"
 }

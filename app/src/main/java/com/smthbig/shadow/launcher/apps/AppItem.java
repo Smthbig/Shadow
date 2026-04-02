@@ -1,4 +1,4 @@
-package com.smthbig.shadow.launcher;
+package com.smthbig.shadow.launcher.apps;
 
 public class AppItem {
     public final String label;
