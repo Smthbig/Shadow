@@ -1,8 +1,6 @@
 name: Signed Release
 
 on:
-  push:
-    branches: [ main ]
   workflow_dispatch:
 
 permissions:
@@ -17,17 +15,11 @@ jobs:
 
     steps:
 
-      # -------------------------------
-      # Checkout
-      # -------------------------------
       - name: Checkout
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
 
-      # -------------------------------
-      # Java
-      # -------------------------------
       - name: Setup JDK 21
         uses: actions/setup-java@v4
         with:
@@ -35,15 +27,9 @@ jobs:
           java-version: 21
           cache: gradle
 
-      # -------------------------------
-      # Android SDK
-      # -------------------------------
       - name: Setup Android SDK
         uses: android-actions/setup-android@v3
 
-      # -------------------------------
-      # Validate Secret Exists
-      # -------------------------------
       - name: Validate secret
         run: |
           if [ -z "${{ secrets.KEYSTORE_BASE64 }}" ]; then
@@ -51,14 +37,10 @@ jobs:
             exit 1
           fi
 
-      # -------------------------------
-      # Decode Keystore
-      # -------------------------------
       - name: Decode Keystore
         run: |
           echo "${{ secrets.KEYSTORE_BASE64 }}" | base64 -d > keystore.jks
 
-          echo "---- FILE INFO ----"
           ls -lh keystore.jks
           file keystore.jks
 
@@ -67,16 +49,10 @@ jobs:
             exit 1
           fi
 
-      # -------------------------------
-      # Verify Keystore (CRITICAL)
-      # -------------------------------
       - name: Verify keystore integrity
         run: |
           keytool -list -keystore keystore.jks -storepass "${{ secrets.KEYSTORE_PASSWORD }}" > /dev/null
 
-      # -------------------------------
-      # Export Signing Env
-      # -------------------------------
       - name: Export signing env
         run: |
           echo "KEYSTORE_FILE=keystore.jks" >> $GITHUB_ENV
@@ -84,18 +60,12 @@ jobs:
           echo "KEY_ALIAS=${{ secrets.KEY_ALIAS }}" >> $GITHUB_ENV
           echo "KEY_PASSWORD=${{ secrets.KEY_PASSWORD }}" >> $GITHUB_ENV
 
-      # -------------------------------
-      # Version
-      # -------------------------------
       - name: Extract version
         id: version
         run: |
           VERSION_NAME=$(grep VERSION_NAME gradle.properties | cut -d'=' -f2 | tr -d '\r')
           echo "name=$VERSION_NAME" >> $GITHUB_OUTPUT
 
-      # -------------------------------
-      # Prevent duplicate release
-      # -------------------------------
       - name: Check release
         id: check
         run: |
@@ -109,26 +79,19 @@ jobs:
 
       - name: Stop if exists
         if: steps.check.outputs.exists == 'true'
-        run: exit 0
+        run: |
+          echo "Release already exists"
+          exit 0
 
-      # -------------------------------
-      # Build
-      # -------------------------------
       - name: Build APK
         run: |
           chmod +x gradlew
           ./gradlew assembleRelease --no-daemon --stacktrace
 
-      # -------------------------------
-      # Rename APK
-      # -------------------------------
       - name: Rename APK
         run: |
           mv app/build/outputs/apk/release/app-release.apk shadow-v${{ steps.version.outputs.name }}.apk
 
-      # -------------------------------
-      # Changelog
-      # -------------------------------
       - name: Generate changelog
         id: changelog
         run: |
@@ -143,9 +106,6 @@ jobs:
           echo "" >> $GITHUB_OUTPUT
           echo "EOF" >> $GITHUB_OUTPUT
 
-      # -------------------------------
-      # Release
-      # -------------------------------
       - name: Create Release
         uses: softprops/action-gh-release@v2
         with:
