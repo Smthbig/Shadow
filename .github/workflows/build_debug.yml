@@ -1,21 +1,22 @@
-name: Android CI
+name: Nightly Build & Release
 
 on:
   push:
     branches: [ main ]
   workflow_dispatch:
-  release:
-    types: [created]
+
+permissions:
+  contents: write
 
 jobs:
-
-  build-debug:
-    name: Build Debug APK
+  nightly:
     runs-on: ubuntu-latest
 
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 0  # required for changelog
 
       - name: Setup JDK 21
         uses: actions/setup-java@v4
@@ -29,34 +30,39 @@ jobs:
       - name: Build Debug APK
         run: ./gradlew assembleDebug
 
-      - name: Upload Debug APK
-        uses: actions/upload-artifact@v4
-        with:
-          name: shadow-debug-apk
-          path: app/build/outputs/apk/debug/app-debug.apk
+      - name: Rename APK
+        run: |
+          mv app/build/outputs/apk/debug/app-debug.apk shadow-nightly.apk
 
-  build-release:
-    name: Build Release APK
-    runs-on: ubuntu-latest
-    if: github.event_name == 'release'
+      # ---------- CHANGELOG GENERATION ----------
+      - name: Generate changelog
+        id: changelog
+        run: |
+          # Last commit message
+          LAST_MSG=$(git log -1 --pretty=%s)
 
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v4
+          # Short commit hash
+          SHORT_SHA=$(git rev-parse --short HEAD)
 
-      - name: Setup JDK 21
-        uses: actions/setup-java@v4
-        with:
-          distribution: temurin
-          java-version: 21
+          # Date
+          DATE=$(date -u +"%Y-%m-%d %H:%M UTC")
 
-      - name: Grant Gradle permission
-        run: chmod +x gradlew
+          echo "CHANGELOG<<EOF" >> $GITHUB_OUTPUT
+          echo "### Nightly Build" >> $GITHUB_OUTPUT
+          echo "" >> $GITHUB_OUTPUT
+          echo "- Commit: $SHORT_SHA" >> $GITHUB_OUTPUT
+          echo "- Message: $LAST_MSG" >> $GITHUB_OUTPUT
+          echo "- Built at: $DATE" >> $GITHUB_OUTPUT
+          echo "EOF" >> $GITHUB_OUTPUT
 
-      - name: Build Release APK
-        run: ./gradlew assembleRelease
-
-      - name: Upload APK to Release
+      # ---------- RELEASE ----------
+      - name: Create/Update Nightly Release
         uses: softprops/action-gh-release@v2
         with:
-          files: app/build/outputs/apk/release/app-release.apk
+          tag_name: nightly
+          name: Nightly Build
+          body: ${{ steps.changelog.outputs.CHANGELOG }}
+          prerelease: true
+          files: shadow-nightly.apk
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
