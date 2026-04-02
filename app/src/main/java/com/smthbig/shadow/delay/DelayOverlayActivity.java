@@ -8,6 +8,7 @@ import android.view.HapticFeedbackConstants;
 import android.view.View;
 import android.widget.TextView;
 
+import androidx.activity.OnBackPressedCallback;
 import androidx.appcompat.app.AppCompatActivity;
 
 import com.google.android.material.button.MaterialButton;
@@ -31,46 +32,29 @@ public final class DelayOverlayActivity extends AppCompatActivity {
 
     private CountDownTimer timer;
     private boolean launched = false;
+    private long remainingMs;
 
     /* ========================================================= */
     /* ================= FACTORY ================================ */
     /* ========================================================= */
 
-    public static Intent delay(
-            Context ctx,
-            String pkg,
-            long delayMs,
-            String reason,
-            boolean usingExtension
-    ) {
+    public static Intent delay(Context ctx, String pkg, long delayMs, String reason, boolean usingExtension) {
         return base(ctx, pkg, reason, usingExtension)
                 .putExtra(EXTRA_MODE, MODE_DELAY)
                 .putExtra(EXTRA_DELAY, delayMs);
     }
 
-    public static Intent block(
-            Context ctx,
-            String pkg,
-            String reason
-    ) {
+    public static Intent block(Context ctx, String pkg, String reason) {
         return base(ctx, pkg, reason, false)
                 .putExtra(EXTRA_MODE, MODE_BLOCK);
     }
 
-    private static Intent base(
-            Context ctx,
-            String pkg,
-            String reason,
-            boolean usingExtension
-    ) {
+    private static Intent base(Context ctx, String pkg, String reason, boolean usingExtension) {
         Intent i = new Intent(ctx, DelayOverlayActivity.class);
-
         i.putExtra(EXTRA_PACKAGE, pkg);
         i.putExtra(EXTRA_REASON, reason);
         i.putExtra(EXTRA_EXTENSION, usingExtension);
-
         i.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-
         return i;
     }
 
@@ -81,16 +65,28 @@ public final class DelayOverlayActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
 
-        ThemeManager.apply(this); // ✅ ensure theme sync
+        if (!isTaskRoot()) {
+            finish();
+            return;
+        }
+
         super.onCreate(savedInstanceState);
+        ThemeManager.apply(this);
         setContentView(R.layout.activity_delay);
+
+        // 🔒 BLOCK BACK COMPLETELY
+        getOnBackPressedDispatcher().addCallback(this,
+                new OnBackPressedCallback(true) {
+                    @Override
+                    public void handleOnBackPressed() {
+                        // no-op
+                    }
+                });
 
         int mode = getIntent().getIntExtra(EXTRA_MODE, MODE_BLOCK);
         long delay = Math.max(0, getIntent().getLongExtra(EXTRA_DELAY, 0));
         String reason = getIntent().getStringExtra(EXTRA_REASON);
-        boolean usingExtension =
-                getIntent().getBooleanExtra(EXTRA_EXTENSION, false);
-
+        boolean usingExtension = getIntent().getBooleanExtra(EXTRA_EXTENSION, false);
         String pkg = getIntent().getStringExtra(EXTRA_PACKAGE);
 
         if (pkg == null || pkg.isEmpty()) {
@@ -98,33 +94,27 @@ public final class DelayOverlayActivity extends AppCompatActivity {
             return;
         }
 
-        /* ---------- VIEW BIND ---------- */
-
         TextView title = findViewById(R.id.title);
         TextView subtitle = findViewById(R.id.subtitle);
         TextView timerText = findViewById(R.id.timer);
 
         MaterialButton btnCancel = findViewById(R.id.btn_cancel);
         MaterialButton btnExtend = findViewById(R.id.btn_extend);
-
-        CircularProgressIndicator progress =
-                findViewById(R.id.progress);
+        CircularProgressIndicator progress = findViewById(R.id.progress);
 
         if (progress == null || timerText == null) {
-            finish(); // safety
+            finish();
             return;
         }
 
         ExtensionEngine engine = new ExtensionEngine(this);
 
-        /* ========================================================= */
-        /* ================= BLOCK MODE ============================ */
-        /* ========================================================= */
+        /* ================= BLOCK MODE ================= */
 
         if (mode == MODE_BLOCK) {
 
             title.setText("Blocked");
-            subtitle.setText(reason != null ? reason : "Time limit reached");
+            subtitle.setText(reason != null ? reason : "Limit reached");
 
             timerText.setVisibility(View.GONE);
             progress.setVisibility(View.GONE);
@@ -136,115 +126,114 @@ public final class DelayOverlayActivity extends AppCompatActivity {
             return;
         }
 
-        /* ========================================================= */
-        /* ================= DELAY MODE ============================ */
-        /* ========================================================= */
+        /* ================= DELAY MODE ================= */
 
         title.setText(usingExtension ? "Using Extension" : "Wait");
         subtitle.setText(reason != null ? reason : "");
 
-        int safeMax = (int) Math.max(1, Math.min(delay, Integer.MAX_VALUE));
-        progress.setMax(safeMax);
-        progress.setProgress(0);
-
-        timerText.setText((delay / 1000) + "s");
-
-        btnCancel.setOnClickListener(v -> finish());
-
-        /* ---------- EXTENSION BUTTON ---------- */
+        btnCancel.setOnClickListener(v -> finish()); // allowed exit
 
         if (usingExtension) {
             btnExtend.setVisibility(View.GONE);
         } else {
-
             btnExtend.setVisibility(View.VISIBLE);
 
             btnExtend.setOnClickListener(v -> {
 
-                boolean granted =
-                        engine.grant(pkg, TimeUnit.MINUTES.toMillis(5));
+                long extra = TimeUnit.MINUTES.toMillis(5);
+
+                boolean granted = engine.grant(pkg, extra);
 
                 if (granted) {
-                    btnExtend.setText("Added ✓");
-                    btnExtend.setEnabled(false);
 
-                    btnExtend.performHapticFeedback(
-                            HapticFeedbackConstants.CONFIRM
-                    );
-                } else {
-                    btnExtend.setText("Limit reached");
                     btnExtend.setEnabled(false);
+                    btnExtend.setText("Added ✓");
+
+                    btnExtend.performHapticFeedback(HapticFeedbackConstants.CONFIRM);
+
+                    remainingMs += extra;
+
+                    restartTimer(pkg, progress, timerText);
+
+                } else {
+                    btnExtend.setEnabled(false);
+                    btnExtend.setText("Limit reached");
                 }
             });
         }
 
-        /* ========================================================= */
-        /* ================= TIMER ================================ */
-        /* ========================================================= */
-
         if (delay <= 0) {
-            launchApp(pkg);
-            finish();
+            launchOnce(pkg);
             return;
         }
 
-        timer = new CountDownTimer(delay, 50) {
+        remainingMs = delay;
+        startTimer(pkg, progress, timerText);
+    }
+
+    /* ========================================================= */
+    /* ================= TIMER ================================ */
+    /* ========================================================= */
+
+    private void startTimer(String pkg, CircularProgressIndicator progress, TextView timerText) {
+
+        int safeMax = (int) Math.min(remainingMs, Integer.MAX_VALUE);
+        progress.setMax(safeMax);
+        progress.setProgress(0);
+
+        timer = new CountDownTimer(remainingMs, 50) {
 
             @Override
             public void onTick(long ms) {
+                remainingMs = ms;
 
-                long elapsed = delay - ms;
-
+                long elapsed = safeMax - ms;
                 progress.setProgress((int) elapsed);
+
                 timerText.setText((ms / 1000) + "s");
             }
 
             @Override
             public void onFinish() {
-
-                if (launched) return;
-                launched = true;
-
-                timerText.setText("0s");
-                progress.setProgress(progress.getMax());
-
-                progress.performHapticFeedback(
-                        HapticFeedbackConstants.CONFIRM
-                );
-
-                launchApp(pkg);
-                finish();
+                launchOnce(pkg);
             }
-
         }.start();
     }
 
+    private void restartTimer(String pkg, CircularProgressIndicator progress, TextView timerText) {
+        if (timer != null) timer.cancel();
+        startTimer(pkg, progress, timerText);
+    }
+
     /* ========================================================= */
-    /* ================= LAUNCH SAFE ============================ */
+    /* ================= SAFE LAUNCH ============================ */
     /* ========================================================= */
 
-    private void launchApp(String pkg) {
+    private void launchOnce(String pkg) {
+
+        if (launched) return;
+        launched = true;
+
         try {
-            Intent intent =
-                    getPackageManager().getLaunchIntentForPackage(pkg);
+            Intent intent = getPackageManager().getLaunchIntentForPackage(pkg);
 
             if (intent != null) {
                 intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
                 startActivity(intent);
             }
+
         } catch (Exception ignored) {}
+
+        finish();
     }
 
     /* ========================================================= */
-    /* ================= SAFETY ================================= */
+    /* ================= CLEANUP ================================ */
     /* ========================================================= */
 
     @Override
     protected void onDestroy() {
         super.onDestroy();
-
-        if (timer != null) {
-            timer.cancel();
-        }
+        if (timer != null) timer.cancel();
     }
 }

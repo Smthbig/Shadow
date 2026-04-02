@@ -14,19 +14,16 @@ public final class UsageStatsReader {
 
     public UsageStatsReader(Context context) {
         this.usageStatsManager =
-                (UsageStatsManager)
-                        context.getSystemService(Context.USAGE_STATS_SERVICE);
+                (UsageStatsManager) context.getSystemService(Context.USAGE_STATS_SERVICE);
     }
 
     /* ========================================================= */
-    /* ================= SINGLE APP USAGE ======================= */
+    /* ================= SINGLE APP ============================ */
     /* ========================================================= */
 
     public long getTodayForegroundTimeMs(String packageName) {
 
-        if (usageStatsManager == null || packageName == null) {
-            return 0L;
-        }
+        if (usageStatsManager == null || packageName == null) return 0L;
 
         long start = startOfTodayMillis();
         long now = System.currentTimeMillis();
@@ -38,46 +35,62 @@ public final class UsageStatsReader {
 
         long total = 0L;
         Long activeStart = null;
+        String currentForeground = null;
 
         while (events.hasNextEvent()) {
 
             events.getNextEvent(event);
 
-            if (!packageName.equals(event.getPackageName())) continue;
-
+            String pkg = event.getPackageName();
             int type = event.getEventType();
             long time = event.getTimeStamp();
 
+            if (pkg == null) continue;
+
             if (type == UsageEvents.Event.ACTIVITY_RESUMED) {
-                activeStart = time;
+
+                // close previous foreground if switching
+                if (currentForeground != null
+                        && activeStart != null
+                        && currentForeground.equals(packageName)) {
+
+                    long delta = time - activeStart;
+                    if (isValidDelta(delta)) total += delta;
+                }
+
+                currentForeground = pkg;
+
+                if (pkg.equals(packageName)) {
+                    activeStart = time;
+                } else {
+                    activeStart = null;
+                }
             }
 
             else if (type == UsageEvents.Event.ACTIVITY_PAUSED
                   || type == UsageEvents.Event.ACTIVITY_STOPPED) {
 
-                if (activeStart != null) {
-                    long delta = time - activeStart;
+                if (pkg.equals(packageName) && activeStart != null) {
 
-                    if (delta > 0 && delta < 1000L * 60 * 60 * 12) { // sanity cap (12h)
-                        total += delta;
-                    }
+                    long delta = time - activeStart;
+                    if (isValidDelta(delta)) total += delta;
 
                     activeStart = null;
                 }
             }
         }
 
-        // still active
-        if (activeStart != null) {
+        // ongoing session
+        if (activeStart != null && packageName.equals(currentForeground)) {
             long delta = now - activeStart;
-            if (delta > 0) total += delta;
+            if (isValidDelta(delta)) total += delta;
         }
 
-        return Math.max(0L, total);
+        return Math.max(total, 0L);
     }
 
     /* ========================================================= */
-    /* ================= ALL APPS USAGE ========================= */
+    /* ================= ALL APPS ============================== */
     /* ========================================================= */
 
     public Map<String, Long> getAllTodayForegroundTimes() {
@@ -94,7 +107,8 @@ public final class UsageStatsReader {
 
         UsageEvents.Event event = new UsageEvents.Event();
 
-        Map<String, Long> active = new HashMap<>();
+        String currentForeground = null;
+        long activeStart = 0L;
 
         while (events.hasNextEvent()) {
 
@@ -107,37 +121,47 @@ public final class UsageStatsReader {
             if (pkg == null) continue;
 
             if (type == UsageEvents.Event.ACTIVITY_RESUMED) {
-                active.put(pkg, time);
+
+                // close previous app
+                if (currentForeground != null) {
+                    long delta = time - activeStart;
+                    if (isValidDelta(delta)) {
+                        result.put(
+                                currentForeground,
+                                result.getOrDefault(currentForeground, 0L) + delta
+                        );
+                    }
+                }
+
+                currentForeground = pkg;
+                activeStart = time;
             }
 
             else if (type == UsageEvents.Event.ACTIVITY_PAUSED
                   || type == UsageEvents.Event.ACTIVITY_STOPPED) {
 
-                Long startTime = active.remove(pkg);
+                if (pkg.equals(currentForeground)) {
 
-                if (startTime != null) {
-
-                    long delta = time - startTime;
-
-                    if (delta > 0 && delta < 1000L * 60 * 60 * 12) {
+                    long delta = time - activeStart;
+                    if (isValidDelta(delta)) {
                         result.put(
                                 pkg,
                                 result.getOrDefault(pkg, 0L) + delta
                         );
                     }
+
+                    currentForeground = null;
                 }
             }
         }
 
-        // still running apps
-        for (Map.Entry<String, Long> entry : active.entrySet()) {
-
-            long delta = now - entry.getValue();
-
-            if (delta > 0) {
+        // still active app
+        if (currentForeground != null) {
+            long delta = now - activeStart;
+            if (isValidDelta(delta)) {
                 result.put(
-                        entry.getKey(),
-                        result.getOrDefault(entry.getKey(), 0L) + delta
+                        currentForeground,
+                        result.getOrDefault(currentForeground, 0L) + delta
                 );
             }
         }
@@ -146,8 +170,12 @@ public final class UsageStatsReader {
     }
 
     /* ========================================================= */
-    /* ================= TIME BASE ============================== */
+    /* ================= HELPERS =============================== */
     /* ========================================================= */
+
+    private boolean isValidDelta(long delta) {
+        return delta > 0 && delta < 1000L * 60 * 60 * 12;
+    }
 
     private long startOfTodayMillis() {
 

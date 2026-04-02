@@ -1,11 +1,7 @@
-package com.smthbig.shadow.launcher.core;
+package com.smthbig.shadow.setup.permissions;
 
-import android.app.role.RoleManager;
 import android.content.Intent;
-import android.net.Uri;
-import android.os.Build;
 import android.os.Bundle;
-import android.provider.Settings;
 import android.view.View;
 
 import androidx.activity.result.ActivityResultLauncher;
@@ -15,9 +11,8 @@ import androidx.appcompat.app.AppCompatActivity;
 import com.google.android.material.button.MaterialButton;
 import com.google.android.material.textview.MaterialTextView;
 import com.smthbig.shadow.R;
-import com.smthbig.shadow.system.UsagePermissionHelper;
-import com.smthbig.shadow.theme.ThemeManager;
 import com.smthbig.shadow.launcher.home.HomeActivity;
+import com.smthbig.shadow.theme.ThemeManager;
 
 public final class PermissionActivity extends AppCompatActivity {
 
@@ -33,14 +28,18 @@ public final class PermissionActivity extends AppCompatActivity {
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
-        ThemeManager.apply(this);
         super.onCreate(savedInstanceState);
+        ThemeManager.apply(this);
 
         setContentView(R.layout.activity_permission);
 
         statusText = findViewById(R.id.status_text);
         actionButton = findViewById(R.id.action_button);
         skipButton = findViewById(R.id.skip_button);
+
+        if (statusText == null || actionButton == null || skipButton == null) {
+            throw new RuntimeException("Permission layout binding failed");
+        }
 
         updateUI();
     }
@@ -75,24 +74,21 @@ public final class PermissionActivity extends AppCompatActivity {
 
         statusText.setText(
                 "Usage access required.\n\n" +
-                "If restricted settings are blocked,\n" +
-                "you can skip and configure later."
+                "If toggle is disabled, enable 'Allow restricted settings' in App Info."
         );
 
-        actionButton.setText("Open App Settings");
+        actionButton.setText("Open Usage Access");
 
-        actionButton.setOnClickListener(v -> {
-            Intent intent = new Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS);
-            intent.setData(Uri.fromParts("package", getPackageName(), null));
-            startActivity(intent);
-        });
+        actionButton.setOnClickListener(v ->
+                startActivity(UsagePermissionHelper.getUsageAccessIntent())
+        );
 
-        // ✅ Allow skip ONLY here
         skipButton.setVisibility(View.VISIBLE);
-        skipButton.setOnClickListener(v -> {
-            // Move forward but DO NOT bypass launcher requirement
-            showHomeStep();
-        });
+        skipButton.setText("Open App Info");
+
+        skipButton.setOnClickListener(v ->
+                startActivity(UsagePermissionHelper.getAppDetailsIntent(this))
+        );
     }
 
     /* ========================================================= */
@@ -103,38 +99,29 @@ public final class PermissionActivity extends AppCompatActivity {
 
         statusText.setText(
                 "Set Shadow as default launcher.\n\n" +
-                "This step is required to continue."
+                "This step is mandatory."
         );
 
         actionButton.setText("Set Default Launcher");
 
         actionButton.setOnClickListener(v -> requestHomeRole());
 
-        // ❌ No skip allowed here (critical enforcement)
         skipButton.setVisibility(View.GONE);
     }
 
     private void requestHomeRole() {
 
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+        Intent intent = UsagePermissionHelper.getHomeRoleRequestIntent(this);
 
-            RoleManager roleManager = (RoleManager) getSystemService(ROLE_SERVICE);
-
-            if (roleManager != null
-                    && roleManager.isRoleAvailable(RoleManager.ROLE_HOME)
-                    && !roleManager.isRoleHeld(RoleManager.ROLE_HOME)) {
-
-                roleLauncher.launch(
-                        roleManager.createRequestRoleIntent(RoleManager.ROLE_HOME)
-                );
-                return;
+        // If it's a role request → use launcher
+        if (intent != null) {
+            try {
+                roleLauncher.launch(intent);
+            } catch (Exception e) {
+                // fallback safety
+                startActivity(intent);
             }
         }
-
-        // fallback
-        Intent intent = new Intent(Intent.ACTION_MAIN);
-        intent.addCategory(Intent.CATEGORY_HOME);
-        startActivity(intent);
     }
 
     /* ========================================================= */

@@ -11,18 +11,23 @@ import com.smthbig.shadow.extension.ExtensionEngine;
 import com.smthbig.shadow.policy.TimePolicyEngine;
 import com.smthbig.shadow.tracking.UsageTracker;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
 public final class LauncherController {
 
     private static final long DEFAULT_LIMIT_MS = TimeUnit.MINUTES.toMillis(60);
+    private static final long LAUNCH_COOLDOWN_MS = 500; // anti-spam
 
     private final Context appContext;
     private final TimePolicyEngine policyEngine;
     private final AppLimitStore appLimitStore;
     private final UsageTracker usageTracker;
     private final ExtensionEngine extensionEngine;
+
+    private final Map<String, Long> lastLaunchMap = new HashMap<>();
 
     public LauncherController(Context context) {
         this.appContext = context.getApplicationContext();
@@ -61,7 +66,7 @@ public final class LauncherController {
         base.addCategory(Intent.CATEGORY_LAUNCHER);
 
         List<ResolveInfo> apps = pm.queryIntentActivities(base, 0);
-        if (apps == null || apps.isEmpty()) return null;
+        if (apps == null) return null;
 
         ResolveInfo chosen = null;
 
@@ -70,8 +75,7 @@ public final class LauncherController {
             String label = normalize(info.loadLabel(pm).toString());
 
             if (label.equals(normalizedQuery)) {
-                chosen = info;
-                break;
+                return info.activityInfo.packageName;
             }
 
             if (chosen == null && label.startsWith(normalizedQuery)) {
@@ -79,9 +83,7 @@ public final class LauncherController {
             }
         }
 
-        if (chosen == null) return null;
-
-        return chosen.activityInfo.packageName; // ✅ ONLY RETURN PKG
+        return chosen != null ? chosen.activityInfo.packageName : null;
     }
 
     /* ========================================================= */
@@ -92,23 +94,29 @@ public final class LauncherController {
 
         if (pkg == null || pkg.isEmpty()) return;
 
+        /* ---------- ANTI-SPAM ---------- */
+
+        long now = System.currentTimeMillis();
+        Long last = lastLaunchMap.get(pkg);
+
+        if (last != null && (now - last) < LAUNCH_COOLDOWN_MS) {
+            return;
+        }
+
+        lastLaunchMap.put(pkg, now);
+
         /* ---------- USAGE ---------- */
 
         long usedMs = usageTracker.getTodayUsageMs(pkg);
 
-        /* ---------- BASE LIMIT ---------- */
+        /* ---------- LIMIT ---------- */
 
         long baseLimitMs = appLimitStore.getLimitMs(pkg);
-
-        if (baseLimitMs <= 0) {
-            baseLimitMs = DEFAULT_LIMIT_MS;
-        }
-
-        /* ---------- DERIVED STATE ---------- */
+        if (baseLimitMs <= 0) baseLimitMs = DEFAULT_LIMIT_MS;
 
         long remainingBaseMs = appLimitStore.getRemainingBaseMs(pkg, usedMs);
 
-        long remainingExtensionMs = extensionEngine.getRemainingMs(pkg, usedMs, baseLimitMs);
+        long remainingExtensionMs = extensionEngine.getRemainingMs(pkg);
 
         /* ---------- POLICY ---------- */
 
@@ -118,12 +126,18 @@ public final class LauncherController {
         /* ---------- ACTION ---------- */
 
         if (decision.blocked) {
-            appContext.startActivity(DelayOverlayActivity.block(appContext, pkg, decision.reason));
+            launchOverlay(DelayOverlayActivity.block(appContext, pkg, decision.reason));
             return;
         }
 
         if (decision.delayMs > 0) {
-            appContext.startActivity(
+
+            // IMPORTANT: consume extension ONLY when used
+            if (decision.usingExtension) {
+                extensionEngine.consume(pkg, decision.delayMs);
+            }
+
+            launchOverlay(
                     DelayOverlayActivity.delay(
                             appContext,
                             pkg,
@@ -136,6 +150,17 @@ public final class LauncherController {
         /* ---------- SAFE LAUNCH ---------- */
 
         launchApp(pkg);
+    }
+
+    /* ========================================================= */
+    /* ================= OVERLAY =============================== */
+    /* ========================================================= */
+
+    private void launchOverlay(Intent intent) {
+        if (intent == null) return;
+
+        intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+        appContext.startActivity(intent);
     }
 
     /* ========================================================= */
@@ -153,7 +178,6 @@ public final class LauncherController {
             appContext.startActivity(launchIntent);
 
         } catch (Exception ignored) {
-            // prevent crash
         }
     }
 

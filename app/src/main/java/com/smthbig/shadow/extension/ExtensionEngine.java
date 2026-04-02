@@ -10,8 +10,6 @@ public final class ExtensionEngine {
 
     private static final String PREF = "extension_store";
 
-    /* ---------- LIMITS ---------- */
-
     private static final long MAX_EXTENSION_PER_DAY =
             TimeUnit.MINUTES.toMillis(20);
 
@@ -44,21 +42,11 @@ public final class ExtensionEngine {
         long lastGrant = getLong(pkg, "lastGrant");
         long dailyUsed = getLong(pkg, "daily");
 
-        // ❌ cooldown
-        if (now - lastGrant < COOLDOWN_MS) {
-            return false;
-        }
+        if (now - lastGrant < COOLDOWN_MS) return false;
+        if (dailyUsed >= MAX_EXTENSION_PER_DAY) return false;
 
-        // ❌ cap single
-        long durationMs = Math.min(requestMs, MAX_SINGLE_GRANT);
-
-        // ❌ cap daily
-        if (dailyUsed >= MAX_EXTENSION_PER_DAY) {
-            return false;
-        }
-
-        long allowed =
-                Math.min(durationMs, MAX_EXTENSION_PER_DAY - dailyUsed);
+        long allowed = Math.min(requestMs, MAX_SINGLE_GRANT);
+        allowed = Math.min(allowed, MAX_EXTENSION_PER_DAY - dailyUsed);
 
         if (allowed <= 0) return false;
 
@@ -74,47 +62,43 @@ public final class ExtensionEngine {
     }
 
     /* ========================================================= */
+    /* ===================== CONSUME ============================ */
+    /* ========================================================= */
+
+    public void consume(String pkg, long ms) {
+
+        if (pkg == null || ms <= 0) return;
+
+        resetIfNewDay(pkg);
+
+        long consumed = getConsumed(pkg);
+        long granted = getGranted(pkg);
+
+        long newConsumed = Math.min(granted, consumed + ms);
+
+        prefs.edit()
+                .putLong(key(pkg, "consumed"), newConsumed)
+                .apply();
+    }
+
+    /* ========================================================= */
     /* ===================== STATE ============================== */
     /* ========================================================= */
 
-    /**
-     * PURE FUNCTION:
-     * Remaining extension = granted - consumed
-     */
-    public long getRemainingMs(
-            String pkg,
-            long usedMs,
-            long baseLimitMs
-    ) {
+    public long getRemainingMs(String pkg) {
 
         if (pkg == null) return 0;
 
         resetIfNewDay(pkg);
 
         long granted = getGranted(pkg);
-        if (granted <= 0) return 0;
-
-        long consumed = getConsumedExtensionMs(usedMs, baseLimitMs);
+        long consumed = getConsumed(pkg);
 
         return Math.max(0, granted - consumed);
     }
 
-    public boolean hasExtension(
-            String pkg,
-            long usedMs,
-            long baseLimitMs
-    ) {
-        return getRemainingMs(pkg, usedMs, baseLimitMs) > 0;
-    }
-
-    /**
-     * Derived consumption
-     */
-    public long getConsumedExtensionMs(
-            long usedMs,
-            long baseLimitMs
-    ) {
-        return Math.max(0, usedMs - baseLimitMs);
+    public boolean hasExtension(String pkg) {
+        return getRemainingMs(pkg) > 0;
     }
 
     /* ========================================================= */
@@ -125,19 +109,13 @@ public final class ExtensionEngine {
         return getGranted(pkg);
     }
 
+    public long getConsumedMs(String pkg) {
+        return getConsumed(pkg);
+    }
+
     public long getDailyUsedMs(String pkg) {
         resetIfNewDay(pkg);
         return getLong(pkg, "daily");
-    }
-
-    public long getCooldownRemainingMs(String pkg) {
-
-        long lastGrant = getLong(pkg, "lastGrant");
-        long now = System.currentTimeMillis();
-
-        long remaining = COOLDOWN_MS - (now - lastGrant);
-
-        return Math.max(0, remaining);
     }
 
     public boolean canGrant(String pkg) {
@@ -168,6 +146,7 @@ public final class ExtensionEngine {
             prefs.edit()
                     .putLong(key(pkg, "daily"), 0)
                     .putLong(key(pkg, "granted"), 0)
+                    .putLong(key(pkg, "consumed"), 0)
                     .putLong(key(pkg, "day"), today)
                     .apply();
         }
@@ -179,6 +158,10 @@ public final class ExtensionEngine {
 
     private long getGranted(String pkg) {
         return getLong(pkg, "granted");
+    }
+
+    private long getConsumed(String pkg) {
+        return getLong(pkg, "consumed");
     }
 
     private long getLong(String pkg, String field) {
@@ -201,6 +184,7 @@ public final class ExtensionEngine {
     public void clear(String pkg) {
         prefs.edit()
                 .remove(key(pkg, "granted"))
+                .remove(key(pkg, "consumed"))
                 .remove(key(pkg, "daily"))
                 .remove(key(pkg, "lastGrant"))
                 .remove(key(pkg, "day"))
