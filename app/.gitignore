@@ -1,1 +1,106 @@
-/build
+# ==============================
+# Android / Gradle Build Outputs
+# ==============================
+*.apk
+*.ap_
+*.aab
+*.aar
+*.dex
+
+/build/
+/app/build/
+/.gradle/
+
+# ==============================
+# Java / Kotlin
+# ==============================
+*.class
+*.kotlin_module
+
+# ==============================
+# Local Configuration
+# ==============================
+local.properties
+
+# ==============================
+# IDE (Android Studio / IntelliJ)
+# ==============================
+.idea/
+*.iml
+/.androidide
+
+# Allow useful shared configs (optional)
+!.idea/codeStyles/
+!.idea/inspectionProfiles/
+
+# ==============================
+# OS / Hidden Files
+# ==============================
+.DS_Store
+Thumbs.db
+
+# Linux hidden junk
+.*.swp
+.*.swo
+
+# ==============================
+# Logs
+# ==============================
+*.log
+
+# ==============================
+# Keystore / Signing (CRITICAL)
+# ==============================
+*.jks
+*.keystore
+release.properties
+keystore.properties
+keystore.txt
+
+# ==============================
+# CI / Secrets / Env
+# ==============================
+.env
+.env.*
+*.key
+*.pem
+
+# ==============================
+# NDK / Native
+# ==============================
+.externalNativeBuild/
+.cxx/
+
+# ==============================
+# Lint / Reports
+# ==============================
+/lint/
+/lint-results*.xml
+
+# ==============================
+# Navigation / Captures
+# ==============================
+.navigation/
+captures/
+
+# ==============================
+# Fastlane (if used)
+# ==============================
+fastlane/report.xml
+fastlane/Preview.html
+fastlane/screenshots/
+fastlane/test_output/
+
+# ==============================
+# Misc
+# ==============================
+/out/
+/bin/
+/gen/
+
+# ==============================
+# Prevent committing hidden root files
+# ==============================
+.*
+!.gitignore
+!.github/
