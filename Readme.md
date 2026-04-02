@@ -17,7 +17,15 @@
 &nbsp;
 
 <p align="center">
-  <img src="https://img.shields.io/badge/Download-Coming%20Soon-black?style=for-the-badge&logo=android"/>
+  <a href="https://github.com/Smthbig/shadow/releases/download/nightly/shadow-nightly.apk">
+    <img src="https://img.shields.io/badge/Download-Nightly-black?style=for-the-badge&logo=android"/>
+  </a>
+</p>
+
+<p align="center">
+  <a href="https://github.com/Smthbig/shadow/releases/tag/nightly">
+    <img src="https://img.shields.io/badge/View-Changelog-1f2937?style=for-the-badge"/>
+  </a>
 </p>
 
 &nbsp;
