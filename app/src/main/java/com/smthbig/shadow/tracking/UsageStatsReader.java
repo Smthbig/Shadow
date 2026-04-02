@@ -18,10 +18,12 @@ public final class UsageStatsReader {
                         context.getSystemService(Context.USAGE_STATS_SERVICE);
     }
 
-    /**
-     * Returns total foreground time (ms) for a package since start of today.
-     */
+    /* ========================================================= */
+    /* ================= SINGLE APP USAGE ======================= */
+    /* ========================================================= */
+
     public long getTodayForegroundTimeMs(String packageName) {
+
         if (usageStatsManager == null || packageName == null) {
             return 0L;
         }
@@ -29,49 +31,57 @@ public final class UsageStatsReader {
         long start = startOfTodayMillis();
         long now = System.currentTimeMillis();
 
-        UsageEvents events =
-                usageStatsManager.queryEvents(start, now);
-
+        UsageEvents events = usageStatsManager.queryEvents(start, now);
         if (events == null) return 0L;
 
         UsageEvents.Event event = new UsageEvents.Event();
 
         long total = 0L;
-        Long lastResume = null;
+        Long activeStart = null;
 
         while (events.hasNextEvent()) {
+
             events.getNextEvent(event);
 
             if (!packageName.equals(event.getPackageName())) continue;
 
             int type = event.getEventType();
+            long time = event.getTimeStamp();
 
             if (type == UsageEvents.Event.ACTIVITY_RESUMED) {
-                lastResume = event.getTimeStamp();
+                activeStart = time;
             }
 
-            if (type == UsageEvents.Event.ACTIVITY_PAUSED) {
-                if (lastResume != null) {
-                    long delta = event.getTimeStamp() - lastResume;
-                    if (delta > 0) total += delta;
-                    lastResume = null;
+            else if (type == UsageEvents.Event.ACTIVITY_PAUSED
+                  || type == UsageEvents.Event.ACTIVITY_STOPPED) {
+
+                if (activeStart != null) {
+                    long delta = time - activeStart;
+
+                    if (delta > 0 && delta < 1000L * 60 * 60 * 12) { // sanity cap (12h)
+                        total += delta;
+                    }
+
+                    activeStart = null;
                 }
             }
         }
 
-        // App still active
-        if (lastResume != null) {
-            long delta = now - lastResume;
+        // still active
+        if (activeStart != null) {
+            long delta = now - activeStart;
             if (delta > 0) total += delta;
         }
 
         return Math.max(0L, total);
     }
 
-    /**
-     * Returns package -> foreground time (ms) for today.
-     */
+    /* ========================================================= */
+    /* ================= ALL APPS USAGE ========================= */
+    /* ========================================================= */
+
     public Map<String, Long> getAllTodayForegroundTimes() {
+
         Map<String, Long> result = new HashMap<>();
 
         if (usageStatsManager == null) return result;
@@ -79,9 +89,7 @@ public final class UsageStatsReader {
         long start = startOfTodayMillis();
         long now = System.currentTimeMillis();
 
-        UsageEvents events =
-                usageStatsManager.queryEvents(start, now);
-
+        UsageEvents events = usageStatsManager.queryEvents(start, now);
         if (events == null) return result;
 
         UsageEvents.Event event = new UsageEvents.Event();
@@ -89,20 +97,29 @@ public final class UsageStatsReader {
         Map<String, Long> active = new HashMap<>();
 
         while (events.hasNextEvent()) {
+
             events.getNextEvent(event);
 
             String pkg = event.getPackageName();
             int type = event.getEventType();
+            long time = event.getTimeStamp();
+
+            if (pkg == null) continue;
 
             if (type == UsageEvents.Event.ACTIVITY_RESUMED) {
-                active.put(pkg, event.getTimeStamp());
+                active.put(pkg, time);
             }
 
-            if (type == UsageEvents.Event.ACTIVITY_PAUSED) {
+            else if (type == UsageEvents.Event.ACTIVITY_PAUSED
+                  || type == UsageEvents.Event.ACTIVITY_STOPPED) {
+
                 Long startTime = active.remove(pkg);
+
                 if (startTime != null) {
-                    long delta = event.getTimeStamp() - startTime;
-                    if (delta > 0) {
+
+                    long delta = time - startTime;
+
+                    if (delta > 0 && delta < 1000L * 60 * 60 * 12) {
                         result.put(
                                 pkg,
                                 result.getOrDefault(pkg, 0L) + delta
@@ -112,9 +129,11 @@ public final class UsageStatsReader {
             }
         }
 
-        // Still running apps
+        // still running apps
         for (Map.Entry<String, Long> entry : active.entrySet()) {
+
             long delta = now - entry.getValue();
+
             if (delta > 0) {
                 result.put(
                         entry.getKey(),
@@ -126,12 +145,19 @@ public final class UsageStatsReader {
         return result;
     }
 
+    /* ========================================================= */
+    /* ================= TIME BASE ============================== */
+    /* ========================================================= */
+
     private long startOfTodayMillis() {
+
         Calendar cal = Calendar.getInstance();
+
         cal.set(Calendar.HOUR_OF_DAY, 0);
         cal.set(Calendar.MINUTE, 0);
         cal.set(Calendar.SECOND, 0);
         cal.set(Calendar.MILLISECOND, 0);
+
         return cal.getTimeInMillis();
     }
 }

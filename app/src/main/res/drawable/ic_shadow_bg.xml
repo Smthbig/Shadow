@@ -1,0 +1,93 @@
+<?xml version="1.0" encoding="utf-8"?>
+<layer-list xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <!-- ===== BASE GRAPHITE METAL ===== -->
+    <item>
+        <shape android:shape="rectangle">
+            <gradient
+                android:angle="270"
+                android:startColor="#16171D"
+                android:endColor="#23252D"/>
+        </shape>
+    </item>
+
+    <!-- ===== RADIAL SILVER AMBIENCE ===== -->
+    <item>
+        <shape android:shape="rectangle">
+            <gradient
+                android:type="radial"
+                android:gradientRadius="420dp"
+                android:centerX="0.5"
+                android:centerY="0.45"
+                android:startColor="#353945"
+                android:endColor="#00000000"/>
+        </shape>
+    </item>
+
+    <!-- ===== CENTER SILVER GLOW (SUBTLE) ===== -->
+    <item android:gravity="center">
+        <shape android:shape="oval">
+            <gradient
+                android:type="radial"
+                android:gradientRadius="260dp"
+                android:startColor="#40C8CCD6"
+                android:endColor="#00000000"/>
+        </shape>
+    </item>
+
+    <!-- ===== EDGE FADE (DEPTH CONTROL) ===== -->
+    <item>
+        <shape android:shape="rectangle">
+            <gradient
+                android:angle="0"
+                android:startColor="#0B0C10"
+                android:centerColor="#00000000"
+                android:endColor="#0B0C10"/>
+        </shape>
+    </item>
+
+    <!-- ===== TOP GLASS REFLECTION ===== -->
+    <item android:gravity="top">
+        <shape android:shape="rectangle">
+            <gradient
+                android:angle="270"
+                android:startColor="#40FFFFFF"
+                android:centerColor="#18FFFFFF"
+                android:endColor="#00000000"/>
+        </shape>
+    </item>
+
+    <!-- ===== SOFT CENTER LINE (MATCH FG SLIT) ===== -->
+    <item
+        android:width="2dp"
+        android:gravity="center_horizontal">
+        <shape android:shape="rectangle">
+            <gradient
+                android:angle="90"
+                android:startColor="#00000000"
+                android:centerColor="#66D9DCE3"
+                android:endColor="#00000000"/>
+        </shape>
+    </item>
+
+    <!-- ===== TOP VIGNETTE ===== -->
+    <item android:gravity="top">
+        <shape android:shape="rectangle">
+            <gradient
+                android:angle="270"
+                android:startColor="#0B0C10"
+                android:endColor="#00000000"/>
+        </shape>
+    </item>
+
+    <!-- ===== BOTTOM VIGNETTE ===== -->
+    <item android:gravity="bottom">
+        <shape android:shape="rectangle">
+            <gradient
+                android:angle="90"
+                android:startColor="#22000000"
+                android:endColor="#00000000"/>
+        </shape>
+    </item>
+
+</layer-list>

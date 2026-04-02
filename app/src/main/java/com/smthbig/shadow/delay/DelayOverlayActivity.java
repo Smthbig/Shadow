@@ -2,208 +2,249 @@ package com.smthbig.shadow.delay;
 
 import android.content.Context;
 import android.content.Intent;
-import android.os.Build;
 import android.os.Bundle;
-import android.os.Handler;
-import android.os.Looper;
-import android.view.Window;
+import android.os.CountDownTimer;
+import android.view.HapticFeedbackConstants;
+import android.view.View;
+import android.widget.TextView;
 
 import androidx.appcompat.app.AppCompatActivity;
 
+import com.google.android.material.button.MaterialButton;
+import com.google.android.material.progressindicator.CircularProgressIndicator;
 import com.smthbig.shadow.R;
-import com.smthbig.shadow.extension.ExtensionGrantActivity;
+import com.smthbig.shadow.extension.ExtensionEngine;
 import com.smthbig.shadow.theme.ThemeManager;
+
+import java.util.concurrent.TimeUnit;
 
 public final class DelayOverlayActivity extends AppCompatActivity {
 
-    public static final String EXTRA_TARGET_INTENT = "extra_target";
-    public static final String EXTRA_DELAY_MS = "extra_delay";
-    public static final String EXTRA_REASON = "extra_reason";
-    public static final String EXTRA_USING_EXTENSION = "extra_using_extension";
-    public static final String EXTRA_BLOCK = "extra_block";
+    private static final String EXTRA_MODE = "mode";
+    private static final String EXTRA_DELAY = "delay";
+    private static final String EXTRA_REASON = "reason";
+    private static final String EXTRA_PACKAGE = "pkg";
+    private static final String EXTRA_EXTENSION = "extension";
 
-    private final Handler handler = new Handler(Looper.getMainLooper());
+    private static final int MODE_DELAY = 1;
+    private static final int MODE_BLOCK = 2;
 
-    private Intent target;
-    private long endTime;
+    private CountDownTimer timer;
+    private boolean launched = false;
 
-    private boolean usingExtension;
-    private boolean launched;
+    /* ========================================================= */
+    /* ================= FACTORY ================================ */
+    /* ========================================================= */
 
-    private android.widget.TextView text;
-    private android.widget.Button extendBtn;
+    public static Intent delay(
+            Context ctx,
+            String pkg,
+            long delayMs,
+            String reason,
+            boolean usingExtension
+    ) {
+        return base(ctx, pkg, reason, usingExtension)
+                .putExtra(EXTRA_MODE, MODE_DELAY)
+                .putExtra(EXTRA_DELAY, delayMs);
+    }
 
-    /* ---------- LIFECYCLE ---------- */
+    public static Intent block(
+            Context ctx,
+            String pkg,
+            String reason
+    ) {
+        return base(ctx, pkg, reason, false)
+                .putExtra(EXTRA_MODE, MODE_BLOCK);
+    }
+
+    private static Intent base(
+            Context ctx,
+            String pkg,
+            String reason,
+            boolean usingExtension
+    ) {
+        Intent i = new Intent(ctx, DelayOverlayActivity.class);
+
+        i.putExtra(EXTRA_PACKAGE, pkg);
+        i.putExtra(EXTRA_REASON, reason);
+        i.putExtra(EXTRA_EXTENSION, usingExtension);
+
+        i.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+
+        return i;
+    }
+
+    /* ========================================================= */
+    /* ================= LIFECYCLE ============================== */
+    /* ========================================================= */
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
-        ThemeManager.apply(this);
+
+        ThemeManager.apply(this); // ✅ ensure theme sync
         super.onCreate(savedInstanceState);
+        setContentView(R.layout.activity_delay);
 
-        prepareWindow();
-        setContentView(R.layout.activity_delay_overlay);
+        int mode = getIntent().getIntExtra(EXTRA_MODE, MODE_BLOCK);
+        long delay = Math.max(0, getIntent().getLongExtra(EXTRA_DELAY, 0));
+        String reason = getIntent().getStringExtra(EXTRA_REASON);
+        boolean usingExtension =
+                getIntent().getBooleanExtra(EXTRA_EXTENSION, false);
 
-        text = findViewById(R.id.text);
-        extendBtn = findViewById(R.id.btn_extend);
+        String pkg = getIntent().getStringExtra(EXTRA_PACKAGE);
 
-        handleIntent(getIntent());
-    }
-
-    private void handleIntent(Intent intent) {
-
-        boolean isBlocked = intent.getBooleanExtra(EXTRA_BLOCK, false);
-        String reason = intent.getStringExtra(EXTRA_REASON);
-
-        if (Build.VERSION.SDK_INT >= 33) {
-            target = intent.getParcelableExtra(EXTRA_TARGET_INTENT, Intent.class);
-        } else {
-            target = intent.getParcelableExtra(EXTRA_TARGET_INTENT);
-        }
-
-        long delay = Math.max(0, intent.getLongExtra(EXTRA_DELAY_MS, 0));
-        usingExtension = intent.getBooleanExtra(EXTRA_USING_EXTENSION, false);
-
-        if (isBlocked) {
-            handleBlock(reason);
-            return;
-        }
-
-        if (target == null) {
+        if (pkg == null || pkg.isEmpty()) {
             finish();
             return;
         }
 
-        if (delay == 0) {
-            launchSafely();
+        /* ---------- VIEW BIND ---------- */
+
+        TextView title = findViewById(R.id.title);
+        TextView subtitle = findViewById(R.id.subtitle);
+        TextView timerText = findViewById(R.id.timer);
+
+        MaterialButton btnCancel = findViewById(R.id.btn_cancel);
+        MaterialButton btnExtend = findViewById(R.id.btn_extend);
+
+        CircularProgressIndicator progress =
+                findViewById(R.id.progress);
+
+        if (progress == null || timerText == null) {
+            finish(); // safety
             return;
         }
 
-        endTime = System.currentTimeMillis() + delay;
+        ExtensionEngine engine = new ExtensionEngine(this);
 
-        updateText(delay);
-        handler.post(tickRunnable);
-    }
+        /* ========================================================= */
+        /* ================= BLOCK MODE ============================ */
+        /* ========================================================= */
 
-    /* ---------- INTENT BUILDERS (RESTORE) ---------- */
+        if (mode == MODE_BLOCK) {
 
-    public static Intent delay(
-            Context context, Intent target, long delayMs, String reason, boolean usingExtension) {
-        Intent i = new Intent(context, DelayOverlayActivity.class);
+            title.setText("Blocked");
+            subtitle.setText(reason != null ? reason : "Time limit reached");
 
-        i.putExtra(EXTRA_TARGET_INTENT, target);
-        i.putExtra(EXTRA_DELAY_MS, Math.max(0, delayMs));
-        i.putExtra(EXTRA_REASON, reason);
-        i.putExtra(EXTRA_USING_EXTENSION, usingExtension);
+            timerText.setVisibility(View.GONE);
+            progress.setVisibility(View.GONE);
+            btnExtend.setVisibility(View.GONE);
 
-        i.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+            btnCancel.setText("Close");
+            btnCancel.setOnClickListener(v -> finish());
 
-        return i;
-    }
-
-    public static Intent block(Context context, Intent target, String reason) {
-        Intent i = new Intent(context, DelayOverlayActivity.class);
-
-        i.putExtra(EXTRA_BLOCK, true);
-        i.putExtra(EXTRA_REASON, reason);
-        i.putExtra(EXTRA_TARGET_INTENT, target);
-
-        i.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-
-        return i;
-    }
-
-    /* ---------- TIMER ---------- */
-
-    private final Runnable tickRunnable =
-            new Runnable() {
-                @Override
-                public void run() {
-                    if (launched) return;
-
-                    long remaining = endTime - System.currentTimeMillis();
-
-                    if (remaining <= 0) {
-                        launchSafely();
-                        return;
-                    }
-
-                    updateText(remaining);
-                    handler.postDelayed(this, 1000);
-                }
-            };
-
-    /* ---------- UI ---------- */
-
-    private void handleBlock(String reason) {
-
-        text.setText(reason != null ? reason : "Daily limit reached");
-
-        if (target != null && target.getComponent() != null) {
-            extendBtn.setVisibility(android.view.View.VISIBLE);
-
-            extendBtn.setOnClickListener(
-                    v -> {
-                        Intent i = new Intent(this, ExtensionGrantActivity.class);
-                        i.putExtra("pkg", target.getComponent().getPackageName());
-                        startActivity(i);
-                        finish();
-                    });
+            return;
         }
-    }
 
-    private void updateText(long remainingMs) {
+        /* ========================================================= */
+        /* ================= DELAY MODE ============================ */
+        /* ========================================================= */
 
-        int seconds = (int) Math.ceil(remainingMs / 1000f);
+        title.setText(usingExtension ? "Using Extension" : "Wait");
+        subtitle.setText(reason != null ? reason : "");
 
-        String reason = getIntent().getStringExtra(EXTRA_REASON);
+        int safeMax = (int) Math.max(1, Math.min(delay, Integer.MAX_VALUE));
+        progress.setMax(safeMax);
+        progress.setProgress(0);
 
-        StringBuilder sb = new StringBuilder();
+        timerText.setText((delay / 1000) + "s");
 
-        if (reason != null) {
-            sb.append(reason).append("\n\n");
-        }
+        btnCancel.setOnClickListener(v -> finish());
+
+        /* ---------- EXTENSION BUTTON ---------- */
 
         if (usingExtension) {
-            sb.append("Using extension time\n\n");
+            btnExtend.setVisibility(View.GONE);
+        } else {
+
+            btnExtend.setVisibility(View.VISIBLE);
+
+            btnExtend.setOnClickListener(v -> {
+
+                boolean granted =
+                        engine.grant(pkg, TimeUnit.MINUTES.toMillis(5));
+
+                if (granted) {
+                    btnExtend.setText("Added ✓");
+                    btnExtend.setEnabled(false);
+
+                    btnExtend.performHapticFeedback(
+                            HapticFeedbackConstants.CONFIRM
+                    );
+                } else {
+                    btnExtend.setText("Limit reached");
+                    btnExtend.setEnabled(false);
+                }
+            });
         }
 
-        sb.append("Continuing in ").append(seconds).append("s");
+        /* ========================================================= */
+        /* ================= TIMER ================================ */
+        /* ========================================================= */
 
-        text.setText(sb.toString());
-    }
-
-    /* ---------- NAVIGATION ---------- */
-
-    private void launchSafely() {
-        if (launched) return;
-        launched = true;
-
-        try {
-            Intent launch = new Intent(target);
-            launch.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-            startActivity(launch);
-        } catch (Exception ignored) {
-        } finally {
+        if (delay <= 0) {
+            launchApp(pkg);
             finish();
+            return;
         }
+
+        timer = new CountDownTimer(delay, 50) {
+
+            @Override
+            public void onTick(long ms) {
+
+                long elapsed = delay - ms;
+
+                progress.setProgress((int) elapsed);
+                timerText.setText((ms / 1000) + "s");
+            }
+
+            @Override
+            public void onFinish() {
+
+                if (launched) return;
+                launched = true;
+
+                timerText.setText("0s");
+                progress.setProgress(progress.getMax());
+
+                progress.performHapticFeedback(
+                        HapticFeedbackConstants.CONFIRM
+                );
+
+                launchApp(pkg);
+                finish();
+            }
+
+        }.start();
     }
 
-    /* ---------- WINDOW (MODERN) ---------- */
+    /* ========================================================= */
+    /* ================= LAUNCH SAFE ============================ */
+    /* ========================================================= */
 
-    private void prepareWindow() {
-        Window window = getWindow();
+    private void launchApp(String pkg) {
+        try {
+            Intent intent =
+                    getPackageManager().getLaunchIntentForPackage(pkg);
 
-        window.setStatusBarColor(android.graphics.Color.TRANSPARENT);
-        window.setNavigationBarColor(android.graphics.Color.TRANSPARENT);
-
-        if (Build.VERSION.SDK_INT >= 30) {
-            window.setDecorFitsSystemWindows(false);
-        }
+            if (intent != null) {
+                intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+                startActivity(intent);
+            }
+        } catch (Exception ignored) {}
     }
+
+    /* ========================================================= */
+    /* ================= SAFETY ================================= */
+    /* ========================================================= */
 
     @Override
     protected void onDestroy() {
         super.onDestroy();
-        handler.removeCallbacksAndMessages(null);
+
+        if (timer != null) {
+            timer.cancel();
+        }
     }
 }

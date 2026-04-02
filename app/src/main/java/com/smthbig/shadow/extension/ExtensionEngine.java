@@ -3,103 +3,211 @@ package com.smthbig.shadow.extension;
 import android.content.Context;
 import android.content.SharedPreferences;
 
+import java.util.Calendar;
 import java.util.concurrent.TimeUnit;
 
 public final class ExtensionEngine {
 
-    private static final String PREFS = "shadow_extensions";
+    private static final String PREF = "extension_store";
 
-    private static final String KEY_DAY = "day";
+    /* ---------- LIMITS ---------- */
 
-    private static final long MAX_DAILY_EXTENSION_MS = TimeUnit.MINUTES.toMillis(30);
+    private static final long MAX_EXTENSION_PER_DAY =
+            TimeUnit.MINUTES.toMillis(20);
+
+    private static final long MAX_SINGLE_GRANT =
+            TimeUnit.MINUTES.toMillis(10);
+
+    private static final long COOLDOWN_MS =
+            TimeUnit.MINUTES.toMillis(2);
 
     private final SharedPreferences prefs;
 
     public ExtensionEngine(Context context) {
         this.prefs =
-                context.getApplicationContext().getSharedPreferences(PREFS, Context.MODE_PRIVATE);
-        resetIfNewDay();
+                context.getApplicationContext()
+                        .getSharedPreferences(PREF, Context.MODE_PRIVATE);
     }
 
-    /* ---------- Public API (PER APP) ---------- */
-    public synchronized boolean canGrant(String pkg, long ms) {
-        resetIfNewDay();
+    /* ========================================================= */
+    /* ===================== GRANT ============================== */
+    /* ========================================================= */
 
-        long used = getUsedMs(pkg);
+    public boolean grant(String pkg, long requestMs) {
 
-        return used + ms <= MAX_DAILY_EXTENSION_MS;
-    }
+        if (pkg == null || requestMs <= 0) return false;
 
-    public synchronized boolean grant(String pkg, long ms) {
-        resetIfNewDay();
+        long now = System.currentTimeMillis();
 
-        long used = getUsedMs(pkg);
+        resetIfNewDay(pkg);
 
-        if (used + ms > MAX_DAILY_EXTENSION_MS) {
+        long lastGrant = getLong(pkg, "lastGrant");
+        long dailyUsed = getLong(pkg, "daily");
+
+        // ❌ cooldown
+        if (now - lastGrant < COOLDOWN_MS) {
             return false;
         }
 
-        long granted = getGrantedMs(pkg);
+        // ❌ cap single
+        long durationMs = Math.min(requestMs, MAX_SINGLE_GRANT);
 
-        prefs.edit().putLong(keyGranted(pkg), granted + ms).apply();
+        // ❌ cap daily
+        if (dailyUsed >= MAX_EXTENSION_PER_DAY) {
+            return false;
+        }
+
+        long allowed =
+                Math.min(durationMs, MAX_EXTENSION_PER_DAY - dailyUsed);
+
+        if (allowed <= 0) return false;
+
+        long granted = getGranted(pkg);
+
+        prefs.edit()
+                .putLong(key(pkg, "granted"), granted + allowed)
+                .putLong(key(pkg, "daily"), dailyUsed + allowed)
+                .putLong(key(pkg, "lastGrant"), now)
+                .apply();
 
         return true;
     }
 
-    public synchronized long getRemainingMs(String pkg) {
-        resetIfNewDay();
+    /* ========================================================= */
+    /* ===================== STATE ============================== */
+    /* ========================================================= */
 
-        return Math.max(0, getGrantedMs(pkg) - getUsedMs(pkg));
+    /**
+     * PURE FUNCTION:
+     * Remaining extension = granted - consumed
+     */
+    public long getRemainingMs(
+            String pkg,
+            long usedMs,
+            long baseLimitMs
+    ) {
+
+        if (pkg == null) return 0;
+
+        resetIfNewDay(pkg);
+
+        long granted = getGranted(pkg);
+        if (granted <= 0) return 0;
+
+        long consumed = getConsumedExtensionMs(usedMs, baseLimitMs);
+
+        return Math.max(0, granted - consumed);
     }
 
-    public synchronized void consume(String pkg, long deltaMs) {
-        if (deltaMs <= 0) return;
-
-        resetIfNewDay();
-
-        long used = getUsedMs(pkg);
-        long granted = getGrantedMs(pkg);
-
-        long newUsed = Math.min(granted, used + deltaMs);
-
-        if (newUsed != used) {
-            prefs.edit().putLong(keyUsed(pkg), newUsed).apply();
-        }
+    public boolean hasExtension(
+            String pkg,
+            long usedMs,
+            long baseLimitMs
+    ) {
+        return getRemainingMs(pkg, usedMs, baseLimitMs) > 0;
     }
 
-    /* ---------- Key Helpers ---------- */
-
-    private String keyGranted(String pkg) {
-        return "granted_" + pkg;
+    /**
+     * Derived consumption
+     */
+    public long getConsumedExtensionMs(
+            long usedMs,
+            long baseLimitMs
+    ) {
+        return Math.max(0, usedMs - baseLimitMs);
     }
 
-    private String keyUsed(String pkg) {
-        return "used_" + pkg;
+    /* ========================================================= */
+    /* ===================== METADATA =========================== */
+    /* ========================================================= */
+
+    public long getGrantedMs(String pkg) {
+        return getGranted(pkg);
     }
 
-    /* ---------- Internals ---------- */
+    public long getDailyUsedMs(String pkg) {
+        resetIfNewDay(pkg);
+        return getLong(pkg, "daily");
+    }
 
-    private void resetIfNewDay() {
-        long today = todayKey();
-        long storedDay = prefs.getLong(KEY_DAY, -1);
+    public long getCooldownRemainingMs(String pkg) {
+
+        long lastGrant = getLong(pkg, "lastGrant");
+        long now = System.currentTimeMillis();
+
+        long remaining = COOLDOWN_MS - (now - lastGrant);
+
+        return Math.max(0, remaining);
+    }
+
+    public boolean canGrant(String pkg) {
+
+        long now = System.currentTimeMillis();
+
+        resetIfNewDay(pkg);
+
+        long lastGrant = getLong(pkg, "lastGrant");
+        long dailyUsed = getLong(pkg, "daily");
+
+        if (now - lastGrant < COOLDOWN_MS) return false;
+        if (dailyUsed >= MAX_EXTENSION_PER_DAY) return false;
+
+        return true;
+    }
+
+    /* ========================================================= */
+    /* ===================== RESET ============================== */
+    /* ========================================================= */
+
+    private void resetIfNewDay(String pkg) {
+
+        int today = currentDay();
+        int storedDay = (int) getLong(pkg, "day");
 
         if (storedDay != today) {
             prefs.edit()
-                    .putLong(KEY_DAY, today)
-                    .clear() // clear all per-app data
+                    .putLong(key(pkg, "daily"), 0)
+                    .putLong(key(pkg, "granted"), 0)
+                    .putLong(key(pkg, "day"), today)
                     .apply();
         }
     }
 
-    private long getGrantedMs(String pkg) {
-        return prefs.getLong(keyGranted(pkg), 0);
+    /* ========================================================= */
+    /* ===================== INTERNAL =========================== */
+    /* ========================================================= */
+
+    private long getGranted(String pkg) {
+        return getLong(pkg, "granted");
     }
 
-    private long getUsedMs(String pkg) {
-        return prefs.getLong(keyUsed(pkg), 0);
+    private long getLong(String pkg, String field) {
+        return prefs.getLong(key(pkg, field), 0L);
     }
 
-    private long todayKey() {
-        return System.currentTimeMillis() / TimeUnit.DAYS.toMillis(1);
+    private String key(String pkg, String field) {
+        return pkg + "_" + field;
+    }
+
+    private int currentDay() {
+        Calendar c = Calendar.getInstance();
+        return c.get(Calendar.DAY_OF_YEAR);
+    }
+
+    /* ========================================================= */
+    /* ===================== CLEAR ============================== */
+    /* ========================================================= */
+
+    public void clear(String pkg) {
+        prefs.edit()
+                .remove(key(pkg, "granted"))
+                .remove(key(pkg, "daily"))
+                .remove(key(pkg, "lastGrant"))
+                .remove(key(pkg, "day"))
+                .apply();
+    }
+
+    public void clearAll() {
+        prefs.edit().clear().apply();
     }
 }
