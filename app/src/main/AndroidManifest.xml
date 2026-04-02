@@ -22,8 +22,7 @@
         android:name=".App"
         android:allowBackup="false"
         android:label="Shadow"
-        android:icon="@mipmap/ic_launcher"
-        android:roundIcon="@mipmap/ic_launcher_round"
+        android:icon="@mipmap/ic_shadow"
         android:supportsRtl="true"
         android:theme="@style/Theme.Shadow.Base"
         android:hardwareAccelerated="true">
