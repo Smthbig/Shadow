@@ -1,12 +1,15 @@
 package com.smthbig.shadow.launcher.core;
 
-import android.app.Activity;
 import android.app.role.RoleManager;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
 import android.provider.Settings;
+import android.view.View;
+
+import androidx.activity.result.ActivityResultLauncher;
+import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.appcompat.app.AppCompatActivity;
 
 import com.google.android.material.button.MaterialButton;
@@ -18,83 +21,112 @@ import com.smthbig.shadow.launcher.home.HomeActivity;
 
 public final class PermissionActivity extends AppCompatActivity {
 
-    private static final int REQ_HOME_ROLE = 1001;
-
     private MaterialTextView statusText;
     private MaterialButton actionButton;
+    private MaterialButton skipButton;
+
+    private final ActivityResultLauncher<Intent> roleLauncher =
+            registerForActivityResult(
+                    new ActivityResultContracts.StartActivityForResult(),
+                    result -> updateUI()
+            );
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
-        ThemeManager.apply(this); // 🔥 apply theme first
+        ThemeManager.apply(this);
         super.onCreate(savedInstanceState);
-
-        if (UsagePermissionHelper.hasRequiredPermissions(this)) {
-            goHome();
-            return;
-        }
 
         setContentView(R.layout.activity_permission);
 
         statusText = findViewById(R.id.status_text);
         actionButton = findViewById(R.id.action_button);
+        skipButton = findViewById(R.id.skip_button);
 
         updateUI();
     }
 
+    /* ========================================================= */
+    /* ================= STATE MACHINE ========================== */
+    /* ========================================================= */
+
     private void updateUI() {
+
         boolean hasUsage = UsagePermissionHelper.hasUsageAccess(this);
         boolean isHome = UsagePermissionHelper.isDefaultHomeApp(this);
 
         if (!hasUsage) {
-            setupUsageStep();
-        } else if (!isHome) {
-            setupHomeStep();
-        } else {
-            goHome();
+            showUsageStep();
+            return;
         }
+
+        if (!isHome) {
+            showHomeStep();
+            return;
+        }
+
+        goHome();
     }
 
-    /* ---------- USAGE ACCESS ---------- */
+    /* ========================================================= */
+    /* ================= USAGE STEP ============================ */
+    /* ========================================================= */
 
-    private void setupUsageStep() {
+    private void showUsageStep() {
+
         statusText.setText(
-                "Grant App Usage Access.\n\n" +
-                "Steps:\n" +
-                "1. Open App Info\n" +
-                "2. Allow restricted settings\n" +
-                "3. Enable Usage Access"
+                "Usage access required.\n\n" +
+                "If restricted settings are blocked,\n" +
+                "you can skip and configure later."
         );
 
-        actionButton.setText("Open App Info");
+        actionButton.setText("Open App Settings");
+
         actionButton.setOnClickListener(v -> {
             Intent intent = new Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS);
             intent.setData(Uri.fromParts("package", getPackageName(), null));
             startActivity(intent);
         });
+
+        // ✅ Allow skip ONLY here
+        skipButton.setVisibility(View.VISIBLE);
+        skipButton.setOnClickListener(v -> {
+            // Move forward but DO NOT bypass launcher requirement
+            showHomeStep();
+        });
     }
 
-    /* ---------- HOME ROLE ---------- */
+    /* ========================================================= */
+    /* ================= HOME STEP ============================= */
+    /* ========================================================= */
 
-    private void setupHomeStep() {
+    private void showHomeStep() {
+
         statusText.setText(
                 "Set Shadow as default launcher.\n\n" +
-                "Required to control app launches."
+                "This step is required to continue."
         );
 
         actionButton.setText("Set Default Launcher");
+
         actionButton.setOnClickListener(v -> requestHomeRole());
+
+        // ❌ No skip allowed here (critical enforcement)
+        skipButton.setVisibility(View.GONE);
     }
 
     private void requestHomeRole() {
+
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+
             RoleManager roleManager = (RoleManager) getSystemService(ROLE_SERVICE);
 
-            if (roleManager != null &&
-                    roleManager.isRoleAvailable(RoleManager.ROLE_HOME) &&
-                    !roleManager.isRoleHeld(RoleManager.ROLE_HOME)) {
+            if (roleManager != null
+                    && roleManager.isRoleAvailable(RoleManager.ROLE_HOME)
+                    && !roleManager.isRoleHeld(RoleManager.ROLE_HOME)) {
 
-                Intent intent = roleManager.createRequestRoleIntent(RoleManager.ROLE_HOME);
-                startActivityForResult(intent, REQ_HOME_ROLE);
+                roleLauncher.launch(
+                        roleManager.createRequestRoleIntent(RoleManager.ROLE_HOME)
+                );
                 return;
             }
         }
@@ -105,22 +137,29 @@ public final class PermissionActivity extends AppCompatActivity {
         startActivity(intent);
     }
 
+    /* ========================================================= */
+    /* ================= NAVIGATION ============================ */
+    /* ========================================================= */
+
+    private void goHome() {
+
+        Intent intent = new Intent(this, HomeActivity.class);
+        intent.addFlags(
+                Intent.FLAG_ACTIVITY_NEW_TASK |
+                Intent.FLAG_ACTIVITY_CLEAR_TASK
+        );
+
+        startActivity(intent);
+        finish();
+    }
+
+    /* ========================================================= */
+    /* ================= LIFECYCLE ============================= */
+    /* ========================================================= */
+
     @Override
     protected void onResume() {
         super.onResume();
         updateUI();
-    }
-
-    /* ---------- NAVIGATION ---------- */
-
-    private void goHome() {
-        Intent intent = new Intent(this, HomeActivity.class);
-        intent.addFlags(
-                Intent.FLAG_ACTIVITY_NEW_TASK |
-                Intent.FLAG_ACTIVITY_CLEAR_TOP |
-                Intent.FLAG_ACTIVITY_SINGLE_TOP
-        );
-        startActivity(intent);
-        finish();
     }
 }

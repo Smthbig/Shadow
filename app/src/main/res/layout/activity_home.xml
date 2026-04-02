@@ -6,20 +6,37 @@
     android:layout_height="match_parent"
     android:background="@drawable/bg_shadow_gradient">
 
-    <!-- Optional subtle depth overlay (Material elevation feel) -->
-    <View
-        android:id="@+id/base_overlay"
+    <!-- ================= CONTENT (BLUR TARGET) ================= -->
+    <FrameLayout
+        android:id="@+id/content_container"
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:background="?attr/colorSurface"
-        android:alpha="0.02"/>
+        android:layout_height="match_parent">
 
-    <!-- Blur overlay (used when intent bar opens) -->
+        <!-- Your main launcher UI goes here (apps, clock, etc.) -->
+
+        <!-- Optional subtle depth -->
+        <View
+            android:id="@+id/base_overlay"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:background="?attr/colorSurface"
+            android:alpha="0.02" />
+
+    </FrameLayout>
+
+    <!-- ================= DIM / GLASS ================= -->
     <View
         android:id="@+id/blur_overlay"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:background="@android:color/transparent"
-        android:visibility="gone"/>
+        android:alpha="0"
+        android:visibility="gone" />
+
+    <!-- ================= OVERLAY (TOP LAYER) ================= -->
+    <FrameLayout
+        android:id="@+id/overlay_container"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:background="@android:color/transparent" />
 
 </FrameLayout>

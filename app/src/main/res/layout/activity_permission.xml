@@ -5,66 +5,101 @@
     android:id="@+id/root"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@drawable/bg_shadow_gradient">
+    android:background="@drawable/bg_shadow_gradient"
+    android:fitsSystemWindows="false">
 
-    <!-- Subtle surface overlay -->
-    <View
+    <!-- ===== EDGE SAFE CONTAINER ===== -->
+    <FrameLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:background="?attr/colorSurface"
-        android:alpha="0.04"/>
+        android:padding="16dp"
+        android:clipToPadding="false">
 
-    <!-- Center Card -->
-    <com.google.android.material.card.MaterialCardView
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_gravity="center"
-        android:layout_margin="24dp"
-        app:cardCornerRadius="20dp"
-        app:cardElevation="8dp"
-        app:cardBackgroundColor="?attr/colorSurfaceVariant"
-        app:strokeColor="?attr/colorOutline"
-        app:strokeWidth="1dp">
+        <!-- ===== TONAL GLASS OVERLAY ===== -->
+        <View
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:background="?attr/colorSurface"
+            android:alpha="0.06"/>
 
-        <LinearLayout
+        <!-- ===== CENTER CARD ===== -->
+        <com.google.android.material.card.MaterialCardView
+            android:id="@+id/card"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:orientation="vertical"
-            android:gravity="center"
-            android:padding="24dp">
+            android:layout_gravity="center"
+            android:layout_margin="8dp"
 
-            <!-- Title -->
-            <com.google.android.material.textview.MaterialTextView
-                android:id="@+id/title"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="Permissions Required"
-                android:textSize="20sp"
-                android:textStyle="bold"
-                android:textColor="?attr/colorOnSurface"
-                android:layout_marginBottom="16dp"/>
+            app:cardCornerRadius="28dp"
+            app:cardElevation="0dp"
+            app:strokeWidth="1dp"
+            app:strokeColor="?attr/colorOutline"
+            app:cardBackgroundColor="?attr/colorSurfaceContainer">
 
-            <!-- Status -->
-            <com.google.android.material.textview.MaterialTextView
-                android:id="@+id/status_text"
+            <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:textColor="?attr/colorOnSurfaceVariant"
-                android:textSize="14sp"
-                android:gravity="center"
-                android:lineSpacingMultiplier="1.3"/>
+                android:orientation="vertical"
+                android:gravity="center_horizontal"
+                android:padding="28dp">
 
-            <!-- Action Button -->
-            <com.google.android.material.button.MaterialButton
-                android:id="@+id/action_button"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="Continue"
-                android:layout_marginTop="24dp"
-                style="@style/Widget.MaterialComponents.Button"/>
+                <!-- ===== TITLE ===== -->
+                <com.google.android.material.textview.MaterialTextView
+                    android:id="@+id/title"
+                    style="@style/TextAppearance.Material3.TitleLarge"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Permissions Required"
+                    android:textStyle="bold"
+                    android:textColor="?attr/colorOnSurface"
+                    android:layout_marginBottom="10dp"/>
 
-        </LinearLayout>
+                <!-- ===== STATUS ===== -->
+                <com.google.android.material.textview.MaterialTextView
+                    android:id="@+id/status_text"
+                    style="@style/TextAppearance.Material3.BodyMedium"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="Checking permissions..."
+                    android:textColor="?attr/colorOnSurfaceVariant"
+                    android:gravity="center"
+                    android:lineSpacingExtra="4dp"
+                    android:paddingHorizontal="8dp"/>
 
-    </com.google.android.material.card.MaterialCardView>
+                <!-- ===== ACTIONS ===== -->
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    android:layout_marginTop="28dp"
+                    android:gravity="center">
+
+                    <!-- PRIMARY ACTION -->
+                    <com.google.android.material.button.MaterialButton
+                        android:id="@+id/action_button"
+                        style="@style/Widget.Material3.Button"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:text="Continue"
+                        android:textAllCaps="false"
+                        app:cornerRadius="18dp"/>
+
+                    <!-- SECONDARY (SKIP) -->
+                    <com.google.android.material.button.MaterialButton
+                        android:id="@+id/skip_button"
+                        style="@style/Widget.Material3.Button.TextButton"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Skip for now"
+                        android:textAllCaps="false"
+                        android:layout_marginTop="12dp"/>
+
+                </LinearLayout>
+
+            </LinearLayout>
+
+        </com.google.android.material.card.MaterialCardView>
+
+    </FrameLayout>
 
 </FrameLayout>
