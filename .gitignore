@@ -27,7 +27,7 @@ local.properties
 # ==============================
 .idea/
 *.iml
-.androidide
+/.androidide
 
 # Allow useful shared configs (optional)
 !.idea/codeStyles/
