@@ -18,7 +18,7 @@
     <!-- ============================= -->
     <uses-permission android:name="android.permission.PACKAGE_USAGE_STATS" />
 
-    <application 
+    <application
         android:name=".App"
         android:allowBackup="false"
         android:label="Shadow"
@@ -31,7 +31,7 @@
         <!-- ENTRY ACTIVITY -->
         <!-- ============================= -->
         <activity
-            android:name=".launcher.core.PermissionActivity"
+            android:name=".setup.EntryActivity"
             android:exported="true"
             android:excludeFromRecents="true"
             android:theme="@style/Theme.Shadow.Base">
@@ -88,6 +88,14 @@
         <!-- ============================= -->
         <activity
             android:name=".launcher.apps.AppLimitActivity"
+            android:exported="false"
+            android:theme="@style/Theme.Shadow.Base" />
+        <activity
+            android:name=".setup.permissions.PermissionActivity"
+            android:exported="false"
+            android:theme="@style/Theme.Shadow.Base" />
+        <activity
+            android:name=".setup.SetupActivity"
             android:exported="false"
             android:theme="@style/Theme.Shadow.Base" />
 
