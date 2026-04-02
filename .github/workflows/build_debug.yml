@@ -10,10 +10,23 @@ permissions:
 
 jobs:
   nightly:
-    if: vars.NIGHTLY_ENABLED == 'true'
     runs-on: ubuntu-latest
 
     steps:
+
+      # -------------------------------
+      # HARD DISABLE CHECK
+      # -------------------------------
+      - name: Check if nightly is enabled
+        run: |
+          if [ "${{ vars.NIGHTLY_ENABLED }}" != "true" ]; then
+            echo "Nightly disabled. Skipping workflow."
+            exit 0
+          fi
+
+      # -------------------------------
+      # Checkout
+      # -------------------------------
       - name: Checkout
         uses: actions/checkout@v4
         with:
