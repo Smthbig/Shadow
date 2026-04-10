@@ -21,6 +21,8 @@ import java.util.concurrent.TimeUnit;
 
 public final class DelayOverlayActivity extends AppCompatActivity {
 
+    /* ================= EXTRAS ================= */
+
     private static final String EXTRA_MODE = "mode";
     private static final String EXTRA_DELAY = "delay";
     private static final String EXTRA_REASON = "reason";
@@ -30,9 +32,11 @@ public final class DelayOverlayActivity extends AppCompatActivity {
     private static final int MODE_DELAY = 1;
     private static final int MODE_BLOCK = 2;
 
+    /* ================= STATE ================= */
+
     private CountDownTimer timer;
     private boolean launched = false;
-    private long remainingMs;
+    private long remainingMs = 0;
 
     /* ========================================================= */
     /* ================= FACTORY ================================ */
@@ -64,17 +68,12 @@ public final class DelayOverlayActivity extends AppCompatActivity {
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState); // ✅ MUST ALWAYS BE FIRST
 
-        if (!isTaskRoot()) {
-            finish();
-            return;
-        }
-
-        super.onCreate(savedInstanceState);
         ThemeManager.apply(this);
         setContentView(R.layout.activity_delay);
 
-        // 🔒 BLOCK BACK COMPLETELY
+        // 🔒 Block back
         getOnBackPressedDispatcher().addCallback(this,
                 new OnBackPressedCallback(true) {
                     @Override
@@ -83,16 +82,33 @@ public final class DelayOverlayActivity extends AppCompatActivity {
                     }
                 });
 
-        int mode = getIntent().getIntExtra(EXTRA_MODE, MODE_BLOCK);
-        long delay = Math.max(0, getIntent().getLongExtra(EXTRA_DELAY, 0));
-        String reason = getIntent().getStringExtra(EXTRA_REASON);
-        boolean usingExtension = getIntent().getBooleanExtra(EXTRA_EXTENSION, false);
-        String pkg = getIntent().getStringExtra(EXTRA_PACKAGE);
+        // ✅ Safe duplicate launch handling (AFTER super)
+        if (!isTaskRoot()) {
+            finish();
+            overridePendingTransition(0, 0);
+            return;
+        }
+
+        /* ================= INTENT ================= */
+
+        Intent intent = getIntent();
+        if (intent == null) {
+            finish();
+            return;
+        }
+
+        final int mode = intent.getIntExtra(EXTRA_MODE, MODE_BLOCK);
+        final long delay = Math.max(0, intent.getLongExtra(EXTRA_DELAY, 0));
+        final String reason = intent.getStringExtra(EXTRA_REASON);
+        final boolean usingExtension = intent.getBooleanExtra(EXTRA_EXTENSION, false);
+        final String pkg = intent.getStringExtra(EXTRA_PACKAGE);
 
         if (pkg == null || pkg.isEmpty()) {
             finish();
             return;
         }
+
+        /* ================= VIEWS ================= */
 
         TextView title = findViewById(R.id.title);
         TextView subtitle = findViewById(R.id.subtitle);
@@ -102,19 +118,22 @@ public final class DelayOverlayActivity extends AppCompatActivity {
         MaterialButton btnExtend = findViewById(R.id.btn_extend);
         CircularProgressIndicator progress = findViewById(R.id.progress);
 
-        if (progress == null || timerText == null) {
+        if (title == null || subtitle == null || timerText == null ||
+                btnCancel == null || btnExtend == null || progress == null) {
             finish();
             return;
         }
 
         ExtensionEngine engine = new ExtensionEngine(this);
 
-        /* ================= BLOCK MODE ================= */
+        /* ===================================================== */
+        /* ================= BLOCK MODE ========================== */
+        /* ===================================================== */
 
         if (mode == MODE_BLOCK) {
 
             title.setText("Blocked");
-            subtitle.setText(reason != null ? reason : "Limit reached");
+            subtitle.setText(reason != null ? reason : "Daily limit reached");
 
             timerText.setVisibility(View.GONE);
             progress.setVisibility(View.GONE);
@@ -126,22 +145,28 @@ public final class DelayOverlayActivity extends AppCompatActivity {
             return;
         }
 
-        /* ================= DELAY MODE ================= */
+        /* ===================================================== */
+        /* ================= DELAY MODE ========================== */
+        /* ===================================================== */
 
         title.setText(usingExtension ? "Using Extension" : "Wait");
         subtitle.setText(reason != null ? reason : "");
 
-        btnCancel.setOnClickListener(v -> finish()); // allowed exit
+        btnCancel.setOnClickListener(v -> finish());
+
+        /* ---------- EXTENSION ---------- */
 
         if (usingExtension) {
             btnExtend.setVisibility(View.GONE);
         } else {
+
             btnExtend.setVisibility(View.VISIBLE);
 
             btnExtend.setOnClickListener(v -> {
 
-                long extra = TimeUnit.MINUTES.toMillis(5);
+                if (launched) return; // safety
 
+                long extra = TimeUnit.MINUTES.toMillis(5);
                 boolean granted = engine.grant(pkg, extra);
 
                 if (granted) {
@@ -162,6 +187,8 @@ public final class DelayOverlayActivity extends AppCompatActivity {
             });
         }
 
+        /* ---------- TIMER ---------- */
+
         if (delay <= 0) {
             launchOnce(pkg);
             return;
@@ -178,6 +205,7 @@ public final class DelayOverlayActivity extends AppCompatActivity {
     private void startTimer(String pkg, CircularProgressIndicator progress, TextView timerText) {
 
         int safeMax = (int) Math.min(remainingMs, Integer.MAX_VALUE);
+
         progress.setMax(safeMax);
         progress.setProgress(0);
 
@@ -187,8 +215,8 @@ public final class DelayOverlayActivity extends AppCompatActivity {
             public void onTick(long ms) {
                 remainingMs = ms;
 
-                long elapsed = safeMax - ms;
-                progress.setProgress((int) elapsed);
+                int elapsed = (int) (safeMax - ms);
+                progress.setProgress(Math.max(0, elapsed));
 
                 timerText.setText((ms / 1000) + "s");
             }
@@ -201,7 +229,10 @@ public final class DelayOverlayActivity extends AppCompatActivity {
     }
 
     private void restartTimer(String pkg, CircularProgressIndicator progress, TextView timerText) {
-        if (timer != null) timer.cancel();
+        if (timer != null) {
+            timer.cancel();
+            timer = null;
+        }
         startTimer(pkg, progress, timerText);
     }
 
@@ -215,11 +246,11 @@ public final class DelayOverlayActivity extends AppCompatActivity {
         launched = true;
 
         try {
-            Intent intent = getPackageManager().getLaunchIntentForPackage(pkg);
+            Intent launchIntent = getPackageManager().getLaunchIntentForPackage(pkg);
 
-            if (intent != null) {
-                intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-                startActivity(intent);
+            if (launchIntent != null) {
+                launchIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+                startActivity(launchIntent);
             }
 
         } catch (Exception ignored) {}
@@ -234,6 +265,10 @@ public final class DelayOverlayActivity extends AppCompatActivity {
     @Override
     protected void onDestroy() {
         super.onDestroy();
-        if (timer != null) timer.cancel();
+
+        if (timer != null) {
+            timer.cancel();
+            timer = null;
+        }
     }
 }

@@ -1,51 +1,22 @@
-<?xml version="1.0" encoding="utf-8"?>
 <resources>
-
-    <!-- ================= PRIMARY ================= -->
-    <color name="md_primary">#6C5CE7</color>
-    <color name="md_on_primary">#FFFFFF</color>
-
-    <!-- More usable container -->
-    <color name="md_primary_container">#E4E0FF</color>
-    <color name="md_on_primary_container">#1A1446</color>
-
-    <!-- ================= SECONDARY ================= -->
-    <color name="md_secondary">#7C7A8A</color>
-    <color name="md_on_secondary">#FFFFFF</color>
-
-    <color name="md_secondary_container">#EFEFF5</color>
-    <color name="md_on_secondary_container">#1C1B1F</color>
-
-    <!-- ================= BACKGROUND ================= -->
-    <!-- Slight cool tint (better glass contrast) -->
-    <color name="md_background">#F3F2F8</color>
-    <color name="md_on_background">#1A1A1F</color>
-
-    <!-- ================= SURFACE ================= -->
-    <!-- Layered system (important for depth) -->
-    <color name="md_surface">#FAF9FD</color>
-    <color name="md_on_surface">#1A1A1F</color>
-
-    <!-- Elevated surface -->
-    <color name="md_surface_variant">#E9E7F2</color>
-    <color name="md_on_surface_variant">#5A5865</color>
-
-    <!-- ================= OUTLINE ================= -->
-    <color name="md_outline">#C6C4D0</color>
-
-    <!-- ================= ERROR ================= -->
-    <color name="md_error">#B3261E</color>
-    <color name="md_on_error">#FFFFFF</color>
-
-    <!-- ================= GLASS SYSTEM ================= -->
-
-    <!-- Base glass (background cards) -->
-    <color name="shadow_glass">#33FFFFFF</color>
-
-    <!-- Strong glass (dialogs / focused cards) -->
-    <color name="shadow_glass_strong">#66FFFFFF</color>
-
-    <!-- Soft overlay (depth layering) -->
-    <color name="shadow_glass_soft">#1FFFFFFF</color>
-
+	<color name="md_primary">#EC95B4FD</color>
+	<color name="md_on_primary">#FFFFFF</color>
+	<color name="md_primary_container">#E4E0FF</color>
+	<color name="md_on_primary_container">#1A1446</color>
+	<color name="md_secondary">#7C7A8A</color>
+	<color name="md_on_secondary">#FFFFFF</color>
+	<color name="md_secondary_container">#EFEFF5</color>
+	<color name="md_on_secondary_container">#1C1B1F</color>
+	<color name="md_background">#F3F2F8</color>
+	<color name="md_on_background">#1A1A1F</color>
+	<color name="md_surface">#FAF9FD</color>
+	<color name="md_on_surface">#1A1A1F</color>
+	<color name="md_surface_variant">#E9E7F2</color>
+	<color name="md_on_surface_variant">#5A5865</color>
+	<color name="md_outline">#C6C4D0</color>
+	<color name="md_error">#B3261E</color>
+	<color name="md_on_error">#FFFFFF</color>
+	<color name="shadow_glass">#33FFFFFF</color>
+	<color name="shadow_glass_strong">#66FFFFFF</color>
+	<color name="shadow_glass_soft">#1FFFFFFF</color>
 </resources>
