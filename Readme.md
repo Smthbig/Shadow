@@ -84,7 +84,7 @@ when you try to open an app.
 ## Maintainers
 
 - **Mohan Sharma**  
-- GitHub: https://github.com/algopider  
+- GitHub: https://github.com/algospider  
 
 ---
 
