@@ -4,27 +4,15 @@
     android:viewportWidth="108"
     android:viewportHeight="108">
 
-    <!-- Simple, standard paths for 100% compatibility -->
-    
-    <!-- Outer Ring -->
     <path
         android:pathData="M54,54m-44,0a44,44 0,1 1,88 0a44,44 0,1 1,-88 0"
         android:strokeWidth="2"
         android:strokeColor="#6750A4"/>
 
-    <!-- Inner Core Shadow -->
     <path
         android:pathData="M54,54m-32,0a32,32 0,1 1,64 0a32,32 0,1 1,-64 0"
         android:fillColor="#0A0A0F"/>
 
-    <!-- Glow Ring -->
-    <path
-        android:pathData="M54,54m-24,0a24,24 0,1 1,48 0a24,24 0,1 1,-48 0"
-        android:strokeWidth="4"
-        android:strokeColor="#D0BCFF"
-        android:strokeAlpha="0.5"/>
-
-    <!-- Center Point -->
     <path
         android:pathData="M54,54m-8,0a8,8 0,1 1,16 0a8,8 0,1 1,-16 0"
         android:fillColor="#D0BCFF"/>

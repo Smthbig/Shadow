@@ -12,8 +12,12 @@ import android.widget.FrameLayout;
 import android.widget.ImageView;
 
 import androidx.activity.OnBackPressedCallback;
+import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowCompat;
+import androidx.core.view.WindowInsetsAnimationCompat;
+import androidx.core.view.WindowInsetsCompat;
 import androidx.core.view.WindowInsetsControllerCompat;
 
 import com.smthbig.shadow.R;
@@ -21,6 +25,8 @@ import com.smthbig.shadow.data.FeatureStore;
 import com.smthbig.shadow.launcher.core.LauncherController;
 import com.smthbig.shadow.settings.SettingsActivity;
 import com.smthbig.shadow.theme.ThemeManager;
+
+import java.util.List;
 
 public class HomeActivity extends AppCompatActivity {
 
@@ -38,14 +44,15 @@ public class HomeActivity extends AppCompatActivity {
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
-        featureStore = new FeatureStore(this);
-        ThemeManager.apply(this);
+        ThemeManager.applyTheme(this);
         super.onCreate(savedInstanceState);
 
-        prepareWindow();
+        featureStore = new FeatureStore(this);
         launcherController = new LauncherController(this);
 
+        prepareWindow();
         setContentView(R.layout.activity_home);
+        ThemeManager.applyWallpaper(this);
 
         contentContainer = findViewById(R.id.content_container);
         blurOverlay = findViewById(R.id.blur_overlay);
@@ -54,26 +61,50 @@ public class HomeActivity extends AppCompatActivity {
         settingsBtn = findViewById(R.id.settings_btn);
         intentBar = findViewById(R.id.intent_bar);
 
-        applyBackgroundConfig();
-
-        if (doomsdayView != null) {
-            doomsdayView.updateState();
-        }
-
-        if (settingsBtn != null) {
-            settingsBtn.setOnClickListener(v -> openSettings());
-        }
-
-        if (contentContainer != null) {
-            contentContainer.setOnClickListener(v -> showSearch());
-        }
-
-        if (blurOverlay != null) {
-            blurOverlay.setOnClickListener(v -> hideSearch());
-        }
+        if (doomsdayView != null) doomsdayView.updateState();
+        if (settingsBtn != null) settingsBtn.setOnClickListener(v -> openSettings());
+        if (contentContainer != null) contentContainer.setOnClickListener(v -> showSearch());
+        if (blurOverlay != null) blurOverlay.setOnClickListener(v -> hideSearch());
 
         setupIntentBar();
         setupBackHandler();
+        setupKeyboardAnimation();
+    }
+
+    /**
+     * 🚀 PIXEL-PERFECT KEYBOARD SYNC
+     * This follows the keyboard's exact movement frame-by-frame.
+     */
+    private void setupKeyboardAnimation() {
+        if (intentBar == null) return;
+
+        ViewCompat.setWindowInsetsAnimationCallback(intentBar, new WindowInsetsAnimationCompat.Callback(
+                WindowInsetsAnimationCompat.Callback.DISPATCH_MODE_STOP
+        ) {
+            @Override
+            public void onPrepare(@NonNull WindowInsetsAnimationCompat animation) {
+                super.onPrepare(animation);
+            }
+
+            @NonNull
+            @Override
+            public WindowInsetsCompat onProgress(@NonNull WindowInsetsCompat insets, @NonNull List<WindowInsetsAnimationCompat> runningAnimations) {
+                int imeHeight = insets.getInsets(WindowInsetsCompat.Type.ime()).bottom;
+                int navHeight = insets.getInsets(WindowInsetsCompat.Type.systemBars()).bottom;
+                
+                int offset = Math.max(0, imeHeight - navHeight);
+                intentBar.setTranslationY(-offset);
+                
+                return insets;
+            }
+        });
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        ThemeManager.applyWallpaper(this);
+        if (doomsdayView != null) doomsdayView.updateState();
     }
 
     private void setupIntentBar() {
@@ -84,7 +115,6 @@ public class HomeActivity extends AppCompatActivity {
                 hideSearch();
                 launcherController.handleIntentText(text);
             }
-
             @Override
             public void onDismiss() {
                 hideSearch();
@@ -97,18 +127,14 @@ public class HomeActivity extends AppCompatActivity {
         isAnimating = true;
 
         applyBlur(12f);
-
         intentBar.setVisibility(View.VISIBLE);
         intentBar.setAlpha(0f);
-        intentBar.setTranslationY(dpToPx(40));
-
         blurOverlay.setVisibility(View.VISIBLE);
         blurOverlay.setAlpha(0f);
 
         blurOverlay.animate().alpha(1f).setDuration(250).start();
         intentBar.animate()
                 .alpha(1f)
-                .translationY(0)
                 .setDuration(300)
                 .withEndAction(() -> {
                     isAnimating = false;
@@ -122,11 +148,9 @@ public class HomeActivity extends AppCompatActivity {
         isAnimating = true;
 
         intentBar.clearFocusAndHide();
-
         blurOverlay.animate().alpha(0f).setDuration(200).start();
         intentBar.animate()
                 .alpha(0f)
-                .translationY(dpToPx(40))
                 .setDuration(250)
                 .withEndAction(() -> {
                     intentBar.setVisibility(View.GONE);
@@ -135,19 +159,6 @@ public class HomeActivity extends AppCompatActivity {
                     isAnimating = false;
                 })
                 .start();
-    }
-
-    @Override
-    protected void onResume() {
-        super.onResume();
-        if (doomsdayView != null) {
-            doomsdayView.updateState();
-        }
-    }
-
-    private void applyBackgroundConfig() {
-        if (backgroundLayer == null) return;
-        ThemeManager.apply(this); // Refreshes both theme and wallpaper
     }
 
     private void prepareWindow() {
@@ -187,13 +198,5 @@ public class HomeActivity extends AppCompatActivity {
 
     private int dpToPx(int dp) {
         return (int) (dp * getResources().getDisplayMetrics().density);
-    }
-
-    private int getThemedColor(int attr) {
-        android.util.TypedValue typedValue = new android.util.TypedValue();
-        if (getTheme().resolveAttribute(attr, typedValue, true)) {
-            return typedValue.data;
-        }
-        return 0x33000000;
     }
 }

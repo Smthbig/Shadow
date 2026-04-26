@@ -1,6 +1,7 @@
 package com.smthbig.shadow.settings;
 
 import android.os.Bundle;
+import android.util.TypedValue;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.LinearLayout;
@@ -8,6 +9,7 @@ import android.widget.TextView;
 
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.app.AlertDialog;
+import androidx.core.content.ContextCompat;
 
 import com.google.android.material.card.MaterialCardView;
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
@@ -31,9 +33,10 @@ public class SettingsActivity extends AppCompatActivity {
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
-        ThemeManager.apply(this);
+        ThemeManager.applyTheme(this);
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_settings);
+        ThemeManager.applyWallpaper(this);
 
         controller = new SettingsController();
         container = findViewById(R.id.settings_container);
@@ -64,18 +67,18 @@ public class SettingsActivity extends AppCompatActivity {
         if (container == null) return;
         container.removeAllViews();
 
-        addInsightHeader();
+        try {
+            addInsightHeader();
+        } catch (Exception ignored) {}
 
         for (SettingsItem item : items) {
             View itemView = LayoutInflater.from(this)
                     .inflate(R.layout.item_setting_card, container, false);
 
             TextView title = itemView.findViewById(R.id.title);
-            title.setText(item.getTitle());
+            if (title != null) title.setText(item.getTitle());
 
-            itemView.setOnClickListener(v -> {
-                controller.handleItemClick(this, item);
-            });
+            itemView.setOnClickListener(v -> controller.handleItemClick(this, item));
 
             container.addView(itemView);
         }
@@ -87,13 +90,20 @@ public class SettingsActivity extends AppCompatActivity {
                 LinearLayout.LayoutParams.MATCH_PARENT, 
                 LinearLayout.LayoutParams.WRAP_CONTENT
         );
-        params.setMargins(0, 0, 0, 48);
+        params.setMargins(0, 0, 0, dpToPx(24));
         card.setLayoutParams(params);
         card.setRadius(dpToPx(24));
         card.setCardElevation(0);
-        card.setStrokeWidth(1);
-        card.setStrokeColor(getColor(R.color.md_outline));
-        card.setCardBackgroundColor(getColor(R.color.md_surface_variant));
+        card.setStrokeWidth(dpToPx(1));
+        
+        // Use standard theme attributes for universal compatibility
+        int outline = getThemeColor(com.google.android.material.R.attr.colorOutline);
+        int surface = getThemeColor(com.google.android.material.R.attr.colorSurfaceVariant);
+        int onSurface = getThemeColor(com.google.android.material.R.attr.colorOnSurface);
+        int onSurfaceVariant = getThemeColor(com.google.android.material.R.attr.colorOnSurfaceVariant);
+
+        card.setStrokeColor(outline);
+        card.setCardBackgroundColor(surface);
 
         LinearLayout layout = new LinearLayout(this);
         layout.setOrientation(LinearLayout.VERTICAL);
@@ -104,20 +114,20 @@ public class SettingsActivity extends AppCompatActivity {
         title.setTextSize(14);
         title.setAllCaps(true);
         title.setLetterSpacing(0.1f);
-        title.setTextColor(getColor(R.color.md_on_surface_variant));
+        title.setTextColor(onSurfaceVariant);
 
-        int totalFriction = usageTracker.getTotalDelays() + usageTracker.getTotalBlocks();
+        int totalFriction = (usageTracker != null) ? (usageTracker.getTotalDelays() + usageTracker.getTotalBlocks()) : 0;
         TextView score = new TextView(this);
         score.setText(totalFriction + " Shadow Interventions");
         score.setTextSize(22);
         score.setTypeface(null, android.graphics.Typeface.BOLD);
-        score.setTextColor(getColor(R.color.md_on_surface));
+        score.setTextColor(onSurface);
         score.setPadding(0, dpToPx(8), 0, 0);
 
         TextView desc = new TextView(this);
         desc.setText("Times Shadow added friction to keep you intentional.");
         desc.setTextSize(13);
-        desc.setTextColor(getColor(R.color.md_on_surface_variant));
+        desc.setTextColor(onSurfaceVariant);
         desc.setPadding(0, dpToPx(4), 0, 0);
 
         layout.addView(title);
@@ -125,6 +135,14 @@ public class SettingsActivity extends AppCompatActivity {
         layout.addView(desc);
         card.addView(layout);
         container.addView(card);
+    }
+
+    private int getThemeColor(int attr) {
+        TypedValue typedValue = new TypedValue();
+        if (getTheme().resolveAttribute(attr, typedValue, true)) {
+            return typedValue.data;
+        }
+        return 0;
     }
 
     private int dpToPx(int dp) {
@@ -135,54 +153,25 @@ public class SettingsActivity extends AppCompatActivity {
 
     public void openThemeDialog() {
         String[] names = {"System Default", "Light", "Dark", "Dynamic", "Shadow", "Glass", "Transparent Light", "Transparent Dark"};
+        String[] values = {ThemeMode.SYSTEM, ThemeMode.LIGHT, ThemeMode.DARK, ThemeMode.DYNAMIC, ThemeMode.SHADOW, ThemeMode.GLASS, ThemeMode.TRANSPARENT_LIGHT, ThemeMode.TRANSPARENT_DARK};
 
-        String[] values = {
-            ThemeMode.SYSTEM,
-            ThemeMode.LIGHT,
-            ThemeMode.DARK,
-            ThemeMode.DYNAMIC,
-            ThemeMode.SHADOW,
-            ThemeMode.GLASS,
-            ThemeMode.TRANSPARENT_LIGHT,
-            ThemeMode.TRANSPARENT_DARK
-        };
-
-        String current = controller.getCurrentTheme(this);
-
-        ThemeAdapter adapter = new ThemeAdapter(
-                this,
-                names,
-                values,
-                current,
-                selected -> {
-                    // 1. Save theme
-                    controller.applyTheme(this, selected);
-
-                    // 2. Dismiss dialog BEFORE recreate
-                    if (dialog != null && dialog.isShowing()) {
-                        dialog.dismiss();
-                    }
-
-                    // 3. Recreate activity (clean + fast)
-                    ThemeRestarter.restart(this);
-                });
+        ThemeAdapter adapter = new ThemeAdapter(this, names, values, controller.getCurrentTheme(this), selected -> {
+            controller.applyTheme(this, selected);
+            if (dialog != null && dialog.isShowing()) dialog.dismiss();
+            ThemeRestarter.restart(this);
+        });
 
         dialog = new MaterialAlertDialogBuilder(this)
                 .setTitle("Select Theme")
                 .setAdapter(adapter, null)
                 .setNegativeButton("Cancel", null)
                 .create();
-
         dialog.show();
     }
-
-    /* ---------- LIFECYCLE SAFETY ---------- */
 
     @Override
     protected void onDestroy() {
         super.onDestroy();
-        if (dialog != null && dialog.isShowing()) {
-            dialog.dismiss();
-        }
+        if (dialog != null && dialog.isShowing()) dialog.dismiss();
     }
 }

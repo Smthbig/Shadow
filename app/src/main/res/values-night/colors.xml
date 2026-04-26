@@ -1,45 +1,23 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+    <!-- Dark Mode Specific Overrides -->
+    <color name="brand_shadow">#050507</color>
+    <color name="brand_obsidian">#0A0A0F</color>
+    <color name="brand_focus">#6750A4</color>
+    <color name="brand_neon">#D0BCFF</color>
 
-    <!-- ===== PRIMARY (slightly refined) ===== -->
-    <color name="md_primary">#CBB8FF</color>
-    <color name="md_on_primary">#2A1B5E</color>
+    <color name="md_dark_primary">#D0BCFF</color>
+    <color name="md_dark_on_primary">#381E72</color>
+    <color name="md_dark_surface">#0A0A0F</color>
+    <color name="md_dark_on_surface">#E6E1E5</color>
+    <color name="md_dark_surface_variant">#1C1B23</color>
+    <color name="md_dark_on_surface_variant">#CAC4D0</color>
+    <color name="md_dark_outline">#49454F</color>
 
-    <!-- Slightly brighter container for glow -->
-    <color name="md_primary_container">#3F2F78</color>
-    <color name="md_on_primary_container">#EADDFF</color>
-
-    <!-- ===== SECONDARY ===== -->
-    <color name="md_secondary">#C9C4D6</color>
-    <color name="md_on_secondary">#2B2833</color>
-
-    <color name="md_secondary_container">#3A3546</color>
-    <color name="md_on_secondary_container">#E8DEF8</color>
-
-    <!-- ===== BACKGROUND (CRITICAL FIX) ===== -->
-    <!-- Not pure black → subtle purple tint -->
-    <color name="md_background">#0F0E13</color>
-    <color name="md_on_background">#E6E1E5</color>
-
-    <!-- ===== SURFACE (LAYERED DEPTH) ===== -->
-    <color name="md_surface">#16151C</color>
+    <!-- Fallbacks -->
+    <color name="md_primary">#D0BCFF</color>
+    <color name="md_on_primary">#381E72</color>
+    <color name="md_surface">#0A0A0F</color>
     <color name="md_on_surface">#E6E1E5</color>
-
-    <!-- Elevated surface -->
-    <color name="md_surface_variant">#211F2A</color>
-    <color name="md_on_surface_variant">#C8C3CF</color>
-
-    <!-- ===== OUTLINE ===== -->
-    <!-- Softer, premium feel -->
-    <color name="md_outline">#6E6A78</color>
-
-    <!-- ===== ERROR ===== -->
-    <color name="md_error">#F2B8B5</color>
-    <color name="md_on_error">#601410</color>
-
-    <!-- ===== GLASS SYSTEM (DARK) ===== -->
-    <color name="shadow_glass">#33222222</color>
-    <color name="shadow_glass_strong">#55222222</color>
-    <color name="shadow_glass_soft">#22222222</color>
-
+    <color name="md_outline">#49454F</color>
 </resources>

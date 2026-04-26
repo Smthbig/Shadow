@@ -32,11 +32,11 @@ public final class AppLimitActivity extends AppCompatActivity {
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
-
-        ThemeManager.apply(this);
+        ThemeManager.applyTheme(this);
         super.onCreate(savedInstanceState);
 
         setContentView(R.layout.activity_app_limit);
+        ThemeManager.applyWallpaper(this);
 
         limitStore = new AppLimitStore(this);
         pm = getPackageManager();

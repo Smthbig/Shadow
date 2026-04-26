@@ -50,7 +50,13 @@ public class IntentBarView extends MaterialCardView {
         // Enforce Card Styling
         setRadius(dpToPx(24));
         setCardElevation(dpToPx(12));
-        setStrokeColor(getContext().getColor(R.color.md_outline));
+        
+        // Resolve outline color from theme
+        android.util.TypedValue typedValue = new android.util.TypedValue();
+        if (getContext().getTheme().resolveAttribute(com.google.android.material.R.attr.colorOutline, typedValue, true)) {
+            setStrokeColor(typedValue.data);
+        }
+        
         setStrokeWidth(1);
         
         // Use the glassy background directly on the card

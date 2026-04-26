@@ -19,6 +19,11 @@ public class DoomsdayView extends View {
     private int totalDots = 0;
     private int activeDots = 0;
 
+    // Cached drawing metrics
+    private float cachedSpacing = 0;
+    private float cachedRadius = 0;
+    private int cachedCols = 0;
+
     public DoomsdayView(Context context, @Nullable AttributeSet attrs) {
         super(context, attrs);
         store = new DoomsdayStore(context);
@@ -42,10 +47,11 @@ public class DoomsdayView extends View {
         Calendar calendar = Calendar.getInstance();
         DoomsdayStore.Scale scale = store.getScale();
 
+        int prevTotal = totalDots;
+
         switch (scale) {
             case WEEK:
                 totalDots = 7;
-                // Work-week logic: Dots fill as week passes
                 activeDots = calendar.get(Calendar.DAY_OF_WEEK);
                 break;
             case MONTH:
@@ -58,11 +64,15 @@ public class DoomsdayView extends View {
                 break;
             case CUSTOM:
                 totalDots = store.getCustomDays();
-                activeDots = 1; // Basic placeholder for custom progress
+                activeDots = 1;
                 break;
         }
-        invalidate();
-        requestLayout();
+
+        if (totalDots != prevTotal) {
+            requestLayout();
+        } else {
+            invalidate();
+        }
     }
 
     @Override
@@ -73,13 +83,13 @@ public class DoomsdayView extends View {
             return;
         }
         
-        int cols = (totalDots > 14) ? 20 : totalDots;
-        int rows = (int) Math.ceil((float) totalDots / cols);
+        cachedCols = (totalDots > 14) ? 20 : totalDots;
+        int rows = (int) Math.ceil((float) totalDots / cachedCols);
 
-        float spacing = (float) width / (cols + 1);
-        float radius = spacing / 3.5f;
+        cachedSpacing = (float) width / (cachedCols + 1);
+        cachedRadius = cachedSpacing / 3.5f;
         
-        int desiredHeight = (int) ((radius * 3) + (rows * radius * 3.5f));
+        int desiredHeight = (int) ((cachedRadius * 3) + (rows * cachedRadius * 3.5f));
         setMeasuredDimension(width, desiredHeight);
     }
 
@@ -87,23 +97,17 @@ public class DoomsdayView extends View {
     protected void onDraw(Canvas canvas) {
         super.onDraw(canvas);
 
-        float w = getWidth();
-        if (w == 0 || totalDots == 0) return;
-
-        int cols = (totalDots > 14) ? 20 : totalDots;
-
-        float spacing = w / (cols + 1);
-        float radius = spacing / 3.5f;
+        if (totalDots == 0 || cachedSpacing == 0) return;
 
         for (int i = 0; i < totalDots; i++) {
-            int row = i / cols;
-            int col = i % cols;
+            int row = i / cachedCols;
+            int col = i % cachedCols;
 
-            float x = spacing + (col * spacing);
-            float y = (radius * 3) + (row * radius * 3.5f);
+            float x = cachedSpacing + (col * cachedSpacing);
+            float y = (cachedRadius * 3) + (row * cachedRadius * 3.5f);
 
             Paint p = (i < activeDots) ? paintActive : paintInactive;
-            canvas.drawCircle(x, y, radius, p);
+            canvas.drawCircle(x, y, cachedRadius, p);
         }
     }
 }

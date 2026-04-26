@@ -9,14 +9,28 @@ public final class ThemeManager {
 
     private ThemeManager() {}
 
-    /* ---------- APPLY (PER ACTIVITY) ---------- */
-
-    public static void apply(Activity activity) {
+    /**
+     * Applies the style/theme only. 
+     * Call this BEFORE super.onCreate()
+     */
+    public static void applyTheme(Activity activity) {
         String mode = ThemeStore.getTheme(activity);
         String background = ThemeStore.getBackground(activity);
-        
         ThemeApplier.apply(activity, mode, background);
+    }
+
+    /**
+     * Applies the background/wallpaper to the view hierarchy.
+     * Call this AFTER setContentView()
+     */
+    public static void applyWallpaper(Activity activity) {
         WallpaperApplier.apply(activity);
+    }
+
+    /* ---------- LEGACY / COMPAT ---------- */
+    public static void apply(Activity activity) {
+        applyTheme(activity);
+        // Wallpaper is now called separately for safety
     }
 
     /* ---------- APPLY GLOBAL (APP START) ---------- */

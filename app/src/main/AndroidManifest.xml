@@ -23,7 +23,9 @@
         android:allowBackup="false"
         android:label="Shadow"
         android:icon="@mipmap/ic_shadow"
+        android:roundIcon="@mipmap/ic_shadow"
         android:supportsRtl="true"
+        android:enableOnBackInvokedCallback="true"
         android:theme="@style/Theme.Shadow.Base"
         android:hardwareAccelerated="true">
 
