@@ -1,23 +1,39 @@
 <vector xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:aapt="http://schemas.android.com/aapt"
     android:width="108dp"
     android:height="108dp"
     android:viewportWidth="108"
     android:viewportHeight="108">
-    
-    <!-- Outer intentional shape -->
-    <path
-        android:pathData="M54,10C30,10 10,30 10,54C10,78 30,98 54,98C78,98 98,78 98,54C98,30 78,10 54,10Z"
-        android:fillColor="#000000"
-        android:fillAlpha="0.1" />
 
-    <!-- Shadow Core -->
+    <!-- 1. Background Core Shadow -->
     <path
-        android:pathData="M54,28C40,28 28,40 28,54C28,68 40,80 54,80C68,80 80,68 80,54C80,40 68,28 54,28ZM54,72C44,72 36,64 36,54C36,44 44,36 54,36C64,36 72,44 72,54C72,64 64,72 54,72Z"
-        android:fillColor="#000000" />
-        
-    <!-- Intentionality Dot -->
+        android:pathData="M54,54m-40,0a40,40 0,1 1,80 0a40,40 0,1 1,-80 0"
+        android:fillColor="#0A0A0F" />
+
+    <!-- 2. The Focus Ring (Glow) -->
     <path
-        android:pathData="M54,54m-4,0a4,4 0,1 1,8 0a4,4 0,1 1,-8 0"
-        android:fillColor="#000000" />
-        
+        android:pathData="M54,18C34.1,18 18,34.1 18,54C18,73.9 34.1,90 54,90C73.9,90 90,73.9 90,54"
+        android:strokeWidth="4"
+        android:strokeColor="#D0BCFF"
+        android:strokeLineCap="round"
+        android:strokeAlpha="0.8" />
+
+    <!-- 3. The Intentionality Crescent -->
+    <path
+        android:pathData="M78,54C78,67.3 67.2,78 54,78C40.8,78 30,67.3 30,54C30,40.7 40.8,30 54,30"
+        android:strokeWidth="8"
+        android:strokeColor="#6750A4"
+        android:strokeLineCap="round" />
+
+    <!-- 4. The Center 'Breath' Point -->
+    <path
+        android:pathData="M54,54m-6,0a6,6 0,1 1,12 0a6,6 0,1 1,-12 0"
+        android:fillColor="#D0BCFF" />
+
+    <!-- 5. Optical Flare -->
+    <path
+        android:pathData="M48,34L50,30L52,34L50,38Z"
+        android:fillColor="#FFFFFF"
+        android:fillAlpha="0.3" />
+
 </vector>
