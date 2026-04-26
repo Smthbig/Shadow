@@ -73,6 +73,7 @@ public final class DelayOverlayActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState); 
 
         setContentView(R.layout.activity_delay);
+        ThemeManager.applyWallpaper(this);
 
         // 🔒 Block back
         getOnBackPressedDispatcher().addCallback(this,
@@ -244,6 +245,8 @@ public final class DelayOverlayActivity extends AppCompatActivity {
     @Override
     protected void onDestroy() {
         super.onDestroy();
+        
+        com.smthbig.shadow.tracking.FrictionStore.getInstance().clearActiveDelay();
 
         if (timer != null) {
             timer.cancel();

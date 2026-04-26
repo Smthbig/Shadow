@@ -29,13 +29,16 @@
     <color name="md_on_primary">#FFFFFF</color>
     <color name="md_surface">#FFFBFF</color>
     <color name="md_on_surface">#1C1B1F</color>
-    <color name="md_surface_variant">#E7E0EB</color>
-    <color name="md_on_surface_variant">#49454E</color>
     <color name="md_outline">#7A757F</color>
 
-    <!-- ✨ Transparency & Glows -->
+    <!-- ✨ Transparency & Glass (Unified) -->
+    <color name="glass_white">#33FFFFFF</color>
+    <color name="glass_white_strong">#66FFFFFF</color>
+    <color name="glass_black">#1A000000</color>
+    
+    <color name="scrim_light">#4D000000</color>
+    <color name="scrim_dark">#99000000</color>
+
     <color name="glow_light">#1A000000</color>
     <color name="glow_dark">#26FFFFFF</color>
-    <color name="shadow_glass_strong">#66FFFFFF</color>
-    <color name="shadow_glass_soft">#1FFFFFFF</color>
 </resources>

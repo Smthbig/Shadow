@@ -36,19 +36,37 @@ public final class DoomsdayStore {
         prefs.edit().putInt("custom_days", Math.max(1, days)).apply();
     }
 
+    /**
+     * Returns user-defined active color, or 0 if using theme default.
+     */
     public int getActiveColor() {
-        return prefs.getInt("color_active", 0xCCFFFFFF);
+        return prefs.getInt("color_active", 0);
     }
 
     public void setActiveColor(int color) {
         prefs.edit().putInt("color_active", color).apply();
     }
 
+    /**
+     * Returns user-defined inactive color, or 0 if using theme default.
+     */
     public int getInactiveColor() {
-        return prefs.getInt("color_inactive", 0x33FFFFFF);
+        return prefs.getInt("color_inactive", 0);
     }
 
     public void setInactiveColor(int color) {
         prefs.edit().putInt("color_inactive", color).apply();
+    }
+    
+    public void resetColors() {
+        prefs.edit().remove("color_active").remove("color_inactive").apply();
+    }
+
+    public void resetActiveColor() {
+        prefs.edit().remove("color_active").apply();
+    }
+
+    public void resetInactiveColor() {
+        prefs.edit().remove("color_inactive").apply();
     }
 }

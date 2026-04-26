@@ -25,6 +25,7 @@ import com.smthbig.shadow.data.FeatureStore;
 import com.smthbig.shadow.launcher.core.LauncherController;
 import com.smthbig.shadow.settings.SettingsActivity;
 import com.smthbig.shadow.theme.ThemeManager;
+import com.smthbig.shadow.theme.ThemeStore;
 
 import java.util.List;
 
@@ -164,9 +165,12 @@ public class HomeActivity extends AppCompatActivity {
     private void prepareWindow() {
         Window window = getWindow();
         WindowCompat.setDecorFitsSystemWindows(window, false);
-        WindowInsetsControllerCompat controller = new WindowInsetsControllerCompat(window, window.getDecorView());
-        controller.hide(android.view.WindowInsets.Type.systemBars());
-        controller.setSystemBarsBehavior(WindowInsetsControllerCompat.BEHAVIOR_SHOW_TRANSIENT_BARS_BY_SWIPE);
+        
+        // 🚀 PRODUCTION GRADE: Don't hide bars, just make them transparent
+        // Users need to see their clock/notifications!
+        WindowInsetsControllerCompat controller = WindowCompat.getInsetsController(window, window.getDecorView());
+        controller.setAppearanceLightStatusBars(!ThemeStore.isDark(this));
+        controller.setAppearanceLightNavigationBars(!ThemeStore.isDark(this));
     }
 
     private void setupBackHandler() {

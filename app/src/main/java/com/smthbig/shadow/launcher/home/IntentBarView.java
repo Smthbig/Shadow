@@ -59,9 +59,12 @@ public class IntentBarView extends MaterialCardView {
         
         setStrokeWidth(1);
         
-        // Use the glassy background directly on the card
-        setBackgroundResource(R.drawable.bg_blur_overlay);
-        setCardBackgroundColor(android.graphics.Color.TRANSPARENT);
+        // Resolve shadowGlass color from theme
+        if (getContext().getTheme().resolveAttribute(R.attr.shadowGlass, typedValue, true)) {
+            setCardBackgroundColor(typedValue.data);
+        } else {
+            setCardBackgroundColor(android.graphics.Color.TRANSPARENT);
+        }
 
         LayoutInflater.from(context).inflate(R.layout.view_intent_bar, this, true);
 

@@ -9,6 +9,8 @@
     
     <!-- Settings -->
     <string name="settings_title">Settings</string>
+    <string name="app_limits_title">App Limits</string>
+    <string name="setting_placeholder">Setting Title</string>
     <string name="theme_dialog_title">Select Theme</string>
     <string name="reset_usage_title">Reset Today\'s Extensions?</string>
     <string name="reset_usage_message">This will clear all extension time granted for today.</string>

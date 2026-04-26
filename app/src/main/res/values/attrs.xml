@@ -4,4 +4,7 @@
     <attr name="shadowGlassStrong" format="color"/>
     <attr name="shadowGlassSoft" format="color"/>
     <attr name="shadowGlow" format="color"/>
+    <attr name="shadowScrim" format="color"/>
+    <attr name="doomsdayActive" format="color"/>
+    <attr name="doomsdayInactive" format="color"/>
     </resources>

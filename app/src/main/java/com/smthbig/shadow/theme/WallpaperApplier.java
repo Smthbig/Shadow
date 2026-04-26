@@ -21,22 +21,18 @@ public final class WallpaperApplier {
         View backgroundLayer = activity.findViewById(R.id.background_layer);
         Window window = activity.getWindow();
 
-        // 🚀 ONLY IN TRANSPARENT THEME
-        boolean isTransparentTheme = 
-                ThemeMode.TRANSPARENT_LIGHT.equals(themeMode) || 
-                ThemeMode.TRANSPARENT_DARK.equals(themeMode);
+        // 🚀 System Wallpaper logic (Translucency)
+        boolean isSystemWallpaper = "system_wallpaper".equals(bgType);
 
-        if (isTransparentTheme) {
+        if (isSystemWallpaper) {
             if (backgroundLayer != null) {
                 backgroundLayer.setBackgroundColor(Color.TRANSPARENT);
             }
-            
+            window.addFlags(WindowManager.LayoutParams.FLAG_SHOW_WALLPAPER);
+            // Add a subtle tint to ensure contrast
             int glowColor = getThemeColor(activity, R.attr.shadowGlow);
             window.setBackgroundDrawable(new ColorDrawable(glowColor));
-            window.addFlags(WindowManager.LayoutParams.FLAG_SHOW_WALLPAPER);
-
         } else {
-            // Standard behavior for ALL other themes (including Glass)
             window.clearFlags(WindowManager.LayoutParams.FLAG_SHOW_WALLPAPER);
             applySpecificBackground(activity, backgroundLayer, bgType);
         }

@@ -89,14 +89,19 @@ public class SettingsController {
     }
 
     private void openDoomsdayColorPicker(Activity activity, boolean active) {
-        String[] names = {"Classic White", "Focus Purple", "Shadow Dark", "Emerald", "Amber", "Crimson", "Ocean Blue"};
-        int[] colors = {0xCCFFFFFF, 0xCC6750A4, 0xCC121212, 0xCC2E7D32, 0xCCFF8F00, 0xCCB71C1C, 0xCC1565C0};
+        String[] names = {"Reset to Theme Default", "Classic White", "Focus Purple", "Shadow Dark", "Emerald", "Amber", "Crimson", "Ocean Blue"};
+        int[] colors = {0, 0xCCFFFFFF, 0xCC6750A4, 0xCC121212, 0xCC2E7D32, 0xCCFF8F00, 0xCCB71C1C, 0xCC1565C0};
         DoomsdayStore store = new DoomsdayStore(activity);
         new MaterialAlertDialogBuilder(activity)
                 .setTitle(active ? "Active Color" : "Inactive Color")
                 .setItems(names, (d, which) -> {
-                    if (active) store.setActiveColor(colors[which]);
-                    else store.setInactiveColor(colors[which]);
+                    if (which == 0) {
+                        if (active) store.resetActiveColor();
+                        else store.resetInactiveColor();
+                    } else {
+                        if (active) store.setActiveColor(colors[which]);
+                        else store.setInactiveColor(colors[which]);
+                    }
                 }).show();
     }
 

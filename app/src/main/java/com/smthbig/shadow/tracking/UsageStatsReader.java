@@ -29,20 +29,24 @@ public final class UsageStatsReader {
         long now = System.currentTimeMillis();
         long start = now - TimeUnit.MINUTES.toMillis(1); // look at last 1 min
 
-        UsageEvents events = usageStatsManager.queryEvents(start, now);
-        if (events == null) return null;
+        try {
+            UsageEvents events = usageStatsManager.queryEvents(start, now);
+            if (events == null || !events.hasNextEvent()) return null;
 
-        UsageEvents.Event event = new UsageEvents.Event();
-        String lastPkg = null;
+            UsageEvents.Event event = new UsageEvents.Event();
+            String lastPkg = null;
 
-        while (events.hasNextEvent()) {
-            events.getNextEvent(event);
-            if (event.getEventType() == UsageEvents.Event.ACTIVITY_RESUMED) {
-                lastPkg = event.getPackageName();
+            while (events.hasNextEvent()) {
+                events.getNextEvent(event);
+                if (event.getEventType() == UsageEvents.Event.ACTIVITY_RESUMED) {
+                    lastPkg = event.getPackageName();
+                }
             }
-        }
 
-        return lastPkg;
+            return lastPkg;
+        } catch (Exception e) {
+            return null; // Permission revoked or API failure
+        }
     }
 
     /* ========================================================= */

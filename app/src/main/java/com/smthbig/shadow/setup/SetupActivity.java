@@ -21,6 +21,7 @@ public class SetupActivity extends AppCompatActivity {
         ThemeManager.apply(this);
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_setup);
+        ThemeManager.applyWallpaper(this);
 
         acceptCheckBox = findViewById(R.id.checkbox_accept);
         continueButton = findViewById(R.id.button_continue);

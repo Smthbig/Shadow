@@ -34,8 +34,8 @@ public final class LauncherController {
     private final AppLauncher appLauncher;
     private final FeatureStore featureStore;
 
-    private final Map<String, Long> lastLaunchMap = new HashMap<>();
-    private final Map<String, Long> heatMap = new HashMap<>();
+    private final Map<String, Long> lastLaunchMap;
+    private final Map<String, Long> heatMap;
 
     public LauncherController(Context context) {
         this.appContext = context.getApplicationContext();
@@ -45,6 +45,10 @@ public final class LauncherController {
         this.extensionEngine = new ExtensionEngine(appContext);
         this.appLauncher = new AppLauncher(appContext);
         this.featureStore = new FeatureStore(appContext);
+        
+        // 🔥 Use persisted singleton store
+        this.lastLaunchMap = com.smthbig.shadow.tracking.FrictionStore.getInstance().getLastLaunchMap();
+        this.heatMap = com.smthbig.shadow.tracking.FrictionStore.getInstance().getHeatMap();
     }
 
     /* ========================================================= */

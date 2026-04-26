@@ -1,6 +1,7 @@
 package com.smthbig.shadow.tracking;
 
 import android.app.Service;
+import android.content.Context;
 import android.content.Intent;
 import android.os.Handler;
 import android.os.IBinder;
@@ -53,6 +54,12 @@ public final class UsageMonitorService extends Service {
 
     private void checkForegroundApp() {
         
+        android.os.PowerManager pm = (android.os.PowerManager) getSystemService(Context.POWER_SERVICE);
+        if (pm != null && !pm.isInteractive()) {
+            handler.postDelayed(monitorTask, POLL_INTERVAL);
+            return;
+        }
+
         UsageStatsReader reader = new UsageStatsReader(this);
         String pkg = getForegroundPackage(reader);
 
@@ -72,6 +79,16 @@ public final class UsageMonitorService extends Service {
             if (limitMs > 0 && limitMs != AppLimitStore.UNLIMITED) {
                 
                 if (usedMs > (limitMs + remainingExtensionMs)) {
+                    
+                    // 🔥 BUG FIX: Prevent overlapping overlays
+                    String currentActive = FrictionStore.getInstance().getActiveDelay();
+                    if (pkg.equals(currentActive)) {
+                        handler.postDelayed(monitorTask, POLL_INTERVAL);
+                        return;
+                    }
+
+                    FrictionStore.getInstance().setActiveDelay(pkg);
+                    
                     // ENFORCE: Pull user out of the app into a high-friction delay screen
                     appLauncher.launch(
                             DelayOverlayActivity.delay(

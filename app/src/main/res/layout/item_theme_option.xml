@@ -19,8 +19,7 @@
 
     app:strokeWidth="1dp"
     app:strokeColor="?attr/colorOutline"
-
-    app:cardBackgroundColor="?attr/colorSurface">
+    app:cardBackgroundColor="?attr/shadowGlass">
 
     <LinearLayout
         android:layout_width="match_parent"
@@ -29,9 +28,7 @@
         android:gravity="center_vertical"
         android:minHeight="56dp"
         android:paddingHorizontal="16dp"
-        android:paddingVertical="10dp"
-        android:background="?attr/colorSurface"
-        android:alpha="0.85">
+        android:paddingVertical="10dp">
 
         <!-- TEXT -->
         <LinearLayout

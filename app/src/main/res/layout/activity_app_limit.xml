@@ -21,7 +21,7 @@
             android:id="@+id/title"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="App Limits"
+            android:text="@string/app_limits_title"
             style="@style/TextAppearance.Material3.HeadlineMedium"
             android:textStyle="bold"
             android:textColor="?attr/colorOnSurface"

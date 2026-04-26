@@ -9,6 +9,7 @@ import android.view.View;
 import androidx.annotation.Nullable;
 
 import java.util.Calendar;
+import com.smthbig.shadow.R;
 
 public class DoomsdayView extends View {
 
@@ -41,8 +42,18 @@ public class DoomsdayView extends View {
     }
 
     public void updateState() {
-        paintActive.setColor(store.getActiveColor());
-        paintInactive.setColor(store.getInactiveColor());
+        int active = store.getActiveColor();
+        int inactive = store.getInactiveColor();
+
+        if (active == 0) {
+            active = getThemeColor(R.attr.doomsdayActive);
+        }
+        if (inactive == 0) {
+            inactive = getThemeColor(R.attr.doomsdayInactive);
+        }
+
+        paintActive.setColor(active);
+        paintInactive.setColor(inactive);
 
         Calendar calendar = Calendar.getInstance();
         DoomsdayStore.Scale scale = store.getScale();
@@ -109,5 +120,13 @@ public class DoomsdayView extends View {
             Paint p = (i < activeDots) ? paintActive : paintInactive;
             canvas.drawCircle(x, y, cachedRadius, p);
         }
+    }
+
+    private int getThemeColor(int attr) {
+        android.util.TypedValue typedValue = new android.util.TypedValue();
+        if (getContext().getTheme().resolveAttribute(attr, typedValue, true)) {
+            return typedValue.data;
+        }
+        return android.graphics.Color.GRAY;
     }
 }

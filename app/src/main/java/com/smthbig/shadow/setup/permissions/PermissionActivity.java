@@ -32,6 +32,7 @@ public final class PermissionActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
 
         setContentView(R.layout.activity_permission);
+        ThemeManager.applyWallpaper(this);
 
         statusText = findViewById(R.id.status_text);
         actionButton = findViewById(R.id.action_button);

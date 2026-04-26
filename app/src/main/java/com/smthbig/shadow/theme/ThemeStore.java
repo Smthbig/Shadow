@@ -25,6 +25,15 @@ public final class ThemeStore {
         return prefs(context).getString(KEY_MODE, ThemeMode.SYSTEM);
     }
 
+    public static boolean isDark(Context context) {
+        String mode = getTheme(context);
+        return ThemeMode.DARK.equals(mode) || 
+               ThemeMode.SHADOW.equals(mode) || 
+               ThemeMode.GLASS.equals(mode) || 
+               ThemeMode.GLASS_DARK.equals(mode) || 
+               ThemeMode.TRANSPARENT_DARK.equals(mode);
+    }
+
     /* ---------- BACKGROUND ---------- */
 
     public static void setBackground(Context context, String type) {

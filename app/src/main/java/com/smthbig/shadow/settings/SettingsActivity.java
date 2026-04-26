@@ -98,7 +98,7 @@ public class SettingsActivity extends AppCompatActivity {
         
         // Use standard theme attributes for universal compatibility
         int outline = getThemeColor(com.google.android.material.R.attr.colorOutline);
-        int surface = getThemeColor(com.google.android.material.R.attr.colorSurfaceVariant);
+        int surface = getThemeColor(R.attr.shadowGlass);
         int onSurface = getThemeColor(com.google.android.material.R.attr.colorOnSurface);
         int onSurfaceVariant = getThemeColor(com.google.android.material.R.attr.colorOnSurfaceVariant);
 
