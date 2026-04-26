@@ -14,29 +14,48 @@ public class DoomsdayView extends View {
 
     private Paint paintActive;
     private Paint paintInactive;
-    private int dotCount = 7; // Seven day view
+    private DoomsdayStore store;
+    
+    private int totalDots = 0;
     private int activeDots = 0;
 
     public DoomsdayView(Context context, @Nullable AttributeSet attrs) {
         super(context, attrs);
+        store = new DoomsdayStore(context);
         init();
     }
 
     private void init() {
         paintActive = new Paint(Paint.ANTI_ALIAS_FLAG);
-        paintActive.setColor(0xCCFFFFFF);
         paintActive.setStyle(Paint.Style.FILL);
 
         paintInactive = new Paint(Paint.ANTI_ALIAS_FLAG);
-        paintInactive.setColor(0x33FFFFFF);
         paintInactive.setStyle(Paint.Style.FILL);
 
-        updateTime();
+        updateState();
     }
 
-    public void updateTime() {
+    public void updateState() {
+        paintActive.setColor(store.getActiveColor());
+        paintInactive.setColor(store.getInactiveColor());
+
         Calendar calendar = Calendar.getInstance();
-        activeDots = calendar.get(Calendar.DAY_OF_WEEK); // 1 = Sunday, 7 = Saturday
+        DoomsdayStore.Scale scale = store.getScale();
+
+        switch (scale) {
+            case WEEK:
+                totalDots = 7;
+                activeDots = calendar.get(Calendar.DAY_OF_WEEK);
+                break;
+            case MONTH:
+                totalDots = calendar.getActualMaximum(Calendar.DAY_OF_MONTH);
+                activeDots = calendar.get(Calendar.DAY_OF_MONTH);
+                break;
+            case YEAR:
+                totalDots = calendar.getActualMaximum(Calendar.DAY_OF_YEAR);
+                activeDots = calendar.get(Calendar.DAY_OF_YEAR);
+                break;
+        }
         invalidate();
     }
 
@@ -44,19 +63,26 @@ public class DoomsdayView extends View {
     protected void onDraw(Canvas canvas) {
         super.onDraw(canvas);
 
-        float width = getWidth();
-        float height = getHeight();
-        float centerX = width / 2f;
-        float centerY = height / 2f;
+        float w = getWidth();
+        float h = getHeight();
+        if (w == 0 || h == 0) return;
 
-        float dotRadius = 8f;
-        float spacing = 24f;
+        // Grid calculation
+        int cols = (store.getScale() == DoomsdayStore.Scale.YEAR) ? 20 : totalDots;
+        int rows = (int) Math.ceil((float) totalDots / cols);
 
-        float startX = centerX - ((dotCount - 1) * spacing) / 2f;
+        float spacing = w / (cols + 1);
+        float radius = Math.min(spacing / 3f, h / (rows * 2.5f));
 
-        for (int i = 0; i < dotCount; i++) {
+        for (int i = 0; i < totalDots; i++) {
+            int row = i / cols;
+            int col = i % cols;
+
+            float x = spacing + (col * spacing);
+            float y = (radius * 2) + (row * radius * 3);
+
             Paint p = (i < activeDots) ? paintActive : paintInactive;
-            canvas.drawCircle(startX + (i * spacing), centerY, dotRadius, p);
+            canvas.drawCircle(x, y, radius, p);
         }
     }
 }

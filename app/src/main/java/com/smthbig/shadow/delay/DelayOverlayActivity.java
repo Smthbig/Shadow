@@ -121,65 +121,35 @@ public final class DelayOverlayActivity extends AppCompatActivity {
         ExtensionEngine engine = new ExtensionEngine(this);
 
         /* ===================================================== */
-        /* ================= BLOCK MODE ========================== */
-        /* ===================================================== */
-
-        if (mode == MODE_BLOCK) {
-
-            title.setText("Blocked");
-            subtitle.setText(reason != null ? reason : "Daily limit reached");
-
-            timerText.setVisibility(View.GONE);
-            progress.setVisibility(View.GONE);
-            btnExtend.setVisibility(View.GONE);
-
-            btnCancel.setText("Close");
-            btnCancel.setOnClickListener(v -> finish());
-
-            return;
-        }
-
-        /* ===================================================== */
         /* ================= DELAY MODE ========================== */
         /* ===================================================== */
 
-        title.setText(usingExtension ? "Using Extension" : "Wait");
-        subtitle.setText(reason != null ? reason : "");
+        title.setText("Shadow Friction");
+        subtitle.setText(reason != null ? reason : "Wait or add extension");
 
         btnCancel.setOnClickListener(v -> finish());
 
         /* ---------- EXTENSION ---------- */
 
-        if (usingExtension) {
-            btnExtend.setVisibility(View.GONE);
-        } else {
+        btnExtend.setVisibility(View.VISIBLE);
 
-            btnExtend.setVisibility(View.VISIBLE);
+        btnExtend.setOnClickListener(v -> {
 
-            btnExtend.setOnClickListener(v -> {
+            if (launched) return; // safety
 
-                if (launched) return; // safety
+            long extra = TimeUnit.MINUTES.toMillis(5);
+            boolean granted = engine.grant(pkg, extra);
 
-                long extra = TimeUnit.MINUTES.toMillis(5);
-                boolean granted = engine.grant(pkg, extra);
+            if (granted) {
+                btnExtend.setText("Added +5m");
+                btnExtend.setEnabled(false); // One extension per intervention for focus
+                btnExtend.performHapticFeedback(HapticFeedbackConstants.CONFIRM);
 
-                if (granted) {
-
-                    btnExtend.setEnabled(false);
-                    btnExtend.setText("Added ✓");
-
-                    btnExtend.performHapticFeedback(HapticFeedbackConstants.CONFIRM);
-
-                    remainingMs += extra;
-
-                    restartTimer(pkg, progress, timerText);
-
-                } else {
-                    btnExtend.setEnabled(false);
-                    btnExtend.setText("Limit reached");
-                }
-            });
-        }
+                // Note: We DO NOT add extra to remainingMs here. 
+                // extra is for USAGE time (allowance), remainingMs is for FRICTION time (waiting).
+                // The timer will finish its 10s 'intentionality breath' and then launch.
+            }
+        });
 
         /* ---------- TIMER ---------- */
 
@@ -207,17 +177,20 @@ public final class DelayOverlayActivity extends AppCompatActivity {
 
             @Override
             public void onTick(long ms) {
+                if (launched) return;
                 remainingMs = ms;
 
                 int elapsed = (int) (safeMax - ms);
                 progress.setProgress(Math.max(0, elapsed));
 
-                timerText.setText((ms / 1000) + "s");
+                timerText.setText(Math.max(0, (ms / 1000)) + "s");
             }
 
             @Override
             public void onFinish() {
-                launchOnce(pkg);
+                if (!launched) {
+                    launchOnce(pkg);
+                }
             }
         }.start();
     }

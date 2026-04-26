@@ -62,9 +62,17 @@ public final class UsageMonitorService extends Service {
             // If it's a limited app AND it's out of both base and extension time
             if (limitMs > 0 && limitMs != AppLimitStore.UNLIMITED) {
                 
-                if (usedMs >= (limitMs + remainingExtensionMs)) {
-                    // ENFORCE: Pull user out of the app
-                    appLauncher.launch(DelayOverlayActivity.block(this, pkg, "Time's up for today"));
+                if (usedMs > (limitMs + remainingExtensionMs)) {
+                    // ENFORCE: Pull user out of the app into a high-friction delay screen
+                    appLauncher.launch(
+                            DelayOverlayActivity.delay(
+                                    this, 
+                                    pkg, 
+                                    10000, 
+                                    "Time's up. Add extension to continue.", 
+                                    false
+                            )
+                    );
                 }
             }
         }

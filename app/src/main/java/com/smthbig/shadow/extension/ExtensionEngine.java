@@ -11,13 +11,12 @@ public final class ExtensionEngine {
     private static final String PREF = "extension_store";
 
     private static final long MAX_EXTENSION_PER_DAY =
-            TimeUnit.MINUTES.toMillis(20);
+            TimeUnit.HOURS.toMillis(24); // Practically unlimited
 
     private static final long MAX_SINGLE_GRANT =
             TimeUnit.MINUTES.toMillis(10);
 
-    private static final long COOLDOWN_MS =
-            TimeUnit.MINUTES.toMillis(2);
+    private static final long COOLDOWN_MS = 0; // No cooldown
 
     private final SharedPreferences prefs;
 

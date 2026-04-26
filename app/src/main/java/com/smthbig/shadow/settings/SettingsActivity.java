@@ -52,6 +52,7 @@ public class SettingsActivity extends AppCompatActivity {
         items.add(new SettingsItem("Default Launcher", SettingsItem.TYPE_DEFAULT_LAUNCHER));
         items.add(new SettingsItem("Usage Access Permission", SettingsItem.TYPE_USAGE_ACCESS));
         items.add(new SettingsItem("Reset Today's Extensions", SettingsItem.TYPE_RESET_USAGE));
+        items.add(new SettingsItem("Doomsday Engine", SettingsItem.TYPE_DOOMSDAY_CONFIG));
     }
 
     /* ---------- LIST ---------- */

@@ -52,8 +52,9 @@ public final class TimePolicyEngine {
             return Decision.delay(extDelay, "Using limited extension time", true);
         }
 
-        // 4. BLOCK
-        return Decision.block("Daily limit reached");
+        // 4. OVER LIMIT (NO EXTENSION YET)
+        // Instead of blocking, show a high-friction delay screen that allows extension
+        return Decision.delay(10000, "Limit reached. Add extension to continue.", false);
     }
 
     /* ========================================================= */

@@ -7,6 +7,7 @@ public class SettingsItem {
     public static final int TYPE_DEFAULT_LAUNCHER = 3;
     public static final int TYPE_USAGE_ACCESS = 4;
     public static final int TYPE_RESET_USAGE = 5;
+    public static final int TYPE_DOOMSDAY_CONFIG = 6;
 
     private final String title;
     private final int type;

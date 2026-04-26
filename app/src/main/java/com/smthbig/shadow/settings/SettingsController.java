@@ -40,10 +40,30 @@ public class SettingsController {
             case SettingsItem.TYPE_RESET_USAGE:
                 resetUsage(activity);
                 break;
+
+            case SettingsItem.TYPE_DOOMSDAY_CONFIG:
+                openDoomsdayConfig(activity);
+                break;
         }
     }
 
     /* ---------- NAVIGATION ---------- */
+...
+    private void openDoomsdayConfig(Activity activity) {
+        String[] scales = {"Week (7 dots)", "Month (31 dots)", "Year (365 dots)"};
+        DoomsdayStore store = new DoomsdayStore(activity);
+
+        new MaterialAlertDialogBuilder(activity)
+                .setTitle("Doomsday Scale")
+                .setItems(scales, (d, which) -> {
+                    if (which == 0) store.setScale(DoomsdayStore.Scale.WEEK);
+                    if (which == 1) store.setScale(DoomsdayStore.Scale.MONTH);
+                    if (which == 2) store.setScale(DoomsdayStore.Scale.YEAR);
+                    
+                    android.widget.Toast.makeText(activity, "Scale updated. Restart launcher to apply.", android.widget.Toast.LENGTH_LONG).show();
+                })
+                .show();
+    }
 
     private void openAppLimits(Activity activity) {
         activity.startActivity(
