@@ -1,83 +1,51 @@
 <?xml version="1.0" encoding="utf-8"?>
-<FrameLayout
-    xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:app="http://schemas.android.com/apk/res-auto"
-    android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    android:background="@android:color/transparent">
+<merge xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
 
-
-    <!-- BOTTOM INTENT BAR -->
-    <com.google.android.material.card.MaterialCardView
-        android:id="@+id/bar"
+    <!-- The parent IntentBarView (MaterialCardView) handles the background and card properties -->
+    
+    <androidx.constraintlayout.widget.ConstraintLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_gravity="bottom"
-        android:layout_marginStart="16dp"
-        android:layout_marginEnd="16dp"
-        android:layout_marginBottom="28dp"
-        app:cardCornerRadius="18dp"
-        app:cardElevation="12dp"
-        app:cardBackgroundColor="?attr/colorSurface"
-        app:strokeColor="?attr/colorOutline"
-        app:strokeWidth="1dp">
+        android:padding="16dp">
 
-        <androidx.constraintlayout.widget.ConstraintLayout
+        <!-- Suggestions -->
+        <androidx.recyclerview.widget.RecyclerView
+            android:id="@+id/suggestions_list"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:padding="12dp">
+            android:layout_marginBottom="8dp"
+            android:visibility="gone"
+            app:layout_constraintBottom_toTopOf="@id/input_layout"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent" />
 
-            <!-- Suggestions -->
-            <androidx.recyclerview.widget.RecyclerView
-                android:id="@+id/suggestions_list"
+        <!-- Input -->
+        <com.google.android.material.textfield.TextInputLayout
+            android:id="@+id/input_layout"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            app:boxBackgroundMode="none"
+            app:hintEnabled="false"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintBottom_toBottomOf="parent">
+
+            <com.google.android.material.textfield.TextInputEditText
+                android:id="@+id/input"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginBottom="8dp"
-                android:visibility="gone"
-                app:layout_constraintBottom_toTopOf="@id/input_layout"
-                app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintEnd_toEndOf="parent" />
+                android:hint="Type app…"
+                android:textColor="?attr/colorOnSurface"
+                android:textColorHint="?attr/colorOnSurfaceVariant"
+                android:textSize="18sp"
+                android:singleLine="true"
+                android:inputType="text"
+                android:background="@null"
+                android:paddingVertical="10dp" />
+        </com.google.android.material.textfield.TextInputLayout>
 
-            <!-- Input -->
-            <com.google.android.material.textfield.TextInputLayout
-                android:id="@+id/input_layout"
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                app:boxBackgroundMode="none"
-                app:hintEnabled="false"
-                app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintEnd_toEndOf="parent"
-                app:layout_constraintTop_toTopOf="parent"
-                app:layout_constraintBottom_toBottomOf="parent">
+    </androidx.constraintlayout.widget.ConstraintLayout>
 
-                <com.google.android.material.textfield.TextInputEditText
-                    android:id="@+id/input"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:hint="Type app…"
-                    android:textColor="?attr/colorOnSurface"
-                    android:textColorHint="?attr/colorOnSurfaceVariant"
-                    android:textSize="18sp"
-                    android:singleLine="true"
-                    android:inputType="text"
-                    android:background="@null"
-                    android:paddingVertical="10dp" />
-            </com.google.android.material.textfield.TextInputLayout>
-
-        </androidx.constraintlayout.widget.ConstraintLayout>
-
-    </com.google.android.material.card.MaterialCardView>
-    <!-- SETTINGS BUTTON (TOP RIGHT) -->
-    <ImageView
-        android:id="@+id/settings_btn"
-        android:layout_width="45dp"
-        android:layout_height="45dp"
-        android:padding="10dp"
-        android:layout_marginTop="20dp"
-        android:layout_marginEnd="16dp"
-        android:background="?attr/selectableItemBackgroundBorderless"
-        android:src="@drawable/ic_settings_gear"
-        app:tint="?attr/colorOnSurface"
-        android:layout_gravity="top|end" />
-
-</FrameLayout>
+</merge>

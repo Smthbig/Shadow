@@ -125,7 +125,7 @@ public final class DelayOverlayActivity extends AppCompatActivity {
         /* ===================================================== */
 
         title.setText("Shadow Friction");
-        subtitle.setText(reason != null ? reason : "Wait or add extension");
+        subtitle.setText(getRandomQuote());
 
         btnCancel.setOnClickListener(v -> finish());
 
@@ -142,12 +142,8 @@ public final class DelayOverlayActivity extends AppCompatActivity {
 
             if (granted) {
                 btnExtend.setText("Added +5m");
-                btnExtend.setEnabled(false); // One extension per intervention for focus
+                btnExtend.setEnabled(false); // One extension per intervention
                 btnExtend.performHapticFeedback(HapticFeedbackConstants.CONFIRM);
-
-                // Note: We DO NOT add extra to remainingMs here. 
-                // extra is for USAGE time (allowance), remainingMs is for FRICTION time (waiting).
-                // The timer will finish its 10s 'intentionality breath' and then launch.
             }
         });
 
@@ -160,6 +156,22 @@ public final class DelayOverlayActivity extends AppCompatActivity {
 
         remainingMs = delay;
         startTimer(pkg, progress, timerText);
+    }
+
+    private String getRandomQuote() {
+        String[] quotes = {
+            "Is this necessary?",
+            "Focus is a choice.",
+            "Stay intentional.",
+            "One breath of clarity.",
+            "Mind over impulse.",
+            "Respond, don't react.",
+            "Silence the noise.",
+            "The best way out is through.",
+            "You are the master of your time.",
+            "Inhale purpose, exhale distraction."
+        };
+        return quotes[(int) (Math.random() * quotes.length)];
     }
 
     /* ========================================================= */

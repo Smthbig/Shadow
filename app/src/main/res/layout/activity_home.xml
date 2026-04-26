@@ -1,12 +1,18 @@
 <?xml version="1.0" encoding="utf-8"?>
 <FrameLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:id="@+id/root"
     android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    android:background="@drawable/bg_shadow_gradient">
+    android:layout_height="match_parent">
 
-    <!-- ================= CONTENT (BLUR TARGET) ================= -->
+    <!-- 1. BACKGROUND -->
+    <View
+        android:id="@+id/background_layer"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent" />
+
+    <!-- 2. CONTENT (Can be blurred) -->
     <FrameLayout
         android:id="@+id/content_container"
         android:layout_width="match_parent"
@@ -42,34 +48,53 @@
             <com.smthbig.shadow.launcher.home.DoomsdayView
                 android:id="@+id/doomsday"
                 android:layout_width="match_parent"
-                android:layout_height="40dp"
+                android:layout_height="wrap_content"
                 android:layout_marginTop="24dp" />
 
         </LinearLayout>
 
-        <!-- Optional subtle depth -->
         <View
             android:id="@+id/base_overlay"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             android:background="?attr/colorSurface"
             android:alpha="0.02" />
-
     </FrameLayout>
 
-    <!-- ================= DIM / GLASS ================= -->
+    <!-- 3. DIM LAYER (Only visible during search) -->
     <View
         android:id="@+id/blur_overlay"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
+        android:background="#99000000"
         android:alpha="0"
-        android:visibility="gone" />
+        android:visibility="gone"
+        android:elevation="10dp" />
 
-    <!-- ================= OVERLAY (TOP LAYER) ================= -->
-    <FrameLayout
-        android:id="@+id/overlay_container"
+    <!-- 4. SETTINGS BUTTON (Top Layer) -->
+    <ImageView
+        android:id="@+id/settings_btn"
+        android:layout_width="56dp"
+        android:layout_height="56dp"
+        android:padding="16dp"
+        android:layout_marginTop="24dp"
+        android:layout_marginEnd="16dp"
+        android:background="?attr/selectableItemBackgroundBorderless"
+        android:src="@drawable/ic_settings_gear"
+        app:tint="?attr/colorOnSurface"
+        android:layout_gravity="top|end"
+        android:elevation="20dp" />
+
+    <!-- 5. INTENT BAR (Fixed at bottom) -->
+    <com.smthbig.shadow.launcher.home.IntentBarView
+        android:id="@+id/intent_bar"
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:background="@android:color/transparent" />
+        android:layout_height="wrap_content"
+        android:layout_gravity="bottom"
+        android:layout_marginStart="16dp"
+        android:layout_marginEnd="16dp"
+        android:layout_marginBottom="28dp"
+        android:visibility="gone"
+        android:elevation="30dp" />
 
 </FrameLayout>

@@ -6,6 +6,7 @@ import android.os.Handler;
 import android.os.IBinder;
 import android.os.Looper;
 
+import com.smthbig.shadow.data.FeatureStore;
 import com.smthbig.shadow.data.limits.AppLimitStore;
 import com.smthbig.shadow.delay.DelayOverlayActivity;
 import com.smthbig.shadow.extension.ExtensionEngine;
@@ -28,6 +29,7 @@ public final class UsageMonitorService extends Service {
     private AppLimitStore limitStore;
     private ExtensionEngine extensionEngine;
     private AppLauncher appLauncher;
+    private FeatureStore featureStore;
 
     @Override
     public void onCreate() {
@@ -37,6 +39,7 @@ public final class UsageMonitorService extends Service {
         limitStore = new AppLimitStore(this);
         extensionEngine = new ExtensionEngine(this);
         appLauncher = new AppLauncher(this);
+        featureStore = new FeatureStore(this);
 
         handler = new Handler(Looper.getMainLooper());
         monitorTask = this::checkForegroundApp;
@@ -55,6 +58,12 @@ public final class UsageMonitorService extends Service {
 
         if (pkg != null && !pkg.equals(getPackageName())) {
             
+            // 🚀 BUG FIX: Respect Whitelist
+            if (featureStore.isWhitelisted(pkg)) {
+                handler.postDelayed(monitorTask, POLL_INTERVAL);
+                return;
+            }
+
             long usedMs = usageTracker.getTodayUsageMs(pkg);
             long limitMs = limitStore.getLimitMs(pkg);
             long remainingExtensionMs = extensionEngine.getRemainingMs(pkg);

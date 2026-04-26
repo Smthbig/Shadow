@@ -45,6 +45,7 @@ public class DoomsdayView extends View {
         switch (scale) {
             case WEEK:
                 totalDots = 7;
+                // Work-week logic: Dots fill as week passes
                 activeDots = calendar.get(Calendar.DAY_OF_WEEK);
                 break;
             case MONTH:
@@ -55,8 +56,31 @@ public class DoomsdayView extends View {
                 totalDots = calendar.getActualMaximum(Calendar.DAY_OF_YEAR);
                 activeDots = calendar.get(Calendar.DAY_OF_YEAR);
                 break;
+            case CUSTOM:
+                totalDots = store.getCustomDays();
+                activeDots = 1; // Basic placeholder for custom progress
+                break;
         }
         invalidate();
+        requestLayout();
+    }
+
+    @Override
+    protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec) {
+        int width = MeasureSpec.getSize(widthMeasureSpec);
+        if (width == 0) {
+            setMeasuredDimension(0, 0);
+            return;
+        }
+        
+        int cols = (totalDots > 14) ? 20 : totalDots;
+        int rows = (int) Math.ceil((float) totalDots / cols);
+
+        float spacing = (float) width / (cols + 1);
+        float radius = spacing / 3.5f;
+        
+        int desiredHeight = (int) ((radius * 3) + (rows * radius * 3.5f));
+        setMeasuredDimension(width, desiredHeight);
     }
 
     @Override
@@ -64,22 +88,19 @@ public class DoomsdayView extends View {
         super.onDraw(canvas);
 
         float w = getWidth();
-        float h = getHeight();
-        if (w == 0 || h == 0) return;
+        if (w == 0 || totalDots == 0) return;
 
-        // Grid calculation
-        int cols = (store.getScale() == DoomsdayStore.Scale.YEAR) ? 20 : totalDots;
-        int rows = (int) Math.ceil((float) totalDots / cols);
+        int cols = (totalDots > 14) ? 20 : totalDots;
 
         float spacing = w / (cols + 1);
-        float radius = Math.min(spacing / 3f, h / (rows * 2.5f));
+        float radius = spacing / 3.5f;
 
         for (int i = 0; i < totalDots; i++) {
             int row = i / cols;
             int col = i % cols;
 
             float x = spacing + (col * spacing);
-            float y = (radius * 2) + (row * radius * 3);
+            float y = (radius * 3) + (row * radius * 3.5f);
 
             Paint p = (i < activeDots) ? paintActive : paintInactive;
             canvas.drawCircle(x, y, radius, p);

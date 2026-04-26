@@ -12,29 +12,37 @@ public final class ThemeManager {
     /* ---------- APPLY (PER ACTIVITY) ---------- */
 
     public static void apply(Activity activity) {
-        String mode = get(activity);
-        ThemeApplier.apply(activity, mode);
+        String mode = ThemeStore.getTheme(activity);
+        String background = ThemeStore.getBackground(activity);
+        
+        ThemeApplier.apply(activity, mode, background);
+        WallpaperApplier.apply(activity);
     }
 
     /* ---------- APPLY GLOBAL (APP START) ---------- */
 
     public static void applyGlobal(Context context) {
-        String mode = get(context);
-
-        AppCompatDelegate.setDefaultNightMode(
-                ThemeConfig.getNightMode(mode)
-        );
+        String mode = ThemeStore.getTheme(context);
+        AppCompatDelegate.setDefaultNightMode(ThemeConfig.getNightMode(mode));
     }
 
     /* ---------- SET ---------- */
 
-    public static void set(Context context, String mode) {
-        ThemeStore.set(context, mode);
+    public static void setTheme(Context context, String mode) {
+        ThemeStore.setTheme(context, mode);
+    }
+
+    public static void setBackground(Context context, String type) {
+        ThemeStore.setBackground(context, type);
     }
 
     /* ---------- GET ---------- */
 
-    public static String get(Context context) {
-        return ThemeStore.get(context);
+    public static String getTheme(Context context) {
+        return ThemeStore.getTheme(context);
+    }
+
+    public static String getBackground(Context context) {
+        return ThemeStore.getBackground(context);
     }
 }

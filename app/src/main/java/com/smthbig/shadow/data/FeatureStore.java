@@ -11,16 +11,27 @@ public final class FeatureStore {
     private static final String PREF = "shadow_features";
     private final SharedPreferences prefs;
 
+    // Background Types
+    public static final String BG_DEFAULT = "default";
+    public static final String BG_DISTORTED = "distorted";
+    public static final String BG_MESH = "mesh";
+    public static final String BG_AURORA = "aurora";
+    public static final String BG_SYSTEM_WALLPAPER = "system_wallpaper";
+
     public FeatureStore(Context context) {
         this.prefs = context.getApplicationContext().getSharedPreferences(PREF, Context.MODE_PRIVATE);
     }
 
-    public boolean isWallpaperEnabled() {
-        return prefs.getBoolean("wallpaper_enabled", false);
+    public String getBackgroundType() {
+        return prefs.getString("background_type", BG_DEFAULT);
     }
 
-    public void setWallpaperEnabled(boolean enabled) {
-        prefs.edit().putBoolean("wallpaper_enabled", enabled).apply();
+    public void setBackgroundType(String type) {
+        prefs.edit().putString("background_type", type).apply();
+    }
+
+    public boolean isWallpaperEnabled() {
+        return BG_SYSTEM_WALLPAPER.equals(getBackgroundType());
     }
 
     public boolean isDeepFocusEnabled() {

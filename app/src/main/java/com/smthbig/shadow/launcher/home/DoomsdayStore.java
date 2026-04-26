@@ -2,13 +2,12 @@ package com.smthbig.shadow.launcher.home;
 
 import android.content.Context;
 import android.content.SharedPreferences;
-import android.graphics.Color;
 
 public final class DoomsdayStore {
 
     private static final String PREF = "doomsday_settings";
     
-    public enum Scale { WEEK, MONTH, YEAR }
+    public enum Scale { WEEK, MONTH, YEAR, CUSTOM }
 
     private final SharedPreferences prefs;
 
@@ -18,11 +17,23 @@ public final class DoomsdayStore {
 
     public Scale getScale() {
         String s = prefs.getString("scale", Scale.WEEK.name());
-        return Scale.valueOf(s);
+        try {
+            return Scale.valueOf(s);
+        } catch (Exception e) {
+            return Scale.WEEK;
+        }
     }
 
     public void setScale(Scale scale) {
         prefs.edit().putString("scale", scale.name()).apply();
+    }
+
+    public int getCustomDays() {
+        return prefs.getInt("custom_days", 100);
+    }
+
+    public void setCustomDays(int days) {
+        prefs.edit().putInt("custom_days", Math.max(1, days)).apply();
     }
 
     public int getActiveColor() {

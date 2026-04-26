@@ -4,37 +4,34 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:id="@+id/root"
     android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    android:background="@drawable/bg_shadow_gradient"
-    android:fitsSystemWindows="false">
+    android:layout_height="match_parent">
 
-    <!-- ===== EDGE SAFE CONTAINER ===== -->
+    <!-- 1. Background -->
+    <View
+        android:id="@+id/background_layer"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:background="@drawable/bg_shadow_gradient" />
+
+    <!-- 2. Content -->
     <FrameLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:padding="16dp"
         android:clipToPadding="false">
 
-        <!-- ===== TONAL GLASS OVERLAY ===== -->
-        <View
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:background="?attr/colorSurface"
-            android:alpha="0.06"/>
-
-        <!-- ===== CENTER CARD ===== -->
+        <!-- Center Card -->
         <com.google.android.material.card.MaterialCardView
             android:id="@+id/card"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_gravity="center"
             android:layout_margin="8dp"
-
             app:cardCornerRadius="28dp"
             app:cardElevation="0dp"
             app:strokeWidth="1dp"
             app:strokeColor="?attr/colorOutline"
-            app:cardBackgroundColor="?attr/colorSurfaceContainer">
+            app:cardBackgroundColor="?attr/colorSurface">
 
             <LinearLayout
                 android:layout_width="match_parent"
@@ -43,7 +40,7 @@
                 android:gravity="center_horizontal"
                 android:padding="28dp">
 
-                <!-- ===== TITLE ===== -->
+                <!-- Title -->
                 <com.google.android.material.textview.MaterialTextView
                     android:id="@+id/title"
                     style="@style/TextAppearance.Material3.TitleLarge"
@@ -54,7 +51,7 @@
                     android:textColor="?attr/colorOnSurface"
                     android:layout_marginBottom="10dp"/>
 
-                <!-- ===== STATUS ===== -->
+                <!-- Status -->
                 <com.google.android.material.textview.MaterialTextView
                     android:id="@+id/status_text"
                     style="@style/TextAppearance.Material3.BodyMedium"
@@ -66,7 +63,7 @@
                     android:lineSpacingExtra="4dp"
                     android:paddingHorizontal="8dp"/>
 
-                <!-- ===== ACTIONS ===== -->
+                <!-- Actions -->
                 <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
@@ -74,24 +71,20 @@
                     android:layout_marginTop="28dp"
                     android:gravity="center">
 
-                    <!-- PRIMARY ACTION -->
                     <com.google.android.material.button.MaterialButton
                         android:id="@+id/action_button"
                         style="@style/Widget.Material3.Button"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:text="Continue"
-                        android:textAllCaps="false"
                         app:cornerRadius="18dp"/>
 
-                    <!-- SECONDARY (SKIP) -->
                     <com.google.android.material.button.MaterialButton
                         android:id="@+id/skip_button"
                         style="@style/Widget.Material3.Button.TextButton"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:text="Skip for now"
-                        android:textAllCaps="false"
                         android:layout_marginTop="12dp"/>
 
                 </LinearLayout>

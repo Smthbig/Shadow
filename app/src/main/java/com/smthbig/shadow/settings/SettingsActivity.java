@@ -53,6 +53,9 @@ public class SettingsActivity extends AppCompatActivity {
         items.add(new SettingsItem("Usage Access Permission", SettingsItem.TYPE_USAGE_ACCESS));
         items.add(new SettingsItem("Reset Today's Extensions", SettingsItem.TYPE_RESET_USAGE));
         items.add(new SettingsItem("Doomsday Engine", SettingsItem.TYPE_DOOMSDAY_CONFIG));
+        items.add(new SettingsItem("Shadow Backgrounds", SettingsItem.TYPE_BACKGROUND_GALLERY));
+        items.add(new SettingsItem("Deep Focus Mode", SettingsItem.TYPE_DEEP_FOCUS));
+        items.add(new SettingsItem("Edit Whitelist", SettingsItem.TYPE_WHITELIST));
     }
 
     /* ---------- LIST ---------- */
@@ -131,7 +134,7 @@ public class SettingsActivity extends AppCompatActivity {
     /* ---------- THEME DIALOG ---------- */
 
     public void openThemeDialog() {
-        String[] names = {"System Default", "Light", "Dark", "Dynamic", "Shadow", "Glass", "Glass Light", "Glass Dark"};
+        String[] names = {"System Default", "Light", "Dark", "Dynamic", "Shadow", "Glass", "Transparent Light", "Transparent Dark"};
 
         String[] values = {
             ThemeMode.SYSTEM,
@@ -140,8 +143,8 @@ public class SettingsActivity extends AppCompatActivity {
             ThemeMode.DYNAMIC,
             ThemeMode.SHADOW,
             ThemeMode.GLASS,
-            ThemeMode.GLASS_LIGHT,
-            ThemeMode.GLASS_DARK
+            ThemeMode.TRANSPARENT_LIGHT,
+            ThemeMode.TRANSPARENT_DARK
         };
 
         String current = controller.getCurrentTheme(this);

@@ -8,6 +8,10 @@ public class SettingsItem {
     public static final int TYPE_USAGE_ACCESS = 4;
     public static final int TYPE_RESET_USAGE = 5;
     public static final int TYPE_DOOMSDAY_CONFIG = 6;
+    public static final int TYPE_WALLPAPER_MODE = 7;
+    public static final int TYPE_DEEP_FOCUS = 8;
+    public static final int TYPE_WHITELIST = 9;
+    public static final int TYPE_BACKGROUND_GALLERY = 10;
 
     private final String title;
     private final int type;

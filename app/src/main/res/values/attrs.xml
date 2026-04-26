@@ -3,5 +3,5 @@
     <attr name="shadowGlass" format="color"/>
     <attr name="shadowGlassStrong" format="color"/>
     <attr name="shadowGlassSoft" format="color"/>
-
-</resources>
+    <attr name="shadowGlow" format="color"/>
+    </resources>

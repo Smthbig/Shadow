@@ -6,47 +6,60 @@ import android.content.pm.PackageManager;
 import android.content.pm.ResolveInfo;
 import android.text.Editable;
 import android.text.TextWatcher;
-import android.view.KeyEvent;
+import android.util.AttributeSet;
 import android.view.LayoutInflater;
-import android.view.View;
 import android.view.inputmethod.EditorInfo;
 import android.view.inputmethod.InputMethodManager;
-import android.widget.FrameLayout;
 
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.google.android.material.card.MaterialCardView;
 import com.google.android.material.textfield.TextInputEditText;
 import com.smthbig.shadow.R;
 
 import java.util.ArrayList;
 import java.util.List;
 
-public class IntentBarView extends FrameLayout {
+public class IntentBarView extends MaterialCardView {
 
     public interface Callback {
         void onIntentEntered(String text);
         void onDismiss();
-        void onSettingsClick();
     }
 
     private TextInputEditText input;
-    private View settingsBtn;
     private RecyclerView suggestionsList;
     private AppSuggestionAdapter adapter;
     private List<ResolveInfo> allApps = new ArrayList<>();
     private List<ResolveInfo> filteredApps = new ArrayList<>();
+    private Callback callback;
 
-    public IntentBarView(Context context, Callback callback) {
-        super(context);
-        init(context, callback);
+    public IntentBarView(@NonNull Context context, @Nullable AttributeSet attrs) {
+        super(context, attrs);
+        init(context);
     }
 
-    private void init(Context context, Callback callback) {
+    public void setCallback(Callback callback) {
+        this.callback = callback;
+    }
+
+    private void init(Context context) {
+        // Enforce Card Styling
+        setRadius(dpToPx(24));
+        setCardElevation(dpToPx(12));
+        setStrokeColor(getContext().getColor(R.color.md_outline));
+        setStrokeWidth(1);
+        
+        // Use the glassy background directly on the card
+        setBackgroundResource(R.drawable.bg_blur_overlay);
+        setCardBackgroundColor(android.graphics.Color.TRANSPARENT);
+
         LayoutInflater.from(context).inflate(R.layout.view_intent_bar, this, true);
 
         input = findViewById(R.id.input);
-        settingsBtn = findViewById(R.id.settings_btn);
         suggestionsList = findViewById(R.id.suggestions_list);
 
         loadApps();
@@ -56,24 +69,16 @@ public class IntentBarView extends FrameLayout {
                     new LinearLayoutManager(getContext(), LinearLayoutManager.HORIZONTAL, false));
             adapter = new AppSuggestionAdapter(getContext(), filteredApps, pkg -> {
                 hideKeyboard();
-                callback.onIntentEntered(pkg);
+                if (callback != null) callback.onIntentEntered(pkg);
             });
             suggestionsList.setAdapter(adapter);
             suggestionsList.setVisibility(GONE);
         }
 
-        setupInput(callback);
-        setupSettings(callback);
+        setupInput();
     }
 
-    private void loadApps() {
-        PackageManager pm = getContext().getPackageManager();
-        Intent intent = new Intent(Intent.ACTION_MAIN, null);
-        intent.addCategory(Intent.CATEGORY_LAUNCHER);
-        allApps = pm.queryIntentActivities(intent, 0);
-    }
-
-    private void setupInput(Callback callback) {
+    private void setupInput() {
         if (input == null) return;
 
         input.addTextChangedListener(new TextWatcher() {
@@ -90,29 +95,26 @@ public class IntentBarView extends FrameLayout {
         });
 
         input.setOnEditorActionListener((v, actionId, event) -> {
-            boolean isEnter = event != null &&
-                    event.getKeyCode() == KeyEvent.KEYCODE_ENTER &&
-                    event.getAction() == KeyEvent.ACTION_DOWN;
-
-            if (actionId == EditorInfo.IME_ACTION_DONE ||
-                    actionId == EditorInfo.IME_ACTION_SEARCH ||
-                    actionId == EditorInfo.IME_ACTION_GO ||
-                    isEnter) {
-                submit(callback);
+            if (actionId == EditorInfo.IME_ACTION_SEARCH || actionId == EditorInfo.IME_ACTION_DONE) {
+                submit();
                 return true;
             }
             return false;
         });
+    }
 
-        input.post(() -> {
-            if (!isAttachedToWindow()) return;
+    public void focus() {
+        if (input != null) {
+            input.setText("");
             input.requestFocus();
-            InputMethodManager imm = (InputMethodManager) getContext()
-                    .getSystemService(Context.INPUT_METHOD_SERVICE);
-            if (imm != null) {
-                imm.showSoftInput(input, InputMethodManager.SHOW_IMPLICIT);
-            }
-        });
+            InputMethodManager imm = (InputMethodManager) getContext().getSystemService(Context.INPUT_METHOD_SERVICE);
+            if (imm != null) imm.showSoftInput(input, InputMethodManager.SHOW_IMPLICIT);
+        }
+    }
+
+    public void clearFocusAndHide() {
+        hideKeyboard();
+        if (input != null) input.clearFocus();
     }
 
     private void filterApps(String query) {
@@ -137,27 +139,28 @@ public class IntentBarView extends FrameLayout {
         }
     }
 
-    private void submit(Callback callback) {
-        if (callback == null) return;
+    private void loadApps() {
+        PackageManager pm = getContext().getPackageManager();
+        Intent intent = new Intent(Intent.ACTION_MAIN, null);
+        intent.addCategory(Intent.CATEGORY_LAUNCHER);
+        allApps = pm.queryIntentActivities(intent, 0);
+    }
+
+    private void submit() {
         String text = (input != null && input.getText() != null) ? input.getText().toString().trim() : "";
-        hideKeyboard();
-        if (!text.isEmpty()) {
+        if (!text.isEmpty() && callback != null) {
             callback.onIntentEntered(text);
-        } else {
+        } else if (callback != null) {
             callback.onDismiss();
         }
     }
 
-    private void setupSettings(Callback callback) {
-        if (settingsBtn == null || callback == null) return;
-        settingsBtn.setOnClickListener(v -> callback.onSettingsClick());
+    private void hideKeyboard() {
+        InputMethodManager imm = (InputMethodManager) getContext().getSystemService(Context.INPUT_METHOD_SERVICE);
+        if (imm != null && input != null) imm.hideSoftInputFromWindow(input.getWindowToken(), 0);
     }
 
-    private void hideKeyboard() {
-        InputMethodManager imm = (InputMethodManager) getContext()
-                .getSystemService(Context.INPUT_METHOD_SERVICE);
-        if (imm != null && input != null) {
-            imm.hideSoftInputFromWindow(input.getWindowToken(), 0);
-        }
+    private int dpToPx(int dp) {
+        return (int) (dp * getResources().getDisplayMetrics().density);
     }
 }

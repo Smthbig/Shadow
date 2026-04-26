@@ -1,243 +1,181 @@
 package com.smthbig.shadow.launcher.home;
 
+import android.app.Activity;
 import android.content.Intent;
 import android.graphics.RenderEffect;
 import android.graphics.Shader;
 import android.os.Build;
 import android.os.Bundle;
-import android.view.Gravity;
-import android.view.MotionEvent;
 import android.view.View;
 import android.view.Window;
+import android.widget.FrameLayout;
+import android.widget.ImageView;
 
 import androidx.activity.OnBackPressedCallback;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.view.WindowCompat;
 import androidx.core.view.WindowInsetsControllerCompat;
 
-import android.widget.FrameLayout;
-
 import com.smthbig.shadow.R;
+import com.smthbig.shadow.data.FeatureStore;
+import com.smthbig.shadow.launcher.core.LauncherController;
 import com.smthbig.shadow.settings.SettingsActivity;
 import com.smthbig.shadow.theme.ThemeManager;
-import com.smthbig.shadow.launcher.core.LauncherController;
 
 public class HomeActivity extends AppCompatActivity {
 
     private LauncherController launcherController;
+    private FeatureStore featureStore;
 
     private IntentBarView intentBar;
-
-    //  NEW LAYERS
     private FrameLayout contentContainer;
-    private FrameLayout overlayContainer;
     private View blurOverlay;
+    private View backgroundLayer;
     private DoomsdayView doomsdayView;
+    private ImageView settingsBtn;
 
-    private float downY;
     private boolean isAnimating = false;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
+        featureStore = new FeatureStore(this);
         ThemeManager.apply(this);
         super.onCreate(savedInstanceState);
 
         prepareWindow();
-
         launcherController = new LauncherController(this);
 
         setContentView(R.layout.activity_home);
 
-        // bind correct layers
         contentContainer = findViewById(R.id.content_container);
-        overlayContainer = findViewById(R.id.overlay_container);
         blurOverlay = findViewById(R.id.blur_overlay);
+        backgroundLayer = findViewById(R.id.background_layer);
         doomsdayView = findViewById(R.id.doomsday);
+        settingsBtn = findViewById(R.id.settings_btn);
+        intentBar = findViewById(R.id.intent_bar);
+
+        applyBackgroundConfig();
 
         if (doomsdayView != null) {
-            doomsdayView.updateTime();
+            doomsdayView.updateState();
         }
 
-        setupTap(contentContainer);
+        if (settingsBtn != null) {
+            settingsBtn.setOnClickListener(v -> openSettings());
+        }
+
+        if (contentContainer != null) {
+            contentContainer.setOnClickListener(v -> showSearch());
+        }
+
+        if (blurOverlay != null) {
+            blurOverlay.setOnClickListener(v -> hideSearch());
+        }
+
+        setupIntentBar();
         setupBackHandler();
     }
 
-    /* ========================================================= */
-    /* ================= WINDOW ================================ */
-    /* ========================================================= */
+    private void setupIntentBar() {
+        if (intentBar == null) return;
+        intentBar.setCallback(new IntentBarView.Callback() {
+            @Override
+            public void onIntentEntered(String text) {
+                hideSearch();
+                launcherController.handleIntentText(text);
+            }
+
+            @Override
+            public void onDismiss() {
+                hideSearch();
+            }
+        });
+    }
+
+    private void showSearch() {
+        if (isAnimating || intentBar == null || intentBar.getVisibility() == View.VISIBLE) return;
+        isAnimating = true;
+
+        applyBlur(12f);
+
+        intentBar.setVisibility(View.VISIBLE);
+        intentBar.setAlpha(0f);
+        intentBar.setTranslationY(dpToPx(40));
+
+        blurOverlay.setVisibility(View.VISIBLE);
+        blurOverlay.setAlpha(0f);
+
+        blurOverlay.animate().alpha(1f).setDuration(250).start();
+        intentBar.animate()
+                .alpha(1f)
+                .translationY(0)
+                .setDuration(300)
+                .withEndAction(() -> {
+                    isAnimating = false;
+                    intentBar.focus();
+                })
+                .start();
+    }
+
+    private void hideSearch() {
+        if (isAnimating || intentBar == null || intentBar.getVisibility() != View.VISIBLE) return;
+        isAnimating = true;
+
+        intentBar.clearFocusAndHide();
+
+        blurOverlay.animate().alpha(0f).setDuration(200).start();
+        intentBar.animate()
+                .alpha(0f)
+                .translationY(dpToPx(40))
+                .setDuration(250)
+                .withEndAction(() -> {
+                    intentBar.setVisibility(View.GONE);
+                    blurOverlay.setVisibility(View.GONE);
+                    clearBlur();
+                    isAnimating = false;
+                })
+                .start();
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        if (doomsdayView != null) {
+            doomsdayView.updateState();
+        }
+    }
+
+    private void applyBackgroundConfig() {
+        if (backgroundLayer == null) return;
+        ThemeManager.apply(this); // Refreshes both theme and wallpaper
+    }
 
     private void prepareWindow() {
         Window window = getWindow();
-
         WindowCompat.setDecorFitsSystemWindows(window, false);
-
-        WindowInsetsControllerCompat controller =
-                new WindowInsetsControllerCompat(window, window.getDecorView());
-
+        WindowInsetsControllerCompat controller = new WindowInsetsControllerCompat(window, window.getDecorView());
         controller.hide(android.view.WindowInsets.Type.systemBars());
-        controller.setSystemBarsBehavior(
-                WindowInsetsControllerCompat.BEHAVIOR_SHOW_TRANSIENT_BARS_BY_SWIPE);
+        controller.setSystemBarsBehavior(WindowInsetsControllerCompat.BEHAVIOR_SHOW_TRANSIENT_BARS_BY_SWIPE);
     }
-
-    /* ========================================================= */
-    /* ================= BACK ================================ */
-    /* ========================================================= */
 
     private void setupBackHandler() {
-        getOnBackPressedDispatcher()
-                .addCallback(
-                        this,
-                        new OnBackPressedCallback(true) {
-                            @Override
-                            public void handleOnBackPressed() {
-                                if (intentBar != null) {
-                                    hideIntentBar();
-                                }
-                            }
-                        });
+        getOnBackPressedDispatcher().addCallback(this, new OnBackPressedCallback(true) {
+            @Override
+            public void handleOnBackPressed() {
+                if (intentBar != null && intentBar.getVisibility() == View.VISIBLE) {
+                    hideSearch();
+                }
+            }
+        });
     }
-
-    /* ========================================================= */
-    /* ================= TAP ================================ */
-    /* ========================================================= */
-
-    private void setupTap(View view) {
-        view.setOnClickListener(v -> showIntentBar());
-    }
-
-    /* ========================================================= */
-    /* ================= INTENT BAR ============================ */
-    /* ========================================================= */
-
-    private void showIntentBar() {
-
-        if (intentBar != null || isAnimating) return;
-
-        isAnimating = true;
-
-        //  blur ONLY background
-        applyBlur(10f);
-
-        //  dim overlay
-        int dimColor = getThemedColor(R.attr.shadowGlassSoft);
-        blurOverlay.setBackgroundColor(dimColor);
-        blurOverlay.setAlpha(0f);
-        blurOverlay.setVisibility(View.VISIBLE);
-        blurOverlay.animate().alpha(1f).setDuration(150).start();
-
-        intentBar =
-                new IntentBarView(
-                        this,
-                        new IntentBarView.Callback() {
-                            @Override
-                            public void onIntentEntered(String text) {
-                                hideIntentBar();
-                                launcherController.handleIntentText(text);
-                            }
-
-                            @Override
-                            public void onDismiss() {
-                                hideIntentBar();
-                            }
-
-                            @Override
-                            public void onSettingsClick() {
-                                hideIntentBar();
-                                openSettings();
-                            }
-                        });
-
-        // swipe to dismiss
-        intentBar.setOnTouchListener(
-                (v, event) -> {
-                    switch (event.getAction()) {
-                        case MotionEvent.ACTION_DOWN:
-                            downY = event.getY();
-                            return true;
-
-                        case MotionEvent.ACTION_MOVE:
-                            float delta = event.getY() - downY;
-
-                            if (delta > dp(80)) {
-                                hideIntentBar();
-                                return true;
-                            }
-                            return true;
-                    }
-                    return false;
-                });
-
-        //  ADD TO OVERLAY (NOT ROOT)
-        FrameLayout.LayoutParams params =
-                new FrameLayout.LayoutParams(
-                        FrameLayout.LayoutParams.MATCH_PARENT,
-                        FrameLayout.LayoutParams.MATCH_PARENT //  FIX
-                        );
-        params.gravity = Gravity.BOTTOM;
-
-        overlayContainer.addView(intentBar, params);
-
-        // animation
-        intentBar.setTranslationY(dp(80));
-        intentBar.setAlpha(0f);
-
-        intentBar
-                .animate()
-                .translationY(0)
-                .alpha(1f)
-                .setDuration(180)
-                .withEndAction(() -> isAnimating = false)
-                .start();
-    }
-
-    private void hideIntentBar() {
-
-        if (intentBar == null || isAnimating) return;
-
-        isAnimating = true;
-
-        IntentBarView bar = intentBar;
-        intentBar = null;
-
-        bar.animate()
-                .translationY(dp(80))
-                .alpha(0f)
-                .setDuration(150)
-                .withEndAction(
-                        () -> {
-                            overlayContainer.removeView(bar); // FIXED
-                            isAnimating = false;
-                        })
-                .start();
-
-        blurOverlay
-                .animate()
-                .alpha(0f)
-                .setDuration(150)
-                .withEndAction(
-                        () -> {
-                            blurOverlay.setVisibility(View.GONE);
-                            clearBlur();
-                        })
-                .start();
-    }
-
-    /* ========================================================= */
-    /* ================= SETTINGS =============================== */
-    /* ========================================================= */
 
     private void openSettings() {
         startActivity(new Intent(this, SettingsActivity.class));
     }
 
-    /* ========================================================= */
-    /* ================= BLUR ================================ */
-    /* ========================================================= */
-
     private void applyBlur(float radius) {
         if (Build.VERSION.SDK_INT >= 31 && contentContainer != null) {
-            contentContainer.setRenderEffect(
-                    RenderEffect.createBlurEffect(radius, radius, Shader.TileMode.CLAMP));
+            contentContainer.setRenderEffect(RenderEffect.createBlurEffect(radius, radius, Shader.TileMode.CLAMP));
         }
     }
 
@@ -247,19 +185,15 @@ public class HomeActivity extends AppCompatActivity {
         }
     }
 
-    /* ========================================================= */
-    /* ================= UTIL ================================ */
-    /* ========================================================= */
+    private int dpToPx(int dp) {
+        return (int) (dp * getResources().getDisplayMetrics().density);
+    }
 
     private int getThemedColor(int attr) {
         android.util.TypedValue typedValue = new android.util.TypedValue();
         if (getTheme().resolveAttribute(attr, typedValue, true)) {
             return typedValue.data;
         }
-        return 0x33000000; // fallback
-    }
-
-    private int dp(int v) {
-        return (int) (v * getResources().getDisplayMetrics().density);
+        return 0x33000000;
     }
 }

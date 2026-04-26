@@ -1,22 +1,32 @@
+<?xml version="1.0" encoding="utf-8"?>
 <resources>
-	<color name="md_primary">#EC95B4FD</color>
-	<color name="md_on_primary">#FFFFFF</color>
-	<color name="md_primary_container">#E4E0FF</color>
-	<color name="md_on_primary_container">#1A1446</color>
-	<color name="md_secondary">#7C7A8A</color>
-	<color name="md_on_secondary">#FFFFFF</color>
-	<color name="md_secondary_container">#EFEFF5</color>
-	<color name="md_on_secondary_container">#1C1B1F</color>
-	<color name="md_background">#F3F2F8</color>
-	<color name="md_on_background">#1A1A1F</color>
-	<color name="md_surface">#FAF9FD</color>
-	<color name="md_on_surface">#1A1A1F</color>
-	<color name="md_surface_variant">#E9E7F2</color>
-	<color name="md_on_surface_variant">#5A5865</color>
-	<color name="md_outline">#C6C4D0</color>
-	<color name="md_error">#B3261E</color>
-	<color name="md_on_error">#FFFFFF</color>
-	<color name="shadow_glass">#33FFFFFF</color>
-	<color name="shadow_glass_strong">#66FFFFFF</color>
-	<color name="shadow_glass_soft">#1FFFFFFF</color>
+    <!-- Brand -->
+    <color name="brand_shadow">#0A0A0C</color> <!-- Deepest Obsidian -->
+    <color name="brand_focus">#6750A4</color>
+    <color name="brand_accent">#D0BCFF</color>
+
+    <!-- Light Theme Tonal Palette -->
+    <color name="md_light_primary">#6750A4</color>
+    <color name="md_light_on_primary">#FFFFFF</color>
+    <color name="md_light_surface">#FFFBFF</color>
+    <color name="md_light_on_surface">#1C1B1F</color>
+    <color name="md_light_surface_variant">#E7E0EB</color>
+    <color name="md_light_on_surface_variant">#49454E</color>
+    <color name="md_light_outline">#7A757F</color>
+
+    <!-- Dark Theme Tonal Palette -->
+    <color name="md_dark_primary">#D0BCFF</color>
+    <color name="md_dark_on_primary">#381E72</color>
+    <color name="md_dark_surface">#1C1B1F</color>
+    <color name="md_dark_on_surface">#E6E1E5</color>
+    <color name="md_dark_surface_variant">#49454F</color>
+    <color name="md_dark_on_surface_variant">#CAC4D0</color>
+    <color name="md_dark_outline">#938F99</color>
+
+    <!-- Glass & Transparency Glows -->
+    <color name="glow_light">#1A000000</color> <!-- Soft dark tint for light backgrounds -->
+    <color name="glow_dark">#26FFFFFF</color>  <!-- Soft white radiance for dark backgrounds -->
+    
+    <color name="shadow_glass_strong">#66FFFFFF</color>
+    <color name="shadow_glass_soft">#1FFFFFFF</color>
 </resources>

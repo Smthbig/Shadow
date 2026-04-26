@@ -1,103 +1,92 @@
-name: Signed Release
+name: Professional Release
 
 on:
   workflow_dispatch:
+    inputs:
+      release_version:
+        description: 'Version (e.g., 1.0.1). If empty, reads gradle.properties'
+        required: false
+        default: ''
+      custom_changelog:
+        description: 'Custom changelog notes (Markdown supported)'
+        required: false
+        default: 'Shadow v1 Release'
+      is_prerelease:
+        description: 'Mark as Pre-release?'
+        type: boolean
+        default: false
 
 permissions:
   contents: write
 
 jobs:
-  release:
+  build-and-release:
     runs-on: ubuntu-latest
-
-    env:
-      CI: true
-
+    
     steps:
-
-      - name: Checkout
+      - name: Checkout Code
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
 
-      - name: Setup JDK 21
+      - name: Setup Environment
         uses: actions/setup-java@v4
         with:
-          distribution: temurin
-          java-version: 21
-          cache: gradle
+          distribution: 'temurin'
+          java-version: '21'
+          cache: 'gradle'
 
       - name: Setup Android SDK
         uses: android-actions/setup-android@v3
 
-      - name: Validate secret
+      - name: Resolve Version
+        id: versioning
         run: |
-          if [ -z "${{ secrets.KEYSTORE_BASE64 }}" ]; then
-            echo "ERROR: KEYSTORE_BASE64 is empty"
+          # Priority: Input > gradle.properties
+          INPUT_VERSION="${{ github.event.inputs.release_version }}"
+          GRADLE_VERSION=$(grep VERSION_NAME gradle.properties | cut -d'=' -f2 | tr -d '\r')
+          FINAL_VERSION="${INPUT_VERSION:-$GRADLE_VERSION}"
+          echo "version=$FINAL_VERSION" >> $GITHUB_OUTPUT
+          echo "tag=v$FINAL_VERSION" >> $GITHUB_OUTPUT
+
+      - name: Prepare Signing Key
+        run: |
+          echo "${{ secrets.KEYSTORE_BASE64 }}" | base64 -d > app/shadow-keystore.jks
+          # Verify file exists and is not empty
+          if [ ! -s app/shadow-keystore.jks ]; then
+            echo "Keystore decoding failed"
             exit 1
           fi
 
-      - name: Decode Keystore
-        run: |
-          echo "${{ secrets.KEYSTORE_BASE64 }}" | base64 -d > keystore.jks
-
-          ls -lh keystore.jks
-          file keystore.jks
-
-          if [ ! -s keystore.jks ]; then
-            echo "ERROR: keystore is empty or corrupted"
-            exit 1
-          fi
-
-      - name: Verify keystore integrity
-        run: |
-          keytool -list -keystore keystore.jks -storepass "${{ secrets.KEYSTORE_PASSWORD }}" > /dev/null
-
-      - name: Export signing env
-        run: |
-          echo "KEYSTORE_FILE=keystore.jks" >> $GITHUB_ENV
-          echo "KEYSTORE_PASSWORD=${{ secrets.KEYSTORE_PASSWORD }}" >> $GITHUB_ENV
-          echo "KEY_ALIAS=${{ secrets.KEY_ALIAS }}" >> $GITHUB_ENV
-          echo "KEY_PASSWORD=${{ secrets.KEY_PASSWORD }}" >> $GITHUB_ENV
-
-      - name: Extract version
-        id: version
-        run: |
-          VERSION_NAME=$(grep VERSION_NAME gradle.properties | cut -d'=' -f2 | tr -d '\r')
-          echo "name=$VERSION_NAME" >> $GITHUB_OUTPUT
-
-      - name: Check release
-        id: check
-        run: |
-          if gh release view v${{ steps.version.outputs.name }} > /dev/null 2>&1; then
-            echo "exists=true" >> $GITHUB_OUTPUT
-          else
-            echo "exists=false" >> $GITHUB_OUTPUT
-          fi
+      - name: Build Release APK
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
-      - name: Stop if exists
-        if: steps.check.outputs.exists == 'true'
-        run: |
-          echo "Release already exists"
-          exit 0
-
-      - name: Build APK
+          # In Gradle, you should wire these to your signingConfig
+          KEYSTORE_FILE: "shadow-keystore.jks"
+          KEYSTORE_PASSWORD: ${{ secrets.KEYSTORE_PASSWORD }}
+          KEY_ALIAS: ${{ secrets.KEY_ALIAS }}
+          KEY_PASSWORD: ${{ secrets.KEY_PASSWORD }}
         run: |
           chmod +x gradlew
-          ./gradlew assembleRelease --no-daemon --stacktrace
+          ./gradlew assembleRelease \
+            -Pandroid.injected.signing.store.file=$KEYSTORE_FILE \
+            -Pandroid.injected.signing.store.password=$KEYSTORE_PASSWORD \
+            -Pandroid.injected.signing.key.alias=$KEY_ALIAS \
+            -Pandroid.injected.signing.key.password=$KEY_PASSWORD
 
-      - name: Rename APK
+      - name: Prepare Artifact
         run: |
-          mv app/build/outputs/apk/release/app-release.apk shadow-v${{ steps.version.outputs.name }}.apk
+          cp app/build/outputs/apk/release/app-release.apk shadow-${{ steps.versioning.outputs.version }}.apk
 
-      - name: Generate changelog
+      - name: Generate Combined Changelog
         id: changelog
         run: |
+          echo "BODY<<EOF" >> $GITHUB_OUTPUT
+          echo "### 📝 Notes" >> $GITHUB_OUTPUT
+          echo "${{ github.event.inputs.custom_changelog }}" >> $GITHUB_OUTPUT
+          echo "" >> $GITHUB_OUTPUT
+          echo "### 🚀 Technical Changes" >> $GITHUB_OUTPUT
+          
           LAST_TAG=$(git describe --tags --abbrev=0 2>/dev/null || echo "")
-          echo "CHANGELOG<<EOF" >> $GITHUB_OUTPUT
-          echo "## Changes" >> $GITHUB_OUTPUT
           if [ -z "$LAST_TAG" ]; then
             git log --pretty=format:"- %s" >> $GITHUB_OUTPUT
           else
@@ -106,12 +95,15 @@ jobs:
           echo "" >> $GITHUB_OUTPUT
           echo "EOF" >> $GITHUB_OUTPUT
 
-      - name: Create Release
+      - name: Create GitHub Release
         uses: softprops/action-gh-release@v2
         with:
-          tag_name: v${{ steps.version.outputs.name }}
-          name: Shadow v${{ steps.version.outputs.name }}
-          body: ${{ steps.changelog.outputs.CHANGELOG }}
-          files: shadow-v${{ steps.version.outputs.name }}.apk
+          tag_name: ${{ steps.versioning.outputs.tag }}
+          name: Shadow ${{ steps.versioning.outputs.version }}
+          body: ${{ steps.changelog.outputs.BODY }}
+          prerelease: ${{ github.event.inputs.is_prerelease }}
+          files: |
+            shadow-${{ steps.versioning.outputs.version }}.apk
+            app/build/outputs/mapping/release/mapping.txt
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

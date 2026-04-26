@@ -3,40 +3,36 @@ package com.smthbig.shadow.theme;
 import android.content.Context;
 import android.content.SharedPreferences;
 
-final class ThemeStore {
+public final class ThemeStore {
 
-    private static final String PREF = "theme_pref";
-    private static final String KEY = "mode";
+    private static final String PREF = "shadow_theme_store";
+    private static final String KEY_MODE = "theme_mode";
+    private static final String KEY_BG = "bg_type";
 
     private ThemeStore() {}
 
-    /* ---------- SET ---------- */
-
-    static void set(Context context, String mode) {
-
-        SharedPreferences prefs =
-                context.getSharedPreferences(PREF, Context.MODE_PRIVATE);
-
-        // 🔥 Use commit() for immediate persistence (important for restart)
-        prefs.edit()
-                .putString(KEY, mode)
-                .commit();
+    private static SharedPreferences prefs(Context context) {
+        return context.getApplicationContext().getSharedPreferences(PREF, Context.MODE_PRIVATE);
     }
 
-    /* ---------- GET ---------- */
+    /* ---------- THEME ---------- */
 
-    static String get(Context context) {
+    public static void setTheme(Context context, String mode) {
+        prefs(context).edit().putString(KEY_MODE, mode).apply();
+    }
 
-        SharedPreferences prefs =
-                context.getSharedPreferences(PREF, Context.MODE_PRIVATE);
+    public static String getTheme(Context context) {
+        return prefs(context).getString(KEY_MODE, ThemeMode.SYSTEM);
+    }
 
-        String mode = prefs.getString(KEY, ThemeMode.SYSTEM);
+    /* ---------- BACKGROUND ---------- */
 
-        // safety fallback
-        if (mode == null) {
-            return ThemeMode.SYSTEM;
-        }
+    public static void setBackground(Context context, String type) {
+        prefs(context).edit().putString(KEY_BG, type).apply();
+    }
 
-        return mode;
+    public static String getBackground(Context context) {
+        // Default to 'default' shadow gradient
+        return prefs(context).getString(KEY_BG, "default");
     }
 }

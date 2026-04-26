@@ -1,103 +1,70 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
 
-    <!-- ================= BASE ================= -->
-    <style
-        name="Theme.Shadow.Base"
-        parent="Theme.Material3.DayNight.NoActionBar">
-
-        <!--  IMPORTANT: remove fixed drawable -->
-        <item name="android:windowBackground">@color/md_background</item>
-        <item name="android:colorBackground">@color/md_background</item>
-
-        <!-- PRIMARY -->
-        <item name="colorPrimary">@color/md_primary</item>
-        <item name="colorOnPrimary">@color/md_on_primary</item>
-        <item name="colorPrimaryContainer">@color/md_primary_container</item>
-        <item name="colorOnPrimaryContainer">@color/md_on_primary_container</item>
-
-        <!-- SECONDARY -->
-        <item name="colorSecondary">@color/md_secondary</item>
-        <item name="colorOnSecondary">@color/md_on_secondary</item>
-
-        <!-- SURFACE -->
-        <item name="colorSurface">@color/md_surface</item>
-        <item name="colorOnSurface">@color/md_on_surface</item>
-
-        <item name="colorSurfaceVariant">@color/md_surface_variant</item>
-        <item name="colorOnSurfaceVariant">@color/md_on_surface_variant</item>
-
-        <item name="elevationOverlayEnabled">true</item>
-
-        <!-- OUTLINE -->
-        <item name="colorOutline">@color/md_outline</item>
-
-        <!-- GLASS SYSTEM -->
-        <item name="shadowGlass">@color/shadow_glass</item>
-        <item name="shadowGlassStrong">@color/shadow_glass_strong</item>
-        <item name="shadowGlassSoft">@color/shadow_glass_soft</item>
-
-        <!-- SYSTEM UI -->
-        <item name="android:statusBarColor">@android:color/transparent</item>
+    <!-- ================= BASE (INTERNAL) ================= -->
+    <style name="Theme.Shadow.Base" parent="Theme.Material3.DayNight.NoActionBar">
         <item name="android:navigationBarColor">@android:color/transparent</item>
-
+        <item name="android:statusBarColor">@android:color/transparent</item>
     </style>
 
     <!-- ================= LIGHT ================= -->
     <style name="Theme.Shadow.Light" parent="Theme.Shadow.Base">
+        <item name="colorPrimary">@color/md_light_primary</item>
+        <item name="colorOnPrimary">@color/md_light_on_primary</item>
+        <item name="android:colorBackground">#FFFFFF</item>
+        <item name="colorSurface">@color/md_light_surface</item>
+        <item name="colorOnSurface">@color/md_light_on_surface</item>
+        <item name="colorSurfaceVariant">@color/md_light_surface_variant</item>
+        <item name="colorOnSurfaceVariant">@color/md_light_on_surface_variant</item>
+        <item name="colorOutline">@color/md_light_outline</item>
         <item name="android:windowLightStatusBar">true</item>
+        <item name="shadowGlow">@color/glow_light</item>
     </style>
 
     <!-- ================= DARK ================= -->
     <style name="Theme.Shadow.Dark" parent="Theme.Shadow.Base">
+        <item name="colorPrimary">@color/md_dark_primary</item>
+        <item name="colorOnPrimary">@color/md_dark_on_primary</item>
+        <item name="android:colorBackground">@color/brand_shadow</item>
+        <item name="colorSurface">@color/md_dark_surface</item>
+        <item name="colorOnSurface">@color/md_dark_on_surface</item>
+        <item name="colorSurfaceVariant">@color/md_dark_surface_variant</item>
+        <item name="colorOnSurfaceVariant">@color/md_dark_on_surface_variant</item>
+        <item name="colorOutline">@color/md_dark_outline</item>
         <item name="android:windowLightStatusBar">false</item>
+        <item name="shadowGlow">@color/glow_dark</item>
     </style>
 
     <!-- ================= GLASS ================= -->
     <style name="Theme.Shadow.Glass" parent="Theme.Shadow.Dark">
-
-        <!-- 🔥 REAL GLASS -->
-        <item name="android:windowBackground">@android:color/transparent</item>
-        <item name="android:windowIsTranslucent">true</item>
-
-        <!-- Glass colors -->
         <item name="shadowGlass">@color/shadow_glass_strong</item>
         <item name="shadowGlassSoft">@color/shadow_glass_soft</item>
-
-        <!-- Reduce noise -->
-        <item name="colorOutline">@android:color/transparent</item>
-
-        <!-- Slight lift -->
-        <item name="colorSurface">@color/md_surface_variant</item>
-
+        <item name="colorSurface">@color/md_dark_surface_variant</item>
     </style>
 
-    <style name="Theme.Shadow.Glass.Light" parent="Theme.Shadow.Light">
+    <!-- ================= TRANSPARENT ================= -->
+    <style name="Theme.Shadow.Transparent" parent="Theme.Shadow.Dark">
         <item name="android:windowBackground">@android:color/transparent</item>
         <item name="android:windowIsTranslucent">true</item>
-        <item name="shadowGlass">#44FFFFFF</item>
-        <item name="shadowGlassSoft">#11FFFFFF</item>
-        <item name="colorOutline">@android:color/transparent</item>
+        <item name="android:windowShowWallpaper">true</item>
+        <item name="colorSurface">@android:color/transparent</item>
+        <item name="colorOnSurface">#FFFFFF</item>
+        <item name="shadowGlow">@color/glow_dark</item>
     </style>
 
-    <style name="Theme.Shadow.Glass.Dark" parent="Theme.Shadow.Glass">
-        <!-- Inherits from Glass (Dark) -->
+    <!-- ================= TRANSPARENT LIGHT ================= -->
+    <style name="Theme.Shadow.Transparent.Light" parent="Theme.Shadow.Light">
+        <item name="android:windowBackground">@android:color/transparent</item>
+        <item name="android:windowIsTranslucent">true</item>
+        <item name="android:windowShowWallpaper">true</item>
+        <item name="colorSurface">@android:color/transparent</item>
+        <item name="colorOnSurface">#000000</item>
+        <item name="shadowGlow">@color/glow_light</item>
     </style>
 
-    <!-- ================= SHADOW (LEGACY) ================= -->
-    <style name="Theme.Shadow.Legacy" parent="Theme.Shadow.Dark">
-
-        <item name="colorSurface">@color/md_surface</item>
-        <item name="colorSurfaceVariant">@color/md_surface_variant</item>
-
-    </style>
-
-    <!-- ================= DYNAMIC ================= -->
-    <style name="Theme.Shadow.Dynamic" parent="Theme.Shadow.Base">
-
-        <!-- 🔥 IMPORTANT: no hardcoded colors -->
-        <item name="android:windowBackground">@color/md_background</item>
-
-    </style>
+    <style name="Theme.Shadow.Glass.Light" parent="Theme.Shadow.Light" />
+    <style name="Theme.Shadow.Glass.Dark" parent="Theme.Shadow.Glass" />
+    <style name="Theme.Shadow.Dynamic" parent="Theme.Shadow.Base" />
+    <style name="Theme.Shadow.Legacy" parent="Theme.Shadow.Dark" />
 
 </resources>

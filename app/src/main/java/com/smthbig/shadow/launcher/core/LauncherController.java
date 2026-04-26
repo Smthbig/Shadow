@@ -5,6 +5,7 @@ import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.content.pm.ResolveInfo;
 
+import com.smthbig.shadow.data.FeatureStore;
 import com.smthbig.shadow.data.limits.AppLimitStore;
 import com.smthbig.shadow.delay.DelayOverlayActivity;
 import com.smthbig.shadow.extension.ExtensionEngine;
@@ -31,6 +32,7 @@ public final class LauncherController {
     private final UsageTracker usageTracker;
     private final ExtensionEngine extensionEngine;
     private final AppLauncher appLauncher;
+    private final FeatureStore featureStore;
 
     private final Map<String, Long> lastLaunchMap = new HashMap<>();
     private final Map<String, Long> heatMap = new HashMap<>();
@@ -42,6 +44,7 @@ public final class LauncherController {
         this.usageTracker = new UsageTracker(appContext);
         this.extensionEngine = new ExtensionEngine(appContext);
         this.appLauncher = new AppLauncher(appContext);
+        this.featureStore = new FeatureStore(appContext);
     }
 
     /* ========================================================= */
@@ -117,10 +120,21 @@ public final class LauncherController {
 
         if (pkg == null || pkg.isEmpty()) return;
 
+        // 🚀 FEATURE: WHITELIST BYPASS
+        if (featureStore.isWhitelisted(pkg)) {
+            launchApp(pkg);
+            return;
+        }
+
         long now = System.currentTimeMillis();
 
         /* ---------- HEAT CALCULATION ---------- */
         long heatPenalty = calculateHeatPenalty(pkg, now);
+        
+        // 🚀 FEATURE: DEEP FOCUS (Double Heat Penalty)
+        if (featureStore.isDeepFocusEnabled()) {
+            heatPenalty *= 2;
+        }
 
         /* ---------- ANTI-SPAM (Strict) ---------- */
         Long last = lastLaunchMap.get(pkg);
@@ -141,6 +155,12 @@ public final class LauncherController {
         TimePolicyEngine.Decision decision =
                 policyEngine.evaluate(remainingBaseMs, totalLimitMs, remainingExtensionMs, heatPenalty);
 
+        // 🚀 FEATURE: DEEP FOCUS (Double Delay)
+        long finalDelay = decision.delayMs;
+        if (featureStore.isDeepFocusEnabled() && finalDelay > 0) {
+            finalDelay *= 2;
+        }
+
         /* ---------- ACTION ---------- */
 
         if (decision.blocked) {
@@ -149,20 +169,20 @@ public final class LauncherController {
             return;
         }
 
-        if (decision.delayMs > 0) {
+        if (finalDelay > 0) {
             usageTracker.logDelay();
             // Increase heat on delayed attempts
             updateHeat(pkg, now);
 
             if (decision.usingExtension) {
-                extensionEngine.consume(pkg, decision.delayMs);
+                extensionEngine.consume(pkg, finalDelay);
             }
 
             appLauncher.launch(
                     DelayOverlayActivity.delay(
                             appContext,
                             pkg,
-                            decision.delayMs,
+                            finalDelay,
                             decision.reason,
                             decision.usingExtension));
             return;

@@ -1,5 +1,21 @@
-<?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="app_name">Shadow</string>
-
+    <string name="welcome_title">Welcome to Shadow</string>
+    <string name="welcome_subtitle">Control your app usage intentionally</string>
+    <string name="privacy_policy_title">Privacy &amp; Transparency</string>
+    <string name="privacy_policy_content"><![CDATA[<b>Data Collection:</b> Shadow does not collect, transmit, or store any personal data. We believe your usage habits are your own business.<br/><br/><b>Local Processing:</b> All app usage tracking is performed locally on your device using Android\'s standard UsageStats APIs. This data never leaves your device and is not shared with any third parties.<br/><br/><b>Permissions:</b> Shadow requires Usage Access to calculate friction delays and enforce intentionality. This permission is used solely for the core functionality of the app.<br/><br/><b>Security:</b> Because we do not use servers or cloud storage, your data is as secure as your physical device.]]></string>
+    <string name="agree_checkbox">I agree to the Privacy Policy</string>
+    <string name="continue_button">Continue</string>
+    
+    <!-- Settings -->
+    <string name="settings_title">Settings</string>
+    <string name="theme_dialog_title">Select Theme</string>
+    <string name="reset_usage_title">Reset Today\'s Extensions?</string>
+    <string name="reset_usage_message">This will clear all extension time granted for today.</string>
+    
+    <!-- Friction -->
+    <string name="friction_title">Shadow Friction</string>
+    <string name="wait_message">Wait or add extension</string>
+    <string name="add_extension">Add +5m</string>
+    <string name="cancel_close">Cancel and close</string>
 </resources>
