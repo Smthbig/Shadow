@@ -104,3 +104,6 @@ fastlane/test_output/
 .*
 !.gitignore
 !.github/
+/release.keystore
+
+/app_logs.txt
