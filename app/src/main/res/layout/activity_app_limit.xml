@@ -1,45 +1,38 @@
 <?xml version="1.0" encoding="utf-8"?>
 <FrameLayout
-	xmlns:android="http://schemas.android.com/apk/res/android"
-	xmlns:app="http://schemas.android.com/apk/res-auto"
-	android:layout_width="match_parent"
-	android:layout_height="match_parent"
-	android:background="@drawable/bg_shadow_gradient">
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@drawable/bg_shadow_gradient">
 
-	<LinearLayout
-		android:layout_width="match_parent"
-		android:layout_height="match_parent"
-		android:orientation="vertical"
-		android:padding="16dp"
-		android:background="@android:color/transparent">
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:orientation="vertical"
+        android:padding="20dp">
 
-		<androidx.appcompat.widget.AppCompatTextView
-			android:id="@+id/title"
-			android:layout_width="match_parent"
-			android:layout_height="wrap_content"
-			android:text="App Limits"
-			android:textColor="?attr/colorOnSurface"
-			android:textSize="20sp"
-			android:textStyle="bold"
-			android:gravity="center"
-			android:paddingBottom="12dp" />
+        <com.google.android.material.textview.MaterialTextView
+            android:id="@+id/title"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="App Limits"
+            style="@style/TextAppearance.Material3.HeadlineMedium"
+            android:textStyle="bold"
+            android:textColor="?attr/colorOnSurface"
+            android:layout_marginTop="32dp"
+            android:layout_marginBottom="24dp"/>
 
-		<android.view.View
-			android:layout_width="match_parent"
-			android:layout_height="1dp"
-			android:background="?attr/colorOutline"
-			android:alpha="0.4"
-			android:layout_marginBottom="12dp" />
+        <ListView
+            android:id="@+id/app_list"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:divider="@android:color/transparent"
+            android:dividerHeight="0dp"
+            android:scrollbars="none"
+            android:paddingBottom="40dp"
+            android:clipToPadding="false" />
 
-		<ListView
-			android:id="@+id/app_list"
-			android:layout_width="match_parent"
-			android:layout_height="match_parent"
-			android:background="@android:color/transparent"
-			android:cacheColorHint="@android:color/transparent"
-			android:divider="?attr/colorOutline"
-			android:dividerHeight="1dp" />
-
-	</LinearLayout>
+    </LinearLayout>
 
 </FrameLayout>

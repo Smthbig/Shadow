@@ -4,149 +4,56 @@ import java.util.concurrent.TimeUnit;
 
 public final class TimePolicyEngine {
 
-    /* ========================================================= */
-    /* ================= THRESHOLDS ============================= */
-    /* ========================================================= */
-
-    private static final long SOFT_WARNING_MS =
-            TimeUnit.MINUTES.toMillis(5);
-
-    private static final long HARD_WARNING_MS =
-            TimeUnit.MINUTES.toMillis(2);
-
-    private static final long CRITICAL_MS =
-            TimeUnit.SECONDS.toMillis(30);
-
-    /* ========================================================= */
-    /* ================= BASE DELAYS ============================ */
-    /* ========================================================= */
-
-    private static final long DELAY_SOFT = 1500;
-    private static final long DELAY_MEDIUM = 3000;
-    private static final long DELAY_HARD = 5000;
-
-    /* ========================================================= */
-    /* ================= EXTENSION DELAYS ======================= */
-    /* ========================================================= */
-
-    private static final long EXT_DELAY_BASE = 4000;
-    private static final long EXT_DELAY_MED = 6000;
-    private static final long EXT_DELAY_HIGH = 8000;
-
-    /* ========================================================= */
-    /* ================= ENTRY ================================= */
-    /* ========================================================= */
+    // Threshold: Start adding friction when 70% of limit is REMAINING (30% used)
+    private static final float FRICTION_START_THRESHOLD = 0.7f;
+    
+    // Maximum base delay (ms) when limit is nearly 0
+    private static final long MAX_BASE_DELAY = 10000; // 10 seconds
 
     public Decision evaluate(
             long remainingBaseMs,
-            long remainingExtensionMs
+            long totalLimitMs,
+            long remainingExtensionMs,
+            long heatPenaltyMs
     ) {
-
-        /* ---------- UNLIMITED ---------- */
-        if (remainingBaseMs == Long.MAX_VALUE) {
+        // 1. UNLIMITED
+        if (totalLimitMs <= 0 || remainingBaseMs == Long.MAX_VALUE) {
             return Decision.allow();
         }
 
-        /* ---------- BASE ---------- */
+        // 2. BASE LIMIT FLOW
         if (remainingBaseMs > 0) {
-            return evaluateBase(remainingBaseMs);
+            float percentRemaining = (float) remainingBaseMs / totalLimitMs;
+            
+            if (percentRemaining > FRICTION_START_THRESHOLD) {
+                // No friction yet, but still apply heat penalty if user is spamming
+                if (heatPenaltyMs > 0) {
+                    return Decision.delay(heatPenaltyMs, "Slow down...", false);
+                }
+                return Decision.allow();
+            }
+
+            // Calculate incremental delay
+            // As percentRemaining goes from 0.7 -> 0.0, progress goes 0.0 -> 1.0
+            float progress = (FRICTION_START_THRESHOLD - percentRemaining) / FRICTION_START_THRESHOLD;
+            long dynamicDelay = (long) (progress * MAX_BASE_DELAY);
+            
+            return Decision.delay(
+                    dynamicDelay + heatPenaltyMs,
+                    "Limit decreasing, delay increasing",
+                    false
+            );
         }
 
-        /* ---------- EXTENSION ---------- */
+        // 3. EXTENSION FLOW
         if (remainingExtensionMs > 0) {
-            return evaluateExtension(remainingExtensionMs);
+            // Extension always has a high base friction to discourage use
+            long extDelay = 5000 + heatPenaltyMs; 
+            return Decision.delay(extDelay, "Using limited extension time", true);
         }
 
-        /* ---------- BLOCK ---------- */
+        // 4. BLOCK
         return Decision.block("Daily limit reached");
-    }
-
-    /* ========================================================= */
-    /* ================= BASE POLICY ============================ */
-    /* ========================================================= */
-
-    private Decision evaluateBase(long remainingBaseMs) {
-
-        // SAFE ZONE
-        if (remainingBaseMs > SOFT_WARNING_MS) {
-            return Decision.allow();
-        }
-
-        // SOFT PRESSURE
-        if (remainingBaseMs > HARD_WARNING_MS) {
-            return Decision.delay(
-                    DELAY_SOFT,
-                    "Approaching daily limit",
-                    false
-            );
-        }
-
-        // HARD PRESSURE
-        if (remainingBaseMs > CRITICAL_MS) {
-            return Decision.delay(
-                    DELAY_MEDIUM,
-                    "Limit almost reached",
-                    false
-            );
-        }
-
-        // CRITICAL ZONE
-        return Decision.delay(
-                Math.min(DELAY_HARD, remainingBaseMs),
-                "Final seconds of usage",
-                false
-        );
-    }
-
-    /* ========================================================= */
-    /* ================= EXTENSION POLICY ======================= */
-    /* ========================================================= */
-
-    private Decision evaluateExtension(long remainingExtensionMs) {
-
-        long delay = computeExtensionDelay(remainingExtensionMs);
-
-        return Decision.delay(
-                delay,
-                buildExtensionMessage(remainingExtensionMs),
-                true
-        );
-    }
-
-    /* ========================================================= */
-    /* ================= EXTENSION LOGIC ======================== */
-    /* ========================================================= */
-
-    private long computeExtensionDelay(long remainingExtensionMs) {
-
-        if (remainingExtensionMs < TimeUnit.MINUTES.toMillis(1)) {
-            return EXT_DELAY_HIGH;
-        }
-
-        if (remainingExtensionMs < TimeUnit.MINUTES.toMillis(5)) {
-            return EXT_DELAY_MED;
-        }
-
-        return EXT_DELAY_BASE;
-    }
-
-    private String buildExtensionMessage(long remainingMs) {
-
-        long min = TimeUnit.MILLISECONDS.toMinutes(remainingMs);
-
-        if (min <= 1) {
-            return "Last minute of extension";
-        }
-
-        if (min <= 3) {
-            return "Extension ending soon";
-        }
-
-        if (min <= 5) {
-            return "Extension running low";
-        }
-
-        return "Using extension time";
     }
 
     /* ========================================================= */

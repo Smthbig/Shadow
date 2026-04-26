@@ -18,9 +18,8 @@ public class SetupActivity extends AppCompatActivity {
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
-
-        super.onCreate(savedInstanceState);
         ThemeManager.apply(this);
+        super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_setup);
 
         acceptCheckBox = findViewById(R.id.checkbox_accept);
@@ -38,10 +37,7 @@ public class SetupActivity extends AppCompatActivity {
                     SetupManager.markSetupDone(this);
 
                     try {
-                        Intent intent = new Intent();
-                        intent.setClassName(
-                                this, "com.smthbig.shadow.setup.permissions.PermissionActivity");
-
+                        Intent intent = new Intent(this, PermissionActivity.class);
                         startActivity(intent);
 
                     } catch (Exception e) {

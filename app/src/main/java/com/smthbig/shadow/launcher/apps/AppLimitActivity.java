@@ -38,8 +38,6 @@ public final class AppLimitActivity extends AppCompatActivity {
 
         setContentView(R.layout.activity_app_limit);
 
-        setupSystemUI();
-
         limitStore = new AppLimitStore(this);
         pm = getPackageManager();
 
@@ -52,28 +50,6 @@ public final class AppLimitActivity extends AppCompatActivity {
                 (p, v, i, id) -> showLimitPicker(appList.get(i).packageName));
 
         loadApps(); // load after adapter bind
-    }
-
-    /* ---------- SYSTEM UI ---------- */
-
-    private void setupSystemUI() {
-
-        getWindow().setStatusBarColor(Color.TRANSPARENT);
-        getWindow().setNavigationBarColor(Color.TRANSPARENT);
-
-        if (android.os.Build.VERSION.SDK_INT >= 30) {
-
-            if (getWindow().getInsetsController() != null) {
-
-                boolean isLight = ThemeMode.LIGHT.equals(ThemeManager.get(this));
-
-                getWindow()
-                        .getInsetsController()
-                        .setSystemBarsAppearance(
-                                isLight ? WindowInsetsController.APPEARANCE_LIGHT_STATUS_BARS : 0,
-                                WindowInsetsController.APPEARANCE_LIGHT_STATUS_BARS);
-            }
-        }
     }
 
     /* ---------- LOAD APPS ---------- */
@@ -160,23 +136,40 @@ public final class AppLimitActivity extends AppCompatActivity {
 
     private void showCustomPicker(String pkg) {
 
-        android.widget.NumberPicker picker = new android.widget.NumberPicker(this);
+        com.google.android.material.textfield.TextInputEditText input = 
+                new com.google.android.material.textfield.TextInputEditText(this);
+        input.setInputType(android.text.InputType.TYPE_CLASS_NUMBER);
+        input.setHint("Minutes");
 
-        picker.setMinValue(1);
-        picker.setMaxValue(300);
-        picker.setValue(60);
+        android.widget.FrameLayout container = new android.widget.FrameLayout(this);
+        android.widget.FrameLayout.LayoutParams params = new  android.widget.FrameLayout.LayoutParams(
+                android.view.ViewGroup.LayoutParams.MATCH_PARENT, 
+                android.view.ViewGroup.LayoutParams.WRAP_CONTENT);
+        params.leftMargin = dpToPx(24);
+        params.rightMargin = dpToPx(24);
+        input.setLayoutParams(params);
+        container.addView(input);
 
         new MaterialAlertDialogBuilder(this)
-                .setTitle("Custom limit (minutes)")
-                .setView(picker)
+                .setTitle("Custom limit")
+                .setView(container)
                 .setPositiveButton(
                         "Save",
                         (d, w) -> {
-                            save(pkg, picker.getValue());
-                            refresh();
+                            try {
+                                String val = input.getText().toString();
+                                if (!val.isEmpty()) {
+                                    save(pkg, Integer.parseInt(val));
+                                    refresh();
+                                }
+                            } catch (Exception ignored) {}
                         })
                 .setNegativeButton("Cancel", null)
                 .show();
+    }
+
+    private int dpToPx(int dp) {
+        return (int) (dp * getResources().getDisplayMetrics().density);
     }
 
     /* ---------- HELPERS ---------- */

@@ -152,6 +152,12 @@ public class ThemeAdapter extends BaseAdapter {
             case ThemeMode.GLASS:
                 return "Transparent glass UI";
 
+            case ThemeMode.GLASS_LIGHT:
+                return "Light glass aesthetic";
+
+            case ThemeMode.GLASS_DARK:
+                return "Dark glass aesthetic";
+
             default:
                 return "";
         }

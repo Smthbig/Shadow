@@ -12,7 +12,40 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent">
 
-        <!-- Your main launcher UI goes here (apps, clock, etc.) -->
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:orientation="vertical"
+            android:gravity="center">
+
+            <TextClock
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:format12Hour="hh:mm"
+                android:format24Hour="HH:mm"
+                android:textSize="80sp"
+                android:textColor="?attr/colorOnSurface"
+                android:alpha="0.8"
+                android:fontFamily="sans-serif-thin" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Tap to search"
+                android:textSize="14sp"
+                android:textColor="?attr/colorOnSurface"
+                android:alpha="0.4"
+                android:layout_marginTop="8dp"
+                android:letterSpacing="0.1" />
+
+            <com.smthbig.shadow.launcher.home.DoomsdayView
+                android:id="@+id/doomsday"
+                android:layout_width="match_parent"
+                android:layout_height="40dp"
+                android:layout_marginTop="24dp" />
+
+        </LinearLayout>
 
         <!-- Optional subtle depth -->
         <View

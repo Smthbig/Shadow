@@ -1,24 +1,18 @@
 <?xml version="1.0" encoding="utf-8"?>
-<FrameLayout
+<androidx.core.widget.NestedScrollView
     xmlns:android="http://schemas.android.com/apk/res/android"
     android:id="@+id/root"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@drawable/bg_shadow_gradient">
-
-    <!-- Depth overlay -->
-    <View
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:background="?attr/colorSurface"
-        android:alpha="0.03"/>
+    android:background="@drawable/bg_shadow_gradient"
+    android:fillViewport="true">
 
     <!-- Content -->
     <LinearLayout
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
+        android:layout_height="wrap_content"
         android:orientation="vertical"
-        android:padding="16dp">
+        android:padding="20dp">
 
         <!-- Title -->
         <com.google.android.material.textview.MaterialTextView
@@ -26,27 +20,19 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:text="Settings"
-            android:textSize="22sp"
+            style="@style/TextAppearance.Material3.HeadlineMedium"
             android:textStyle="bold"
             android:textColor="?attr/colorOnSurface"
-            android:paddingBottom="12dp"/>
+            android:layout_marginTop="32dp"
+            android:layout_marginBottom="24dp"/>
 
-        <!-- Divider -->
-        <View
+        <!-- List (we'll replace ListView with a vertical layout of items for better Material 3 look) -->
+        <LinearLayout
+            android:id="@+id/settings_container"
             android:layout_width="match_parent"
-            android:layout_height="1dp"
-            android:background="?attr/colorOutline"
-            android:alpha="0.4"
-            android:layout_marginBottom="12dp"/>
-
-        <!-- List -->
-        <ListView
-            android:id="@+id/settings_list"
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:divider="?attr/colorOutline"
-            android:dividerHeight="1dp"/>
+            android:layout_height="wrap_content"
+            android:orientation="vertical" />
 
     </LinearLayout>
 
-</FrameLayout>
+</androidx.core.widget.NestedScrollView>

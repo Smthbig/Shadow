@@ -76,14 +76,6 @@
             android:launchMode="singleTop" />
 
         <!-- ============================= -->
-        <!-- EXTENSION -->
-        <!-- ============================= -->
-        <activity
-            android:name=".extension.ExtensionGrantActivity"
-            android:exported="false"
-            android:theme="@style/Theme.Shadow.Base" />
-
-        <!-- ============================= -->
         <!-- APP LIMIT -->
         <!-- ============================= -->
         <activity
@@ -106,6 +98,14 @@
             android:name=".settings.SettingsActivity"
             android:exported="false"
             android:theme="@style/Theme.Shadow.Base" />
+
+        <!-- ============================= -->
+        <!-- SERVICES -->
+        <!-- ============================= -->
+        <service
+            android:name=".tracking.UsageMonitorService"
+            android:enabled="true"
+            android:exported="false" />
 
     </application>
 

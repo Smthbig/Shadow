@@ -14,11 +14,13 @@ final class ThemeConfig {
         switch (mode) {
 
             case ThemeMode.LIGHT:
+            case ThemeMode.GLASS_LIGHT:
                 return AppCompatDelegate.MODE_NIGHT_NO;
 
             case ThemeMode.DARK:
             case ThemeMode.SHADOW:
             case ThemeMode.GLASS:
+            case ThemeMode.GLASS_DARK:
                 return AppCompatDelegate.MODE_NIGHT_YES;
 
             case ThemeMode.SYSTEM:
@@ -45,6 +47,12 @@ final class ThemeConfig {
 
             case ThemeMode.GLASS:
                 return R.style.Theme_Shadow_Glass;
+
+            case ThemeMode.GLASS_LIGHT:
+                return R.style.Theme_Shadow_Glass_Light;
+
+            case ThemeMode.GLASS_DARK:
+                return R.style.Theme_Shadow_Glass_Dark;
 
             case ThemeMode.DYNAMIC:
                 return R.style.Theme_Shadow_Dynamic;

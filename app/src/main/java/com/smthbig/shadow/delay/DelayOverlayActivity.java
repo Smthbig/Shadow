@@ -1,5 +1,6 @@
 package com.smthbig.shadow.delay;
 
+import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
@@ -68,9 +69,9 @@ public final class DelayOverlayActivity extends AppCompatActivity {
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState); // ✅ MUST ALWAYS BE FIRST
-
         ThemeManager.apply(this);
+        super.onCreate(savedInstanceState); 
+
         setContentView(R.layout.activity_delay);
 
         // 🔒 Block back
@@ -81,13 +82,6 @@ public final class DelayOverlayActivity extends AppCompatActivity {
                         // no-op
                     }
                 });
-
-        // ✅ Safe duplicate launch handling (AFTER super)
-        if (!isTaskRoot()) {
-            finish();
-            overridePendingTransition(0, 0);
-            return;
-        }
 
         /* ================= INTENT ================= */
 

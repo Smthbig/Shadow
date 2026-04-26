@@ -20,6 +20,7 @@ public final class UsagePermissionHelper {
     /* ================= USAGE ACCESS =========================== */
     /* ========================================================= */
 
+    @SuppressWarnings("deprecation")
     public static boolean hasUsageAccess(Context context) {
 
         // Step 1: AppOps check (fast path)

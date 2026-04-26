@@ -7,6 +7,7 @@ import android.content.Context;
 import java.util.Calendar;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.TimeUnit;
 
 public final class UsageStatsReader {
 
@@ -15,6 +16,33 @@ public final class UsageStatsReader {
     public UsageStatsReader(Context context) {
         this.usageStatsManager =
                 (UsageStatsManager) context.getSystemService(Context.USAGE_STATS_SERVICE);
+    }
+
+    /* ========================================================= */
+    /* ================= FOREGROUND ============================ */
+    /* ========================================================= */
+
+    public String getForegroundPackage() {
+
+        if (usageStatsManager == null) return null;
+
+        long now = System.currentTimeMillis();
+        long start = now - TimeUnit.MINUTES.toMillis(1); // look at last 1 min
+
+        UsageEvents events = usageStatsManager.queryEvents(start, now);
+        if (events == null) return null;
+
+        UsageEvents.Event event = new UsageEvents.Event();
+        String lastPkg = null;
+
+        while (events.hasNextEvent()) {
+            events.getNextEvent(event);
+            if (event.getEventType() == UsageEvents.Event.ACTIVITY_RESUMED) {
+                lastPkg = event.getPackageName();
+            }
+        }
+
+        return lastPkg;
     }
 
     /* ========================================================= */

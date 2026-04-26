@@ -21,13 +21,19 @@ public final class LauncherController {
     private static final long DEFAULT_LIMIT_MS = TimeUnit.MINUTES.toMillis(60);
     private static final long LAUNCH_COOLDOWN_MS = 500; // anti-spam
 
+    // Heat settings
+    private static final long HEAT_DECAY_MS = TimeUnit.MINUTES.toMillis(2);
+    private static final long PENALTY_PER_OPEN = 3000; // 3 seconds penalty per rapid open
+
     private final Context appContext;
     private final TimePolicyEngine policyEngine;
     private final AppLimitStore appLimitStore;
     private final UsageTracker usageTracker;
     private final ExtensionEngine extensionEngine;
+    private final AppLauncher appLauncher;
 
     private final Map<String, Long> lastLaunchMap = new HashMap<>();
+    private final Map<String, Long> heatMap = new HashMap<>();
 
     public LauncherController(Context context) {
         this.appContext = context.getApplicationContext();
@@ -35,6 +41,7 @@ public final class LauncherController {
         this.appLimitStore = new AppLimitStore(appContext);
         this.usageTracker = new UsageTracker(appContext);
         this.extensionEngine = new ExtensionEngine(appContext);
+        this.appLauncher = new AppLauncher(appContext);
     }
 
     /* ========================================================= */
@@ -45,6 +52,13 @@ public final class LauncherController {
 
         if (query == null) return;
 
+        // 1. Direct package launch (from suggestions)
+        if (isPackageInstalled(query)) {
+            handleLaunch(query);
+            return;
+        }
+
+        // 2. Resolve from label
         String cleaned = normalize(query);
         if (cleaned.isEmpty()) return;
 
@@ -52,6 +66,15 @@ public final class LauncherController {
         if (pkg == null) return;
 
         handleLaunch(pkg);
+    }
+
+    private boolean isPackageInstalled(String pkg) {
+        try {
+            appContext.getPackageManager().getPackageInfo(pkg, 0);
+            return true;
+        } catch (PackageManager.NameNotFoundException e) {
+            return false;
+        }
     }
 
     /* ========================================================= */
@@ -94,50 +117,48 @@ public final class LauncherController {
 
         if (pkg == null || pkg.isEmpty()) return;
 
-        /* ---------- ANTI-SPAM ---------- */
-
         long now = System.currentTimeMillis();
-        Long last = lastLaunchMap.get(pkg);
 
+        /* ---------- HEAT CALCULATION ---------- */
+        long heatPenalty = calculateHeatPenalty(pkg, now);
+
+        /* ---------- ANTI-SPAM (Strict) ---------- */
+        Long last = lastLaunchMap.get(pkg);
         if (last != null && (now - last) < LAUNCH_COOLDOWN_MS) {
             return;
         }
-
         lastLaunchMap.put(pkg, now);
 
-        /* ---------- USAGE ---------- */
-
+        /* ---------- USAGE & LIMIT ---------- */
         long usedMs = usageTracker.getTodayUsageMs(pkg);
-
-        /* ---------- LIMIT ---------- */
-
-        long baseLimitMs = appLimitStore.getLimitMs(pkg);
-        if (baseLimitMs <= 0) baseLimitMs = DEFAULT_LIMIT_MS;
+        long totalLimitMs = appLimitStore.getLimitMs(pkg);
+        if (totalLimitMs <= 0) totalLimitMs = DEFAULT_LIMIT_MS;
 
         long remainingBaseMs = appLimitStore.getRemainingBaseMs(pkg, usedMs);
-
         long remainingExtensionMs = extensionEngine.getRemainingMs(pkg);
 
         /* ---------- POLICY ---------- */
-
         TimePolicyEngine.Decision decision =
-                policyEngine.evaluate(remainingBaseMs, remainingExtensionMs);
+                policyEngine.evaluate(remainingBaseMs, totalLimitMs, remainingExtensionMs, heatPenalty);
 
         /* ---------- ACTION ---------- */
 
         if (decision.blocked) {
-            launchOverlay(DelayOverlayActivity.block(appContext, pkg, decision.reason));
+            usageTracker.logBlock();
+            appLauncher.launch(DelayOverlayActivity.block(appContext, pkg, decision.reason));
             return;
         }
 
         if (decision.delayMs > 0) {
+            usageTracker.logDelay();
+            // Increase heat on delayed attempts
+            updateHeat(pkg, now);
 
-            // IMPORTANT: consume extension ONLY when used
             if (decision.usingExtension) {
                 extensionEngine.consume(pkg, decision.delayMs);
             }
 
-            launchOverlay(
+            appLauncher.launch(
                     DelayOverlayActivity.delay(
                             appContext,
                             pkg,
@@ -148,19 +169,30 @@ public final class LauncherController {
         }
 
         /* ---------- SAFE LAUNCH ---------- */
+        // If launched frequently even without delay, increase heat
+        if (last != null && (now - last) < TimeUnit.MINUTES.toMillis(1)) {
+            updateHeat(pkg, now);
+        }
 
         launchApp(pkg);
     }
 
-    /* ========================================================= */
-    /* ================= OVERLAY =============================== */
-    /* ========================================================= */
+    private long calculateHeatPenalty(String pkg, long now) {
+        Long lastHeatUpdate = heatMap.get(pkg);
+        if (lastHeatUpdate == null) return 0;
 
-    private void launchOverlay(Intent intent) {
-        if (intent == null) return;
+        long elapsed = now - lastHeatUpdate;
+        if (elapsed >= HEAT_DECAY_MS) {
+            heatMap.remove(pkg);
+            return 0;
+        }
 
-        intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-        appContext.startActivity(intent);
+        float factor = 1.0f - ((float) elapsed / HEAT_DECAY_MS);
+        return (long) (PENALTY_PER_OPEN * factor);
+    }
+
+    private void updateHeat(String pkg, long now) {
+        heatMap.put(pkg, now);
     }
 
     /* ========================================================= */
@@ -172,10 +204,9 @@ public final class LauncherController {
         try {
             Intent launchIntent = appContext.getPackageManager().getLaunchIntentForPackage(pkg);
 
-            if (launchIntent == null) return;
-
-            launchIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-            appContext.startActivity(launchIntent);
+            if (launchIntent != null) {
+                appLauncher.launch(launchIntent);
+            }
 
         } catch (Exception ignored) {
         }

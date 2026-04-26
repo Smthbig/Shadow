@@ -1,10 +1,13 @@
 package com.smthbig.shadow.launcher.apps;
 
 import android.content.Context;
+import android.content.pm.PackageManager;
+import android.graphics.drawable.Drawable;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.BaseAdapter;
+import android.widget.ImageView;
 import android.widget.TextView;
 
 import com.smthbig.shadow.R;
@@ -34,17 +37,32 @@ public class AppLimitAdapter extends BaseAdapter {
     @Override
     public View getView(int i, View v, ViewGroup parent) {
 
+        ViewHolder holder;
+
         if (v == null) {
             v = LayoutInflater.from(context)
                     .inflate(R.layout.item_app_limit, parent, false);
+            holder = new ViewHolder();
+            holder.icon = v.findViewById(R.id.app_icon);
+            holder.name = v.findViewById(R.id.app_name);
+            holder.limit = v.findViewById(R.id.app_limit);
+            v.setTag(holder);
+        } else {
+            holder = (ViewHolder) v.getTag();
         }
 
         AppItem item = list.get(i);
 
-        TextView name = v.findViewById(R.id.app_name);
-        TextView limit = v.findViewById(R.id.app_limit);
-
-        name.setText(item.label);
+        holder.name.setText(item.label);
+        
+        try {
+            PackageManager pm = context.getPackageManager();
+            Drawable icon = pm.getApplicationIcon(item.packageName);
+            holder.icon.setImageDrawable(icon);
+            holder.icon.setVisibility(View.VISIBLE);
+        } catch (Exception e) {
+            holder.icon.setVisibility(View.GONE);
+        }
 
         String text;
 
@@ -56,8 +74,14 @@ public class AppLimitAdapter extends BaseAdapter {
             text = TimeUnit.MILLISECONDS.toMinutes(item.limitMs) + " min";
         }
 
-        limit.setText(text);
+        holder.limit.setText(text);
 
         return v;
+    }
+
+    private static class ViewHolder {
+        ImageView icon;
+        TextView name;
+        TextView limit;
     }
 }

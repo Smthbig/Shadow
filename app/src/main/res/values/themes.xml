@@ -58,6 +58,7 @@
 
         <!-- 🔥 REAL GLASS -->
         <item name="android:windowBackground">@android:color/transparent</item>
+        <item name="android:windowIsTranslucent">true</item>
 
         <!-- Glass colors -->
         <item name="shadowGlass">@color/shadow_glass_strong</item>
@@ -69,6 +70,18 @@
         <!-- Slight lift -->
         <item name="colorSurface">@color/md_surface_variant</item>
 
+    </style>
+
+    <style name="Theme.Shadow.Glass.Light" parent="Theme.Shadow.Light">
+        <item name="android:windowBackground">@android:color/transparent</item>
+        <item name="android:windowIsTranslucent">true</item>
+        <item name="shadowGlass">#44FFFFFF</item>
+        <item name="shadowGlassSoft">#11FFFFFF</item>
+        <item name="colorOutline">@android:color/transparent</item>
+    </style>
+
+    <style name="Theme.Shadow.Glass.Dark" parent="Theme.Shadow.Glass">
+        <!-- Inherits from Glass (Dark) -->
     </style>
 
     <!-- ================= SHADOW (LEGACY) ================= -->

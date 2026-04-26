@@ -1,4 +1,4 @@
-package com.smthbig.shadow.system;
+package com.smthbig.shadow.launcher.core;
 
 import android.content.Context;
 import android.content.Intent;

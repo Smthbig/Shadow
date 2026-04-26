@@ -32,6 +32,7 @@ public class HomeActivity extends AppCompatActivity {
     private FrameLayout contentContainer;
     private FrameLayout overlayContainer;
     private View blurOverlay;
+    private DoomsdayView doomsdayView;
 
     private float downY;
     private boolean isAnimating = false;
@@ -51,6 +52,11 @@ public class HomeActivity extends AppCompatActivity {
         contentContainer = findViewById(R.id.content_container);
         overlayContainer = findViewById(R.id.overlay_container);
         blurOverlay = findViewById(R.id.blur_overlay);
+        doomsdayView = findViewById(R.id.doomsday);
+
+        if (doomsdayView != null) {
+            doomsdayView.updateTime();
+        }
 
         setupTap(contentContainer);
         setupBackHandler();
@@ -113,7 +119,8 @@ public class HomeActivity extends AppCompatActivity {
         applyBlur(10f);
 
         //  dim overlay
-        blurOverlay.setBackgroundColor(0x33000000);
+        int dimColor = getThemedColor(R.attr.shadowGlassSoft);
+        blurOverlay.setBackgroundColor(dimColor);
         blurOverlay.setAlpha(0f);
         blurOverlay.setVisibility(View.VISIBLE);
         blurOverlay.animate().alpha(1f).setDuration(150).start();
@@ -243,6 +250,14 @@ public class HomeActivity extends AppCompatActivity {
     /* ========================================================= */
     /* ================= UTIL ================================ */
     /* ========================================================= */
+
+    private int getThemedColor(int attr) {
+        android.util.TypedValue typedValue = new android.util.TypedValue();
+        if (getTheme().resolveAttribute(attr, typedValue, true)) {
+            return typedValue.data;
+        }
+        return 0x33000000; // fallback
+    }
 
     private int dp(int v) {
         return (int) (v * getResources().getDisplayMetrics().density);

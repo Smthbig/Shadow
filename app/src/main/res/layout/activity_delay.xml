@@ -5,7 +5,7 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="@drawable/bg_shadow_gradient"
-    android:padding="20dp">
+    android:padding="24dp">
 
     <!-- CENTER CARD -->
     <com.google.android.material.card.MaterialCardView
@@ -13,8 +13,7 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_gravity="center"
-
-        app:cardCornerRadius="24dp"
+        app:cardCornerRadius="32dp"
         app:cardElevation="0dp"
         app:strokeWidth="1dp"
         app:strokeColor="?attr/colorOutline"
@@ -25,23 +24,23 @@
             android:layout_height="wrap_content"
             android:orientation="vertical"
             android:gravity="center"
-            android:padding="24dp">
+            android:padding="32dp">
 
             <!-- ================= PROGRESS ================= -->
-
             <FrameLayout
-                android:layout_width="match_parent"
-                android:layout_height="match_parent">
+                android:layout_width="140dp"
+                android:layout_height="140dp">
 
                 <com.google.android.material.progressindicator.CircularProgressIndicator
                     android:id="@+id/progress"
                     android:layout_width="match_parent"
                     android:layout_height="match_parent"
                     android:indeterminate="false"
-                    app:indicatorSize="120dp"
-                    app:trackThickness="6dp"
+                    app:indicatorSize="140dp"
+                    app:trackThickness="8dp"
                     app:trackColor="?attr/colorSurfaceVariant"
-                    app:indicatorColor="?attr/colorPrimary" />
+                    app:indicatorColor="?attr/colorPrimary"
+                    app:trackCornerRadius="4dp" />
 
                 <TextView
                     android:id="@+id/timer"
@@ -49,60 +48,59 @@
                     android:layout_height="match_parent"
                     android:gravity="center"
                     android:text="0s"
+                    style="@style/TextAppearance.Material3.HeadlineLarge"
                     android:textStyle="bold"
-                    android:textSize="22sp"
                     android:textColor="?attr/colorOnSurface"/>
             </FrameLayout>
 
             <!-- ================= TITLE ================= -->
-
             <com.google.android.material.textview.MaterialTextView
                 android:id="@+id/title"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                style="@style/TextAppearance.Material3.TitleLarge"
-                android:layout_marginTop="20dp"
+                style="@style/TextAppearance.Material3.HeadlineSmall"
+                android:layout_marginTop="28dp"
                 android:text="Wait"
                 android:textColor="?attr/colorOnSurface"
                 android:textStyle="bold"/>
 
             <!-- ================= SUBTITLE ================= -->
-
             <com.google.android.material.textview.MaterialTextView
                 android:id="@+id/subtitle"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                style="@style/TextAppearance.Material3.BodyMedium"
-                android:layout_marginTop="6dp"
+                style="@style/TextAppearance.Material3.BodyLarge"
+                android:layout_marginTop="8dp"
                 android:text="Processing..."
                 android:textColor="?attr/colorOnSurfaceVariant"
                 android:gravity="center"/>
 
             <!-- ================= ACTIONS ================= -->
-
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="24dp"
-                android:orientation="horizontal"
+                android:layout_marginTop="32dp"
+                android:orientation="vertical"
                 android:gravity="center">
-
-                <!-- CANCEL -->
-                <com.google.android.material.button.MaterialButton
-                    android:id="@+id/btn_cancel"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    style="@style/Widget.Material3.Button.OutlinedButton"
-                    android:layout_marginEnd="8dp"
-                    android:text="Cancel"/>
 
                 <!-- EXTEND -->
                 <com.google.android.material.button.MaterialButton
                     android:id="@+id/btn_extend"
-                    android:layout_width="wrap_content"
+                    android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     style="@style/Widget.Material3.Button"
-                    android:text="Get 5 min"/>
+                    android:text="Get 5 min extension"
+                    app:cornerRadius="20dp" />
+
+                <!-- CANCEL -->
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/btn_cancel"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    style="@style/Widget.Material3.Button.TextButton"
+                    android:layout_marginTop="8dp"
+                    android:text="Cancel and close"
+                    android:textColor="?attr/colorError" />
 
             </LinearLayout>
 
