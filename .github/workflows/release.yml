@@ -51,27 +51,22 @@ jobs:
 
       - name: Prepare Signing Key
         run: |
-          echo "${{ secrets.KEYSTORE_BASE64 }}" | base64 -d > app/shadow-keystore.jks
-          # Verify file exists and is not empty
-          if [ ! -s app/shadow-keystore.jks ]; then
+          # Use the root directory for simpler pathing
+          echo "${{ secrets.KEYSTORE_BASE64 }}" | base64 -d > release.keystore
+          if [ ! -s release.keystore ]; then
             echo "Keystore decoding failed"
             exit 1
           fi
 
       - name: Build Release APK
-        env:
-          # In Gradle, you should wire these to your signingConfig
-          KEYSTORE_FILE: "shadow-keystore.jks"
-          KEYSTORE_PASSWORD: ${{ secrets.KEYSTORE_PASSWORD }}
-          KEY_ALIAS: ${{ secrets.KEY_ALIAS }}
-          KEY_PASSWORD: ${{ secrets.KEY_PASSWORD }}
         run: |
           chmod +x gradlew
+          # Using absolute path for the keystore to avoid daemon path issues
           ./gradlew assembleRelease \
-            -Pandroid.injected.signing.store.file=$KEYSTORE_FILE \
-            -Pandroid.injected.signing.store.password=$KEYSTORE_PASSWORD \
-            -Pandroid.injected.signing.key.alias=$KEY_ALIAS \
-            -Pandroid.injected.signing.key.password=$KEY_PASSWORD
+            -Pandroid.injected.signing.store.file=${{ github.workspace }}/release.keystore \
+            -Pandroid.injected.signing.store.password=${{ secrets.KEYSTORE_PASSWORD }} \
+            -Pandroid.injected.signing.key.alias=${{ secrets.KEY_ALIAS }} \
+            -Pandroid.injected.signing.key.password=${{ secrets.KEY_PASSWORD }}
 
       - name: Prepare Artifact
         run: |
