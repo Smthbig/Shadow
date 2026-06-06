@@ -23,12 +23,12 @@ public class SetupActivity extends AppCompatActivity {
         setContentView(binding.getRoot());
         ThemeManager.applyWallpaper(this);
 
-        binding.continueButton.setEnabled(false);
+        binding.buttonContinue.setEnabled(false);
 
         binding.checkboxAccept.setOnCheckedChangeListener(
-                (buttonView, isChecked) -> binding.continueButton.setEnabled(isChecked));
+                (buttonView, isChecked) -> binding.buttonContinue.setEnabled(isChecked));
 
-        binding.continueButton.setOnClickListener(v -> {
+        binding.buttonContinue.setOnClickListener(v -> {
             SetupManager.markSetupDone(this);
 
             try {
