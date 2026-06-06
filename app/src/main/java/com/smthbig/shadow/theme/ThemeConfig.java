@@ -2,7 +2,6 @@ package com.smthbig.shadow.theme;
 
 import androidx.appcompat.app.AppCompatDelegate;
 import com.smthbig.shadow.R;
-import com.smthbig.shadow.data.FeatureStore;
 
 final class ThemeConfig {
 

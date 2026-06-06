@@ -41,4 +41,8 @@
 
     <color name="glow_light">#1A000000</color>
     <color name="glow_dark">#26FFFFFF</color>
+
+    <!-- Adaptive (base value; overridden in values-night) -->
+    <color name="glass_adaptive">@color/glass_white</color>
+    <color name="scrim_adaptive">@color/scrim_light</color>
 </resources>

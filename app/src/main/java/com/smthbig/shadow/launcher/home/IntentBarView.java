@@ -1,10 +1,8 @@
 package com.smthbig.shadow.launcher.home;
 
 import android.content.Context;
-import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.content.pm.ResolveInfo;
-import android.graphics.Color;
 import android.text.Editable;
 import android.text.TextWatcher;
 import android.util.AttributeSet;
@@ -21,6 +19,8 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.google.android.material.card.MaterialCardView;
 import com.google.android.material.textfield.TextInputEditText;
 import com.smthbig.shadow.R;
+import com.smthbig.shadow.di.ServiceLocator;
+import com.smthbig.shadow.repository.AppRepository;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -39,6 +39,8 @@ public class IntentBarView extends MaterialCardView {
     private List<ResolveInfo> allApps = new ArrayList<>();
     private List<ResolveInfo> filteredApps = new ArrayList<>();
     private Callback callback;
+    private PackageManager pm;
+    private AppRepository appRepository;
 
     public IntentBarView(@NonNull Context context, @Nullable AttributeSet attrs) {
         super(context, attrs);
@@ -64,7 +66,7 @@ public class IntentBarView extends MaterialCardView {
         if (getContext().getTheme().resolveAttribute(R.attr.shadowGlass, typedValue, true)) {
             setCardBackgroundColor(typedValue.data);
         } else {
-            setCardBackgroundColor(Color.TRANSPARENT);
+            setCardBackgroundColor(android.graphics.Color.TRANSPARENT);
         }
 
         LayoutInflater.from(context).inflate(R.layout.view_intent_bar, this, true);
@@ -72,6 +74,14 @@ public class IntentBarView extends MaterialCardView {
         input = findViewById(R.id.input);
         suggestionsList = findViewById(R.id.suggestions_list);
         emptyState = findViewById(R.id.empty_state);
+
+        pm = getContext().getPackageManager();
+        try {
+            appRepository = ServiceLocator.getInstance().getAppRepository();
+        } catch (IllegalStateException e) {
+            // ServiceLocator not initialized yet (e.g., in layout preview)
+            appRepository = null;
+        }
 
         loadApps();
 
@@ -136,10 +146,11 @@ public class IntentBarView extends MaterialCardView {
             suggestionsList.setVisibility(GONE);
             if (emptyState != null) emptyState.setVisibility(GONE);
         } else {
-            PackageManager pm = getContext().getPackageManager();
             String lowerQuery = query.toLowerCase();
             for (ResolveInfo app : allApps) {
-                String label = app.loadLabel(pm).toString().toLowerCase();
+                CharSequence labelSeq = app.loadLabel(pm);
+                if (labelSeq == null) continue;
+                String label = labelSeq.toString().toLowerCase();
                 if (label.contains(lowerQuery)) {
                     filteredApps.add(app);
                 }
@@ -156,10 +167,14 @@ public class IntentBarView extends MaterialCardView {
     }
 
     private void loadApps() {
-        PackageManager pm = getContext().getPackageManager();
-        Intent intent = new Intent(Intent.ACTION_MAIN, null);
-        intent.addCategory(Intent.CATEGORY_LAUNCHER);
-        allApps = pm.queryIntentActivities(intent, 0);
+        if (appRepository != null) {
+            allApps = appRepository.getLauncherApps();
+        } else {
+            // Fallback for layout preview
+            Intent intent = new Intent(android.content.Intent.ACTION_MAIN);
+            intent.addCategory(android.content.Intent.CATEGORY_LAUNCHER);
+            allApps = pm.queryIntentActivities(intent, 0);
+        }
     }
 
     private void submit() {
