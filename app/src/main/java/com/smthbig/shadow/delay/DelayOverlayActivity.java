@@ -1,253 +1,178 @@
 package com.smthbig.shadow.delay;
 
-import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
 import android.os.CountDownTimer;
+import android.util.Log;
 import android.view.HapticFeedbackConstants;
 import android.view.View;
-import android.widget.TextView;
 
 import androidx.activity.OnBackPressedCallback;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.lifecycle.ViewModelProvider;
 
-import com.google.android.material.button.MaterialButton;
-import com.google.android.material.progressindicator.CircularProgressIndicator;
-import com.smthbig.shadow.R;
-import com.smthbig.shadow.extension.ExtensionEngine;
+import com.smthbig.shadow.databinding.ActivityDelayBinding;
 import com.smthbig.shadow.theme.ThemeManager;
-
-import java.util.concurrent.TimeUnit;
+import com.smthbig.shadow.tracking.FrictionStore;
+import com.smthbig.shadow.viewmodel.DelayViewModel;
 
 public final class DelayOverlayActivity extends AppCompatActivity {
 
-    /* ================= EXTRAS ================= */
+    private static final String TAG = "DelayOverlay";
 
     private static final String EXTRA_MODE = "mode";
     private static final String EXTRA_DELAY = "delay";
     private static final String EXTRA_REASON = "reason";
     private static final String EXTRA_PACKAGE = "pkg";
-    private static final String EXTRA_EXTENSION = "extension";
+    private static final String EXTRA_EXTENSION_GRANTED = "extension_granted";
 
     private static final int MODE_DELAY = 1;
     private static final int MODE_BLOCK = 2;
+    private static final long EXTENSION_MINUTES = 5;
 
-    /* ================= STATE ================= */
-
+    private ActivityDelayBinding binding;
+    private DelayViewModel viewModel;
     private CountDownTimer timer;
     private boolean launched = false;
-    private long remainingMs = 0;
-
-    /* ========================================================= */
-    /* ================= FACTORY ================================ */
-    /* ========================================================= */
+    private String pkg;
 
     public static Intent delay(Context ctx, String pkg, long delayMs, String reason, boolean usingExtension) {
-        return base(ctx, pkg, reason, usingExtension)
+        return base(ctx, pkg, reason)
                 .putExtra(EXTRA_MODE, MODE_DELAY)
                 .putExtra(EXTRA_DELAY, delayMs);
     }
 
     public static Intent block(Context ctx, String pkg, String reason) {
-        return base(ctx, pkg, reason, false)
-                .putExtra(EXTRA_MODE, MODE_BLOCK);
+        return base(ctx, pkg, reason).putExtra(EXTRA_MODE, MODE_BLOCK);
     }
 
-    private static Intent base(Context ctx, String pkg, String reason, boolean usingExtension) {
+    private static Intent base(Context ctx, String pkg, String reason) {
         Intent i = new Intent(ctx, DelayOverlayActivity.class);
         i.putExtra(EXTRA_PACKAGE, pkg);
         i.putExtra(EXTRA_REASON, reason);
-        i.putExtra(EXTRA_EXTENSION, usingExtension);
         i.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
         return i;
     }
 
-    /* ========================================================= */
-    /* ================= LIFECYCLE ============================== */
-    /* ========================================================= */
-
     @Override
     protected void onCreate(Bundle savedInstanceState) {
-        ThemeManager.apply(this);
-        super.onCreate(savedInstanceState); 
+        ThemeManager.applyTheme(this);
+        super.onCreate(savedInstanceState);
 
-        setContentView(R.layout.activity_delay);
+        viewModel = new ViewModelProvider(this).get(DelayViewModel.class);
+        binding = ActivityDelayBinding.inflate(getLayoutInflater());
+        setContentView(binding.getRoot());
         ThemeManager.applyWallpaper(this);
 
-        // 🔒 Block back
-        getOnBackPressedDispatcher().addCallback(this,
-                new OnBackPressedCallback(true) {
-                    @Override
-                    public void handleOnBackPressed() {
-                        // no-op
-                    }
-                });
-
-        /* ================= INTENT ================= */
+        getOnBackPressedDispatcher().addCallback(this, new OnBackPressedCallback(true) {
+            @Override
+            public void handleOnBackPressed() { }
+        });
 
         Intent intent = getIntent();
-        if (intent == null) {
-            finish();
-            return;
-        }
+        if (intent == null) { finish(); return; }
 
         final int mode = intent.getIntExtra(EXTRA_MODE, MODE_BLOCK);
         final long delay = Math.max(0, intent.getLongExtra(EXTRA_DELAY, 0));
         final String reason = intent.getStringExtra(EXTRA_REASON);
-        final boolean usingExtension = intent.getBooleanExtra(EXTRA_EXTENSION, false);
-        final String pkg = intent.getStringExtra(EXTRA_PACKAGE);
+        pkg = intent.getStringExtra(EXTRA_PACKAGE);
+        long additionalExtension = intent.getLongExtra(EXTRA_EXTENSION_GRANTED, 0);
 
-        if (pkg == null || pkg.isEmpty()) {
-            finish();
+        if (pkg == null || pkg.isEmpty()) { finish(); return; }
+
+        Log.d(TAG, "Delay for " + pkg + ": " + delay + "ms, reason: " + reason);
+
+        viewModel.initialize(pkg, delay, additionalExtension);
+
+        binding.title.setText("Shadow Friction");
+        binding.subtitle.setText(viewModel.getQuote().getValue());
+        binding.btnCancel.setOnClickListener(v -> finish());
+
+        setupExtendButton();
+
+        if (mode == MODE_BLOCK || delay <= 0) {
+            binding.timer.setText(mode == MODE_BLOCK ? "Blocked" : "0s");
+            if (delay <= 0) launchOnce(pkg);
             return;
         }
 
-        /* ================= VIEWS ================= */
+        startTimer();
+    }
 
-        TextView title = findViewById(R.id.title);
-        TextView subtitle = findViewById(R.id.subtitle);
-        TextView timerText = findViewById(R.id.timer);
+    private void setupExtendButton() {
+        binding.btnExtend.setVisibility(View.VISIBLE);
+        binding.btnExtend.setOnClickListener(v -> {
+            if (launched) return;
 
-        MaterialButton btnCancel = findViewById(R.id.btn_cancel);
-        MaterialButton btnExtend = findViewById(R.id.btn_extend);
-        CircularProgressIndicator progress = findViewById(R.id.progress);
-
-        if (title == null || subtitle == null || timerText == null ||
-                btnCancel == null || btnExtend == null || progress == null) {
-            finish();
-            return;
-        }
-
-        ExtensionEngine engine = new ExtensionEngine(this);
-
-        /* ===================================================== */
-        /* ================= DELAY MODE ========================== */
-        /* ===================================================== */
-
-        title.setText("Shadow Friction");
-        subtitle.setText(getRandomQuote());
-
-        btnCancel.setOnClickListener(v -> finish());
-
-        /* ---------- EXTENSION ---------- */
-
-        btnExtend.setVisibility(View.VISIBLE);
-
-        btnExtend.setOnClickListener(v -> {
-
-            if (launched) return; // safety
-
-            long extra = TimeUnit.MINUTES.toMillis(5);
-            boolean granted = engine.grant(pkg, extra);
-
+            boolean granted = viewModel.grantExtension();
             if (granted) {
-                btnExtend.setText("Added +5m");
-                btnExtend.setEnabled(false); // One extension per intervention
-                btnExtend.performHapticFeedback(HapticFeedbackConstants.CONFIRM);
+                Log.d(TAG, "Extension granted for " + pkg);
+                binding.btnExtend.setText("+" + EXTENSION_MINUTES + "m added");
+                binding.btnExtend.setEnabled(false);
+                binding.btnExtend.performHapticFeedback(HapticFeedbackConstants.CONFIRM);
+
+                if (timer != null) timer.cancel();
+                startTimer();
+            } else {
+                android.widget.Toast.makeText(this,
+                        "Daily extension limit reached", android.widget.Toast.LENGTH_SHORT).show();
             }
         });
+    }
 
-        /* ---------- TIMER ---------- */
-
-        if (delay <= 0) {
+    private void startTimer() {
+        long totalMs = viewModel.getTotalMs();
+        if (totalMs <= 0) {
             launchOnce(pkg);
             return;
         }
 
-        remainingMs = delay;
-        startTimer(pkg, progress, timerText);
-    }
+        int safeMax = totalMs > Integer.MAX_VALUE ? Integer.MAX_VALUE : (int) totalMs;
+        binding.progress.setMax(Math.max(safeMax, 1));
+        binding.progress.setProgress(0);
 
-    private String getRandomQuote() {
-        String[] quotes = {
-            "Is this necessary?",
-            "Focus is a choice.",
-            "Stay intentional.",
-            "One breath of clarity.",
-            "Mind over impulse.",
-            "Respond, don't react.",
-            "Silence the noise.",
-            "The best way out is through.",
-            "You are the master of your time.",
-            "Inhale purpose, exhale distraction."
-        };
-        return quotes[(int) (Math.random() * quotes.length)];
-    }
-
-    /* ========================================================= */
-    /* ================= TIMER ================================ */
-    /* ========================================================= */
-
-    private void startTimer(String pkg, CircularProgressIndicator progress, TextView timerText) {
-
-        int safeMax = (int) Math.min(remainingMs, Integer.MAX_VALUE);
-
-        progress.setMax(safeMax);
-        progress.setProgress(0);
-
-        timer = new CountDownTimer(remainingMs, 50) {
-
+        timer = new CountDownTimer(totalMs, 100) {
             @Override
             public void onTick(long ms) {
                 if (launched) return;
-                remainingMs = ms;
+                viewModel.tick(ms);
 
-                int elapsed = (int) (safeMax - ms);
-                progress.setProgress(Math.max(0, elapsed));
-
-                timerText.setText(Math.max(0, (ms / 1000)) + "s");
+                int elapsed = safeMax - (int) ms;
+                binding.progress.setProgress(Math.max(0, Math.min(elapsed, safeMax)));
+                binding.timer.setText(String.valueOf(Math.max(1, (ms / 1000))) + "s");
             }
 
             @Override
             public void onFinish() {
-                if (!launched) {
-                    launchOnce(pkg);
-                }
+                if (!launched) launchOnce(pkg);
             }
         }.start();
     }
 
-    private void restartTimer(String pkg, CircularProgressIndicator progress, TextView timerText) {
-        if (timer != null) {
-            timer.cancel();
-            timer = null;
-        }
-        startTimer(pkg, progress, timerText);
-    }
-
-    /* ========================================================= */
-    /* ================= SAFE LAUNCH ============================ */
-    /* ========================================================= */
-
     private void launchOnce(String pkg) {
-
         if (launched) return;
         launched = true;
 
+        Log.d(TAG, "Launching " + pkg + " after delay");
+
         try {
             Intent launchIntent = getPackageManager().getLaunchIntentForPackage(pkg);
-
             if (launchIntent != null) {
                 launchIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
                 startActivity(launchIntent);
             }
-
-        } catch (Exception ignored) {}
+        } catch (Exception e) {
+            Log.e(TAG, "Failed to launch " + pkg, e);
+        }
 
         finish();
     }
 
-    /* ========================================================= */
-    /* ================= CLEANUP ================================ */
-    /* ========================================================= */
-
     @Override
     protected void onDestroy() {
         super.onDestroy();
-        
-        com.smthbig.shadow.tracking.FrictionStore.getInstance().clearActiveDelay();
-
+        FrictionStore.getInstance().clearActiveDelay();
         if (timer != null) {
             timer.cancel();
             timer = null;

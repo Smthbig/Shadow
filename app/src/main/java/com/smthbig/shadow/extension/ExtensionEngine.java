@@ -9,43 +9,31 @@ import java.util.concurrent.TimeUnit;
 public final class ExtensionEngine {
 
     private static final String PREF = "extension_store";
-
-    private static final long MAX_EXTENSION_PER_DAY =
-            TimeUnit.HOURS.toMillis(24); // Practically unlimited
-
-    private static final long MAX_SINGLE_GRANT =
-            TimeUnit.MINUTES.toMillis(10);
-
-    private static final long COOLDOWN_MS = 0; // No cooldown
+    private static final long MAX_EXTENSION_PER_DAY_MS = TimeUnit.HOURS.toMillis(24);
+    private static final long MAX_SINGLE_GRANT_MS = TimeUnit.MINUTES.toMillis(10);
+    private static final long COOLDOWN_MS = 0;
 
     private final SharedPreferences prefs;
 
     public ExtensionEngine(Context context) {
-        this.prefs =
-                context.getApplicationContext()
-                        .getSharedPreferences(PREF, Context.MODE_PRIVATE);
+        this.prefs = context.getApplicationContext()
+                .getSharedPreferences(PREF, Context.MODE_PRIVATE);
     }
 
-    /* ========================================================= */
-    /* ===================== GRANT ============================== */
-    /* ========================================================= */
-
     public boolean grant(String pkg, long requestMs) {
-
         if (pkg == null || requestMs <= 0) return false;
 
         long now = System.currentTimeMillis();
-
         resetIfNewDay(pkg);
 
         long lastGrant = getLong(pkg, "lastGrant");
         long dailyUsed = getLong(pkg, "daily");
 
         if (now - lastGrant < COOLDOWN_MS) return false;
-        if (dailyUsed >= MAX_EXTENSION_PER_DAY) return false;
+        if (dailyUsed >= MAX_EXTENSION_PER_DAY_MS) return false;
 
-        long allowed = Math.min(requestMs, MAX_SINGLE_GRANT);
-        allowed = Math.min(allowed, MAX_EXTENSION_PER_DAY - dailyUsed);
+        long allowed = Math.min(requestMs, MAX_SINGLE_GRANT_MS);
+        allowed = Math.min(allowed, MAX_EXTENSION_PER_DAY_MS - dailyUsed);
 
         if (allowed <= 0) return false;
 
@@ -60,19 +48,13 @@ public final class ExtensionEngine {
         return true;
     }
 
-    /* ========================================================= */
-    /* ===================== CONSUME ============================ */
-    /* ========================================================= */
-
     public void consume(String pkg, long ms) {
-
         if (pkg == null || ms <= 0) return;
 
         resetIfNewDay(pkg);
 
         long consumed = getConsumed(pkg);
         long granted = getGranted(pkg);
-
         long newConsumed = Math.min(granted, consumed + ms);
 
         prefs.edit()
@@ -80,29 +62,17 @@ public final class ExtensionEngine {
                 .apply();
     }
 
-    /* ========================================================= */
-    /* ===================== STATE ============================== */
-    /* ========================================================= */
-
     public long getRemainingMs(String pkg) {
-
         if (pkg == null) return 0;
-
         resetIfNewDay(pkg);
-
         long granted = getGranted(pkg);
         long consumed = getConsumed(pkg);
-
         return Math.max(0, granted - consumed);
     }
 
     public boolean hasExtension(String pkg) {
         return getRemainingMs(pkg) > 0;
     }
-
-    /* ========================================================= */
-    /* ===================== METADATA =========================== */
-    /* ========================================================= */
 
     public long getGrantedMs(String pkg) {
         return getGranted(pkg);
@@ -118,26 +88,19 @@ public final class ExtensionEngine {
     }
 
     public boolean canGrant(String pkg) {
-
         long now = System.currentTimeMillis();
-
         resetIfNewDay(pkg);
 
         long lastGrant = getLong(pkg, "lastGrant");
         long dailyUsed = getLong(pkg, "daily");
 
         if (now - lastGrant < COOLDOWN_MS) return false;
-        if (dailyUsed >= MAX_EXTENSION_PER_DAY) return false;
+        if (dailyUsed >= MAX_EXTENSION_PER_DAY_MS) return false;
 
         return true;
     }
 
-    /* ========================================================= */
-    /* ===================== RESET ============================== */
-    /* ========================================================= */
-
     private void resetIfNewDay(String pkg) {
-
         int today = currentDay();
         int storedDay = (int) getLong(pkg, "day");
 
@@ -150,10 +113,6 @@ public final class ExtensionEngine {
                     .apply();
         }
     }
-
-    /* ========================================================= */
-    /* ===================== INTERNAL =========================== */
-    /* ========================================================= */
 
     private long getGranted(String pkg) {
         return getLong(pkg, "granted");
@@ -172,13 +131,8 @@ public final class ExtensionEngine {
     }
 
     private int currentDay() {
-        Calendar c = Calendar.getInstance();
-        return c.get(Calendar.DAY_OF_YEAR);
+        return Calendar.getInstance().get(Calendar.DAY_OF_YEAR);
     }
-
-    /* ========================================================= */
-    /* ===================== CLEAR ============================== */
-    /* ========================================================= */
 
     public void clear(String pkg) {
         prefs.edit()

@@ -1,14 +1,18 @@
 package com.smthbig.shadow.policy;
 
+import android.util.Log;
+
 import java.util.concurrent.TimeUnit;
 
 public final class TimePolicyEngine {
 
-    // Threshold: Start adding friction when 70% of limit is REMAINING (30% used)
+    private static final String TAG = "TimePolicy";
+
     private static final float FRICTION_START_THRESHOLD = 0.7f;
-    
-    // Maximum base delay (ms) when limit is nearly 0
-    private static final long MAX_BASE_DELAY = 10000; // 10 seconds
+    private static final long MAX_BASE_DELAY_MS = TimeUnit.SECONDS.toMillis(10);
+    private static final long EXTENSION_BASE_DELAY_MS = TimeUnit.SECONDS.toMillis(5);
+    private static final long OVER_LIMIT_DELAY_MS = TimeUnit.SECONDS.toMillis(10);
+    private static final long MAX_TOTAL_DELAY_MS = TimeUnit.SECONDS.toMillis(30);
 
     public Decision evaluate(
             long remainingBaseMs,
@@ -16,50 +20,40 @@ public final class TimePolicyEngine {
             long remainingExtensionMs,
             long heatPenaltyMs
     ) {
-        // 1. UNLIMITED
         if (totalLimitMs <= 0 || remainingBaseMs == Long.MAX_VALUE) {
             return Decision.allow();
         }
 
-        // 2. BASE LIMIT FLOW
         if (remainingBaseMs > 0) {
             float percentRemaining = (float) remainingBaseMs / totalLimitMs;
-            
+
             if (percentRemaining > FRICTION_START_THRESHOLD) {
-                // No friction yet, but still apply heat penalty if user is spamming
                 if (heatPenaltyMs > 0) {
-                    return Decision.delay(heatPenaltyMs, "Slow down...", false);
+                    long capped = Math.min(heatPenaltyMs, MAX_TOTAL_DELAY_MS);
+                    return Decision.delay(capped, "Slow down...", false);
                 }
                 return Decision.allow();
             }
 
-            // Calculate incremental delay
-            // As percentRemaining goes from 0.7 -> 0.0, progress goes 0.0 -> 1.0
             float progress = (FRICTION_START_THRESHOLD - percentRemaining) / FRICTION_START_THRESHOLD;
-            long dynamicDelay = (long) (progress * MAX_BASE_DELAY);
-            
-            return Decision.delay(
-                    dynamicDelay + heatPenaltyMs,
-                    "Limit decreasing, delay increasing",
-                    false
-            );
+            long dynamicDelay = (long) (progress * MAX_BASE_DELAY_MS);
+            long totalDelay = Math.min(dynamicDelay + heatPenaltyMs, MAX_TOTAL_DELAY_MS);
+
+            Log.d(TAG, "Friction: remaining=" + percentRemaining
+                    + " dynamic=" + dynamicDelay + " heat=" + heatPenaltyMs
+                    + " total=" + totalDelay);
+
+            return Decision.delay(totalDelay, "Limit decreasing, delay increasing", false);
         }
 
-        // 3. EXTENSION FLOW
         if (remainingExtensionMs > 0) {
-            // Extension always has a high base friction to discourage use
-            long extDelay = 5000 + heatPenaltyMs; 
-            return Decision.delay(extDelay, "Using limited extension time", true);
+            long totalDelay = Math.min(EXTENSION_BASE_DELAY_MS + heatPenaltyMs, MAX_TOTAL_DELAY_MS);
+            return Decision.delay(totalDelay, "Using limited extension time", true);
         }
 
-        // 4. OVER LIMIT (NO EXTENSION YET)
-        // Instead of blocking, show a high-friction delay screen that allows extension
-        return Decision.delay(10000, "Limit reached. Add extension to continue.", false);
+        return Decision.delay(OVER_LIMIT_DELAY_MS,
+                "Limit reached. Add extension to continue.", false);
     }
-
-    /* ========================================================= */
-    /* ================= DECISION =============================== */
-    /* ========================================================= */
 
     public static final class Decision {
 
@@ -89,12 +83,7 @@ public final class TimePolicyEngine {
                 String reason,
                 boolean usingExtension
         ) {
-            return new Decision(
-                    false,
-                    Math.max(0, delayMs),
-                    reason,
-                    usingExtension
-            );
+            return new Decision(false, Math.max(0, delayMs), reason, usingExtension);
         }
 
         public static Decision block(String reason) {

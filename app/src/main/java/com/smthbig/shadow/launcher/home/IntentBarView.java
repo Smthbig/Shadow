@@ -4,9 +4,11 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.content.pm.ResolveInfo;
+import android.graphics.Color;
 import android.text.Editable;
 import android.text.TextWatcher;
 import android.util.AttributeSet;
+import android.util.TypedValue;
 import android.view.LayoutInflater;
 import android.view.inputmethod.EditorInfo;
 import android.view.inputmethod.InputMethodManager;
@@ -32,6 +34,7 @@ public class IntentBarView extends MaterialCardView {
 
     private TextInputEditText input;
     private RecyclerView suggestionsList;
+    private android.widget.TextView emptyState;
     private AppSuggestionAdapter adapter;
     private List<ResolveInfo> allApps = new ArrayList<>();
     private List<ResolveInfo> filteredApps = new ArrayList<>();
@@ -47,29 +50,28 @@ public class IntentBarView extends MaterialCardView {
     }
 
     private void init(Context context) {
-        // Enforce Card Styling
         setRadius(dpToPx(24));
         setCardElevation(dpToPx(12));
-        
-        // Resolve outline color from theme
-        android.util.TypedValue typedValue = new android.util.TypedValue();
-        if (getContext().getTheme().resolveAttribute(com.google.android.material.R.attr.colorOutline, typedValue, true)) {
+
+        TypedValue typedValue = new TypedValue();
+
+        if (getContext().getTheme().resolveAttribute(
+                com.google.android.material.R.attr.colorOutline, typedValue, true)) {
             setStrokeColor(typedValue.data);
         }
-        
         setStrokeWidth(1);
-        
-        // Resolve shadowGlass color from theme
+
         if (getContext().getTheme().resolveAttribute(R.attr.shadowGlass, typedValue, true)) {
             setCardBackgroundColor(typedValue.data);
         } else {
-            setCardBackgroundColor(android.graphics.Color.TRANSPARENT);
+            setCardBackgroundColor(Color.TRANSPARENT);
         }
 
         LayoutInflater.from(context).inflate(R.layout.view_intent_bar, this, true);
 
         input = findViewById(R.id.input);
         suggestionsList = findViewById(R.id.suggestions_list);
+        emptyState = findViewById(R.id.empty_state);
 
         loadApps();
 
@@ -104,7 +106,8 @@ public class IntentBarView extends MaterialCardView {
         });
 
         input.setOnEditorActionListener((v, actionId, event) -> {
-            if (actionId == EditorInfo.IME_ACTION_SEARCH || actionId == EditorInfo.IME_ACTION_DONE) {
+            if (actionId == EditorInfo.IME_ACTION_SEARCH
+                    || actionId == EditorInfo.IME_ACTION_DONE) {
                 submit();
                 return true;
             }
@@ -116,7 +119,8 @@ public class IntentBarView extends MaterialCardView {
         if (input != null) {
             input.setText("");
             input.requestFocus();
-            InputMethodManager imm = (InputMethodManager) getContext().getSystemService(Context.INPUT_METHOD_SERVICE);
+            InputMethodManager imm = (InputMethodManager) getContext()
+                    .getSystemService(Context.INPUT_METHOD_SERVICE);
             if (imm != null) imm.showSoftInput(input, InputMethodManager.SHOW_IMPLICIT);
         }
     }
@@ -130,6 +134,7 @@ public class IntentBarView extends MaterialCardView {
         filteredApps.clear();
         if (query.isEmpty()) {
             suggestionsList.setVisibility(GONE);
+            if (emptyState != null) emptyState.setVisibility(GONE);
         } else {
             PackageManager pm = getContext().getPackageManager();
             String lowerQuery = query.toLowerCase();
@@ -141,9 +146,11 @@ public class IntentBarView extends MaterialCardView {
             }
             if (!filteredApps.isEmpty()) {
                 suggestionsList.setVisibility(VISIBLE);
+                if (emptyState != null) emptyState.setVisibility(GONE);
                 adapter.notifyDataSetChanged();
             } else {
                 suggestionsList.setVisibility(GONE);
+                if (emptyState != null) emptyState.setVisibility(VISIBLE);
             }
         }
     }
@@ -156,7 +163,9 @@ public class IntentBarView extends MaterialCardView {
     }
 
     private void submit() {
-        String text = (input != null && input.getText() != null) ? input.getText().toString().trim() : "";
+        String text = (input != null && input.getText() != null)
+                ? input.getText().toString().trim()
+                : "";
         if (!text.isEmpty() && callback != null) {
             callback.onIntentEntered(text);
         } else if (callback != null) {
@@ -165,8 +174,11 @@ public class IntentBarView extends MaterialCardView {
     }
 
     private void hideKeyboard() {
-        InputMethodManager imm = (InputMethodManager) getContext().getSystemService(Context.INPUT_METHOD_SERVICE);
-        if (imm != null && input != null) imm.hideSoftInputFromWindow(input.getWindowToken(), 0);
+        InputMethodManager imm = (InputMethodManager) getContext()
+                .getSystemService(Context.INPUT_METHOD_SERVICE);
+        if (imm != null && input != null) {
+            imm.hideSoftInputFromWindow(input.getWindowToken(), 0);
+        }
     }
 
     private int dpToPx(int dp) {

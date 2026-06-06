@@ -1,33 +1,33 @@
 package com.smthbig.shadow.theme;
 
 import android.app.Activity;
-import android.content.Intent;
+import android.content.SharedPreferences;
 
 public final class ThemeRestarter {
+
+    private static final String PREF = "shadow_theme_restart";
+    private static final String KEY_PENDING_RESTART = "pending_restart";
 
     private ThemeRestarter() {}
 
     public static void restart(Activity activity) {
+        setPendingRestart(activity, true);
+        activity.recreate();
+    }
 
-        Intent intent =
-                activity.getPackageManager()
-                        .getLaunchIntentForPackage(activity.getPackageName());
-
-        if (intent == null) {
-            // fallback safety (should not happen normally)
-            activity.recreate();
-            return;
+    public static boolean consumePendingRestart(Activity activity) {
+        SharedPreferences prefs = activity.getSharedPreferences(PREF, Activity.MODE_PRIVATE);
+        boolean pending = prefs.getBoolean(KEY_PENDING_RESTART, false);
+        if (pending) {
+            prefs.edit().remove(KEY_PENDING_RESTART).apply();
         }
+        return pending;
+    }
 
-        // Clear full task and restart fresh
-        intent.addFlags(
-                Intent.FLAG_ACTIVITY_NEW_TASK |
-                Intent.FLAG_ACTIVITY_CLEAR_TASK
-        );
-
-        activity.startActivity(intent);
-
-        // Finish current activity stack safely
-        activity.finish();
+    private static void setPendingRestart(Activity activity, boolean pending) {
+        activity.getSharedPreferences(PREF, Activity.MODE_PRIVATE)
+                .edit()
+                .putBoolean(KEY_PENDING_RESTART, pending)
+                .apply();
     }
 }

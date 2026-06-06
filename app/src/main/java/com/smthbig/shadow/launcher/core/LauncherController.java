@@ -4,27 +4,31 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.content.pm.ResolveInfo;
+import android.util.Log;
+import android.widget.Toast;
 
 import com.smthbig.shadow.data.FeatureStore;
 import com.smthbig.shadow.data.limits.AppLimitStore;
 import com.smthbig.shadow.delay.DelayOverlayActivity;
+import com.smthbig.shadow.di.ServiceLocator;
 import com.smthbig.shadow.extension.ExtensionEngine;
 import com.smthbig.shadow.policy.TimePolicyEngine;
+import com.smthbig.shadow.repository.AppRepository;
+import com.smthbig.shadow.tracking.FrictionStore;
 import com.smthbig.shadow.tracking.UsageTracker;
 
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
 public final class LauncherController {
 
+    private static final String TAG = "LauncherCtrl";
     private static final long DEFAULT_LIMIT_MS = TimeUnit.MINUTES.toMillis(60);
-    private static final long LAUNCH_COOLDOWN_MS = 500; // anti-spam
-
-    // Heat settings
+    private static final long LAUNCH_COOLDOWN_MS = 500;
     private static final long HEAT_DECAY_MS = TimeUnit.MINUTES.toMillis(2);
-    private static final long PENALTY_PER_OPEN = 3000; // 3 seconds penalty per rapid open
+    private static final long PENALTY_PER_OPEN_MS = 3000;
+    private static final long RAPID_LAUNCH_WINDOW_MS = TimeUnit.MINUTES.toMillis(1);
 
     private final Context appContext;
     private final TimePolicyEngine policyEngine;
@@ -33,45 +37,49 @@ public final class LauncherController {
     private final ExtensionEngine extensionEngine;
     private final AppLauncher appLauncher;
     private final FeatureStore featureStore;
+    private final AppRepository appRepository;
 
     private final Map<String, Long> lastLaunchMap;
     private final Map<String, Long> heatMap;
 
     public LauncherController(Context context) {
+        ServiceLocator locator = ServiceLocator.getInstance();
         this.appContext = context.getApplicationContext();
-        this.policyEngine = new TimePolicyEngine();
-        this.appLimitStore = new AppLimitStore(appContext);
-        this.usageTracker = new UsageTracker(appContext);
-        this.extensionEngine = new ExtensionEngine(appContext);
-        this.appLauncher = new AppLauncher(appContext);
-        this.featureStore = new FeatureStore(appContext);
-        
-        // 🔥 Use persisted singleton store
-        this.lastLaunchMap = com.smthbig.shadow.tracking.FrictionStore.getInstance().getLastLaunchMap();
-        this.heatMap = com.smthbig.shadow.tracking.FrictionStore.getInstance().getHeatMap();
+        this.policyEngine = locator.getTimePolicyEngine();
+        this.appLimitStore = locator.getAppLimitStore();
+        this.usageTracker = locator.getUsageTracker();
+        this.extensionEngine = locator.getExtensionEngine();
+        this.appLauncher = locator.getAppLauncher();
+        this.featureStore = locator.getFeatureStore();
+        this.appRepository = locator.getAppRepository();
+
+        FrictionStore frictionStore = FrictionStore.getInstance();
+        this.lastLaunchMap = frictionStore.getLastLaunchMap();
+        this.heatMap = frictionStore.getHeatMap();
     }
 
-    /* ========================================================= */
-    /* ================= ENTRY ================================= */
-    /* ========================================================= */
-
     public void handleIntentText(String query) {
+        if (query == null || query.trim().isEmpty()) return;
 
-        if (query == null) return;
+        String trimmed = query.trim();
 
-        // 1. Direct package launch (from suggestions)
-        if (isPackageInstalled(query)) {
-            handleLaunch(query);
+        if (isPackageInstalled(trimmed)) {
+            Log.d(TAG, "Direct package launch: " + trimmed);
+            handleLaunch(trimmed);
             return;
         }
 
-        // 2. Resolve from label
-        String cleaned = normalize(query);
+        String cleaned = normalize(trimmed);
         if (cleaned.isEmpty()) return;
 
         String pkg = resolvePackage(cleaned);
-        if (pkg == null) return;
+        if (pkg == null) {
+            Log.w(TAG, "No package found for query: " + trimmed);
+            Toast.makeText(appContext, "No app found: " + trimmed, Toast.LENGTH_SHORT).show();
+            return;
+        }
 
+        Log.d(TAG, "Resolved: " + pkg + " from: " + trimmed);
         handleLaunch(pkg);
     }
 
@@ -84,25 +92,18 @@ public final class LauncherController {
         }
     }
 
-    /* ========================================================= */
-    /* ================= RESOLVE =============================== */
-    /* ========================================================= */
-
     private String resolvePackage(String normalizedQuery) {
-
         PackageManager pm = appContext.getPackageManager();
-
-        Intent base = new Intent(Intent.ACTION_MAIN);
-        base.addCategory(Intent.CATEGORY_LAUNCHER);
-
-        List<ResolveInfo> apps = pm.queryIntentActivities(base, 0);
-        if (apps == null) return null;
+        List<ResolveInfo> apps = appRepository.getLauncherApps();
+        if (apps == null || apps.isEmpty()) return null;
 
         ResolveInfo chosen = null;
 
         for (ResolveInfo info : apps) {
+            if (info == null || info.activityInfo == null) continue;
 
-            String label = normalize(info.loadLabel(pm).toString());
+            CharSequence labelSeq = info.loadLabel(pm);
+            String label = labelSeq != null ? normalize(labelSeq.toString()) : "";
 
             if (label.equals(normalizedQuery)) {
                 return info.activityInfo.packageName;
@@ -113,41 +114,34 @@ public final class LauncherController {
             }
         }
 
-        return chosen != null ? chosen.activityInfo.packageName : null;
+        return chosen != null && chosen.activityInfo != null
+                ? chosen.activityInfo.packageName
+                : null;
     }
 
-    /* ========================================================= */
-    /* ================= CORE ================================== */
-    /* ========================================================= */
-
     private void handleLaunch(String pkg) {
-
         if (pkg == null || pkg.isEmpty()) return;
 
-        // 🚀 FEATURE: WHITELIST BYPASS
         if (featureStore.isWhitelisted(pkg)) {
+            Log.d(TAG, "Whitelisted, direct launch: " + pkg);
             launchApp(pkg);
             return;
         }
 
         long now = System.currentTimeMillis();
-
-        /* ---------- HEAT CALCULATION ---------- */
         long heatPenalty = calculateHeatPenalty(pkg, now);
-        
-        // 🚀 FEATURE: DEEP FOCUS (Double Heat Penalty)
+
         if (featureStore.isDeepFocusEnabled()) {
             heatPenalty *= 2;
         }
 
-        /* ---------- ANTI-SPAM (Strict) ---------- */
         Long last = lastLaunchMap.get(pkg);
         if (last != null && (now - last) < LAUNCH_COOLDOWN_MS) {
+            Log.d(TAG, "Cooldown active for: " + pkg);
             return;
         }
         lastLaunchMap.put(pkg, now);
 
-        /* ---------- USAGE & LIMIT ---------- */
         long usedMs = usageTracker.getTodayUsageMs(pkg);
         long totalLimitMs = appLimitStore.getLimitMs(pkg);
         if (totalLimitMs <= 0) totalLimitMs = DEFAULT_LIMIT_MS;
@@ -155,17 +149,16 @@ public final class LauncherController {
         long remainingBaseMs = appLimitStore.getRemainingBaseMs(pkg, usedMs);
         long remainingExtensionMs = extensionEngine.getRemainingMs(pkg);
 
-        /* ---------- POLICY ---------- */
         TimePolicyEngine.Decision decision =
                 policyEngine.evaluate(remainingBaseMs, totalLimitMs, remainingExtensionMs, heatPenalty);
 
-        // 🚀 FEATURE: DEEP FOCUS (Double Delay)
         long finalDelay = decision.delayMs;
         if (featureStore.isDeepFocusEnabled() && finalDelay > 0) {
             finalDelay *= 2;
         }
 
-        /* ---------- ACTION ---------- */
+        Log.d(TAG, "Decision for " + pkg + ": blocked=" + decision.blocked
+                + " delay=" + finalDelay + "ms reason=" + decision.reason);
 
         if (decision.blocked) {
             usageTracker.logBlock();
@@ -175,26 +168,18 @@ public final class LauncherController {
 
         if (finalDelay > 0) {
             usageTracker.logDelay();
-            // Increase heat on delayed attempts
             updateHeat(pkg, now);
 
             if (decision.usingExtension) {
                 extensionEngine.consume(pkg, finalDelay);
             }
 
-            appLauncher.launch(
-                    DelayOverlayActivity.delay(
-                            appContext,
-                            pkg,
-                            finalDelay,
-                            decision.reason,
-                            decision.usingExtension));
+            appLauncher.launch(DelayOverlayActivity.delay(
+                    appContext, pkg, finalDelay, decision.reason, decision.usingExtension));
             return;
         }
 
-        /* ---------- SAFE LAUNCH ---------- */
-        // If launched frequently even without delay, increase heat
-        if (last != null && (now - last) < TimeUnit.MINUTES.toMillis(1)) {
+        if (last != null && (now - last) < RAPID_LAUNCH_WINDOW_MS) {
             updateHeat(pkg, now);
         }
 
@@ -212,35 +197,29 @@ public final class LauncherController {
         }
 
         float factor = 1.0f - ((float) elapsed / HEAT_DECAY_MS);
-        return (long) (PENALTY_PER_OPEN * factor);
+        return (long) (PENALTY_PER_OPEN_MS * factor);
     }
 
     private void updateHeat(String pkg, long now) {
         heatMap.put(pkg, now);
     }
 
-    /* ========================================================= */
-    /* ================= SAFE LAUNCH ============================ */
-    /* ========================================================= */
-
     private void launchApp(String pkg) {
-
         try {
             Intent launchIntent = appContext.getPackageManager().getLaunchIntentForPackage(pkg);
-
             if (launchIntent != null) {
                 appLauncher.launch(launchIntent);
+            } else {
+                Log.w(TAG, "No launch intent for: " + pkg);
+                Toast.makeText(appContext, "Cannot launch app", Toast.LENGTH_SHORT).show();
             }
-
-        } catch (Exception ignored) {
+        } catch (Exception e) {
+            Log.e(TAG, "Failed to launch: " + pkg, e);
+            Toast.makeText(appContext, "Failed to launch app", Toast.LENGTH_SHORT).show();
         }
     }
 
-    /* ========================================================= */
-    /* ================= UTILS ================================= */
-    /* ========================================================= */
-
-    private String normalize(String text) {
+    private static String normalize(String text) {
         return text.toLowerCase().replaceAll("[^a-z0-9]", "");
     }
 }

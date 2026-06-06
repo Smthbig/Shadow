@@ -1,6 +1,5 @@
 package com.smthbig.shadow.launcher.home;
 
-import android.content.Context;
 import android.content.pm.PackageManager;
 import android.content.pm.ResolveInfo;
 import android.view.LayoutInflater;
@@ -22,13 +21,13 @@ public class AppSuggestionAdapter extends RecyclerView.Adapter<AppSuggestionAdap
         void onClick(String pkg);
     }
 
-    private final Context context;
     private final List<ResolveInfo> apps;
     private final OnAppClick listener;
     private final PackageManager pm;
 
-    public AppSuggestionAdapter(Context context, List<ResolveInfo> apps, OnAppClick listener) {
-        this.context = context;
+    public AppSuggestionAdapter(android.content.Context context,
+                                 List<ResolveInfo> apps,
+                                 OnAppClick listener) {
         this.apps = apps;
         this.listener = listener;
         this.pm = context.getPackageManager();
@@ -37,7 +36,8 @@ public class AppSuggestionAdapter extends RecyclerView.Adapter<AppSuggestionAdap
     @NonNull
     @Override
     public ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
-        View view = LayoutInflater.from(context).inflate(R.layout.item_app_suggestion, parent, false);
+        View view = LayoutInflater.from(parent.getContext())
+                .inflate(R.layout.item_app_suggestion, parent, false);
         return new ViewHolder(view);
     }
 

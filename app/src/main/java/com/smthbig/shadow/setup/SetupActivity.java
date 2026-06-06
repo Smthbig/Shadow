@@ -2,57 +2,43 @@ package com.smthbig.shadow.setup;
 
 import android.content.Intent;
 import android.os.Bundle;
-import android.widget.Button;
-import android.widget.CheckBox;
+import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
 
-import com.smthbig.shadow.R;
+import com.smthbig.shadow.databinding.ActivitySetupBinding;
 import com.smthbig.shadow.setup.permissions.PermissionActivity;
 import com.smthbig.shadow.theme.ThemeManager;
 
 public class SetupActivity extends AppCompatActivity {
 
-    private CheckBox acceptCheckBox;
-    private Button continueButton;
+    private ActivitySetupBinding binding;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
-        ThemeManager.apply(this);
+        ThemeManager.applyTheme(this);
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_setup);
+
+        binding = ActivitySetupBinding.inflate(getLayoutInflater());
+        setContentView(binding.getRoot());
         ThemeManager.applyWallpaper(this);
 
-        acceptCheckBox = findViewById(R.id.checkbox_accept);
-        continueButton = findViewById(R.id.button_continue);
+        binding.continueButton.setEnabled(false);
 
-        continueButton.setEnabled(false);
+        binding.checkboxAccept.setOnCheckedChangeListener(
+                (buttonView, isChecked) -> binding.continueButton.setEnabled(isChecked));
 
-        acceptCheckBox.setOnCheckedChangeListener(
-                (buttonView, isChecked) -> {
-                    continueButton.setEnabled(isChecked);
-                });
+        binding.continueButton.setOnClickListener(v -> {
+            SetupManager.markSetupDone(this);
 
-        continueButton.setOnClickListener(
-                v -> {
-                    SetupManager.markSetupDone(this);
+            try {
+                startActivity(new Intent(this, PermissionActivity.class));
+            } catch (Exception e) {
+                Toast.makeText(this, "Error starting permission screen",
+                        Toast.LENGTH_LONG).show();
+            }
 
-                    try {
-                        Intent intent = new Intent(this, PermissionActivity.class);
-                        startActivity(intent);
-
-                    } catch (Exception e) {
-                        e.printStackTrace();
-
-                        // fallback debug (very important)
-                        android.widget.Toast.makeText(
-                                        this,
-                                        "PermissionActivity not found",
-                                        android.widget.Toast.LENGTH_LONG)
-                                .show();
-                    }
-
-                    finish();
-                });
+            finish();
+        });
     }
 }

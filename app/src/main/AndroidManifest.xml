@@ -99,7 +99,8 @@
         <activity
             android:name=".settings.SettingsActivity"
             android:exported="false"
-            android:theme="@style/Theme.Shadow.Base" />
+            android:theme="@style/Theme.Shadow.Base"
+            android:parentActivityName=".launcher.home.HomeActivity" />
 
         <!-- ============================= -->
         <!-- SERVICES -->

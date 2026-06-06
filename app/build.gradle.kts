@@ -5,9 +5,6 @@ plugins {
     id("com.android.application") version "8.2.2"
 }
 
-// -------------------------------
-// Load keystore properties (local)
-// -------------------------------
 val keystorePropsFile = rootProject.file("release.properties")
 val keystoreProps = Properties()
 
@@ -26,9 +23,6 @@ val hasValidSigningProps = listOf(
 
 val isCI = System.getenv("CI") == "true"
 
-// -------------------------------
-// Android Configuration
-// -------------------------------
 android {
     namespace = "com.smthbig.shadow"
     compileSdk = 34
@@ -37,19 +31,15 @@ android {
         applicationId = "com.smthbig.shadow"
         minSdk = 28
         targetSdk = 34
-        versionCode = 1
-        versionName = "1.0"
+        versionCode = 2
+        versionName = "2.0"
 
         vectorDrawables {
             useSupportLibrary = true
         }
     }
 
-    // -------------------------------
-    // Signing Configuration
-    // -------------------------------
     signingConfigs {
-
         val keystorePath = System.getenv("KEYSTORE_FILE")
 
         if (isCI && keystorePath != null) {
@@ -69,9 +59,6 @@ android {
         }
     }
 
-    // -------------------------------
-    // Build Types
-    // -------------------------------
     buildTypes {
         release {
             signingConfig = signingConfigs.findByName("release")
@@ -79,31 +66,19 @@ android {
         }
     }
 
-    // -------------------------------
-    // Lint
-    // -------------------------------
     lint {
         checkReleaseBuilds = false
     }
 
-    // -------------------------------
-    // Java Compatibility
-    // -------------------------------
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_17
         targetCompatibility = JavaVersion.VERSION_17
     }
 
-    // -------------------------------
-    // Features
-    // -------------------------------
     buildFeatures {
         viewBinding = true
     }
 
-    // -------------------------------
-    // Packaging
-    // -------------------------------
     packaging {
         resources {
             excludes += "/META-INF/{AL2.0,LGPL2.1}"
@@ -112,20 +87,25 @@ android {
     }
 }
 
-// -------------------------------
-// Compiler Options
-// -------------------------------
 tasks.withType<JavaCompile>().configureEach {
     options.compilerArgs.add("-Xlint:deprecation")
 }
 
-// -------------------------------
-// Dependencies
-// -------------------------------
 dependencies {
     implementation("com.google.android.material:material:1.11.0")
     implementation("androidx.appcompat:appcompat:1.6.1")
     implementation("androidx.constraintlayout:constraintlayout:2.1.4")
     implementation("androidx.startup:startup-runtime:1.1.1")
     implementation("androidx.interpolator:interpolator:1.0.0")
+
+    // ViewModel + LiveData
+    implementation("androidx.lifecycle:lifecycle-viewmodel:2.7.0")
+    implementation("androidx.lifecycle:lifecycle-livedata:2.7.0")
+    implementation("androidx.lifecycle:lifecycle-common-java8:2.7.0")
+
+    // RecyclerView
+    implementation("androidx.recyclerview:recyclerview:1.3.2")
+
+    // Swipe-to-refresh for loading states
+    implementation("androidx.swiperefreshlayout:swiperefreshlayout:1.1.0")
 }

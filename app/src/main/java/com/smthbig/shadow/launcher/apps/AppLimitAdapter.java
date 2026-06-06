@@ -36,7 +36,6 @@ public class AppLimitAdapter extends BaseAdapter {
 
     @Override
     public View getView(int i, View v, ViewGroup parent) {
-
         ViewHolder holder;
 
         if (v == null) {
@@ -52,9 +51,8 @@ public class AppLimitAdapter extends BaseAdapter {
         }
 
         AppItem item = list.get(i);
-
         holder.name.setText(item.label);
-        
+
         try {
             PackageManager pm = context.getPackageManager();
             Drawable icon = pm.getApplicationIcon(item.packageName);
@@ -64,17 +62,13 @@ public class AppLimitAdapter extends BaseAdapter {
             holder.icon.setVisibility(View.GONE);
         }
 
-        String text;
-
         if (item.limitMs == -1) {
-            text = "Unlimited";
-        } else if (item.limitMs == 0) {
-            text = "No limit";
+            holder.limit.setText("Unlimited");
+        } else if (item.limitMs <= 0) {
+            holder.limit.setText("No limit set");
         } else {
-            text = TimeUnit.MILLISECONDS.toMinutes(item.limitMs) + " min";
+            holder.limit.setText(TimeUnit.MILLISECONDS.toMinutes(item.limitMs) + " min");
         }
-
-        holder.limit.setText(text);
 
         return v;
     }

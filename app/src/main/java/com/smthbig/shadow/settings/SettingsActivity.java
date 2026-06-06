@@ -3,21 +3,21 @@ package com.smthbig.shadow.settings;
 import android.os.Bundle;
 import android.util.TypedValue;
 import android.view.LayoutInflater;
-import android.view.View;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.app.AlertDialog;
-import androidx.core.content.ContextCompat;
+import androidx.lifecycle.ViewModelProvider;
 
 import com.google.android.material.card.MaterialCardView;
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 import com.smthbig.shadow.R;
+import com.smthbig.shadow.databinding.ActivitySettingsBinding;
 import com.smthbig.shadow.theme.ThemeManager;
 import com.smthbig.shadow.theme.ThemeMode;
 import com.smthbig.shadow.theme.ThemeRestarter;
-import com.smthbig.shadow.tracking.UsageTracker;
+import com.smthbig.shadow.viewmodel.SettingsViewModel;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -26,27 +26,41 @@ public class SettingsActivity extends AppCompatActivity {
 
     private SettingsController controller;
     private List<SettingsItem> items;
-    private LinearLayout container;
-    private UsageTracker usageTracker;
-
-    private AlertDialog dialog; // keep reference
+    private SettingsViewModel viewModel;
+    private AlertDialog dialog;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         ThemeManager.applyTheme(this);
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_settings);
+
+        ActivitySettingsBinding binding = ActivitySettingsBinding.inflate(getLayoutInflater());
+        setContentView(binding.getRoot());
         ThemeManager.applyWallpaper(this);
 
+        viewModel = new ViewModelProvider(this).get(SettingsViewModel.class);
         controller = new SettingsController();
-        container = findViewById(R.id.settings_container);
-        usageTracker = new UsageTracker(this);
 
+        setupToolbar(binding);
         setupItems();
-        setupItemsUI();
+        setupItemsUI(binding);
+        setupObservers();
     }
 
-    /* ---------- DATA ---------- */
+    private void setupToolbar(ActivitySettingsBinding binding) {
+        setSupportActionBar(binding.toolbar);
+        if (getSupportActionBar() != null) {
+            getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+            getSupportActionBar().setDisplayShowTitleEnabled(false);
+        }
+        binding.toolbar.setNavigationOnClickListener(v -> finish());
+    }
+
+    @Override
+    public boolean onSupportNavigateUp() {
+        finish();
+        return true;
+    }
 
     private void setupItems() {
         items = new ArrayList<>();
@@ -61,42 +75,41 @@ public class SettingsActivity extends AppCompatActivity {
         items.add(new SettingsItem("Edit Whitelist", SettingsItem.TYPE_WHITELIST));
     }
 
-    /* ---------- LIST ---------- */
+    private void setupItemsUI(ActivitySettingsBinding binding) {
+        if (binding.settingsContainer == null) return;
+        binding.settingsContainer.removeAllViews();
 
-    private void setupItemsUI() {
-        if (container == null) return;
-        container.removeAllViews();
-
-        try {
-            addInsightHeader();
-        } catch (Exception ignored) {}
+        addInsightHeader(binding);
 
         for (SettingsItem item : items) {
             View itemView = LayoutInflater.from(this)
-                    .inflate(R.layout.item_setting_card, container, false);
+                    .inflate(R.layout.item_setting_card, binding.settingsContainer, false);
 
             TextView title = itemView.findViewById(R.id.title);
             if (title != null) title.setText(item.getTitle());
 
             itemView.setOnClickListener(v -> controller.handleItemClick(this, item));
-
-            container.addView(itemView);
+            binding.settingsContainer.addView(itemView);
         }
     }
 
-    private void addInsightHeader() {
+    private void setupObservers() {
+        viewModel.getTotalInterventions().observe(this, count -> {
+            // Insight header will be updated when recreated
+        });
+    }
+
+    private void addInsightHeader(ActivitySettingsBinding binding) {
         MaterialCardView card = new MaterialCardView(this);
         LinearLayout.LayoutParams params = new LinearLayout.LayoutParams(
-                LinearLayout.LayoutParams.MATCH_PARENT, 
-                LinearLayout.LayoutParams.WRAP_CONTENT
-        );
+                LinearLayout.LayoutParams.MATCH_PARENT,
+                LinearLayout.LayoutParams.WRAP_CONTENT);
         params.setMargins(0, 0, 0, dpToPx(24));
         card.setLayoutParams(params);
         card.setRadius(dpToPx(24));
         card.setCardElevation(0);
         card.setStrokeWidth(dpToPx(1));
-        
-        // Use standard theme attributes for universal compatibility
+
         int outline = getThemeColor(com.google.android.material.R.attr.colorOutline);
         int surface = getThemeColor(R.attr.shadowGlass);
         int onSurface = getThemeColor(com.google.android.material.R.attr.colorOnSurface);
@@ -116,9 +129,11 @@ public class SettingsActivity extends AppCompatActivity {
         title.setLetterSpacing(0.1f);
         title.setTextColor(onSurfaceVariant);
 
-        int totalFriction = (usageTracker != null) ? (usageTracker.getTotalDelays() + usageTracker.getTotalBlocks()) : 0;
+        Integer interventions = viewModel.getTotalInterventions().getValue();
+        int count = interventions != null ? interventions : 0;
+
         TextView score = new TextView(this);
-        score.setText(totalFriction + " Shadow Interventions");
+        score.setText(count + " Shadow Interventions");
         score.setTextSize(22);
         score.setTypeface(null, android.graphics.Typeface.BOLD);
         score.setTextColor(onSurface);
@@ -134,7 +149,7 @@ public class SettingsActivity extends AppCompatActivity {
         layout.addView(score);
         layout.addView(desc);
         card.addView(layout);
-        container.addView(card);
+        binding.settingsContainer.addView(card);
     }
 
     private int getThemeColor(int attr) {
@@ -149,17 +164,19 @@ public class SettingsActivity extends AppCompatActivity {
         return (int) (dp * getResources().getDisplayMetrics().density);
     }
 
-    /* ---------- THEME DIALOG ---------- */
-
     public void openThemeDialog() {
-        String[] names = {"System Default", "Light", "Dark", "Dynamic", "Shadow", "Glass", "Transparent Light", "Transparent Dark"};
-        String[] values = {ThemeMode.SYSTEM, ThemeMode.LIGHT, ThemeMode.DARK, ThemeMode.DYNAMIC, ThemeMode.SHADOW, ThemeMode.GLASS, ThemeMode.TRANSPARENT_LIGHT, ThemeMode.TRANSPARENT_DARK};
+        String[] names = {"System Default", "Light", "Dark", "Dynamic", "Shadow", "Glass",
+                "Transparent Light", "Transparent Dark"};
+        String[] values = {ThemeMode.SYSTEM, ThemeMode.LIGHT, ThemeMode.DARK, ThemeMode.DYNAMIC,
+                ThemeMode.SHADOW, ThemeMode.GLASS, ThemeMode.TRANSPARENT_LIGHT, ThemeMode.TRANSPARENT_DARK};
 
-        ThemeAdapter adapter = new ThemeAdapter(this, names, values, controller.getCurrentTheme(this), selected -> {
-            controller.applyTheme(this, selected);
-            if (dialog != null && dialog.isShowing()) dialog.dismiss();
-            ThemeRestarter.restart(this);
-        });
+        ThemeAdapter adapter = new ThemeAdapter(this, names, values,
+                controller.getCurrentTheme(this),
+                selected -> {
+                    controller.applyTheme(this, selected);
+                    if (dialog != null && dialog.isShowing()) dialog.dismiss();
+                    ThemeRestarter.restart(this);
+                });
 
         dialog = new MaterialAlertDialogBuilder(this)
                 .setTitle("Select Theme")

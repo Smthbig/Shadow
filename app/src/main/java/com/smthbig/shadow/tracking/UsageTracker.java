@@ -3,18 +3,18 @@ package com.smthbig.shadow.tracking;
 import android.content.Context;
 import android.content.SharedPreferences;
 
+import com.smthbig.shadow.repository.UsageStatsRepository;
+
 public final class UsageTracker {
 
     private static final String PREF_STATS = "shadow_friction_stats";
-    private final UsageStatsReader reader;
+    private final UsageStatsRepository usageStatsRepository;
     private final SharedPreferences statsPrefs;
 
-    public UsageTracker(Context context) {
-        this.reader = new UsageStatsReader(context);
+    public UsageTracker(Context context, UsageStatsRepository repository) {
+        this.usageStatsRepository = repository;
         this.statsPrefs = context.getSharedPreferences(PREF_STATS, Context.MODE_PRIVATE);
     }
-
-    /* ---------- FRICTION LOGGING ---------- */
 
     public void logDelay() {
         increment("total_delays");
@@ -37,25 +37,12 @@ public final class UsageTracker {
         return statsPrefs.getInt("total_blocks", 0);
     }
 
-    /* ---------- CORE ---------- */
-
     public long getTodayUsageMs(String packageName) {
-        return reader.getTodayForegroundTimeMs(packageName);
+        return usageStatsRepository.getTodayUsageMs(packageName);
     }
-
-    public long getTodayUsageMinutes(String packageName) {
-        return getTodayUsageMs(packageName) / (60 * 1000);
-    }
-
-    /* ---------- STATE SNAPSHOT (IMPORTANT) ---------- */
 
     public UsageSnapshot getSnapshot(String packageName) {
-
         long usedMs = getTodayUsageMs(packageName);
-
-        return new UsageSnapshot(
-                packageName,
-                usedMs
-        );
+        return new UsageSnapshot(packageName, usedMs);
     }
 }

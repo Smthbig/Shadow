@@ -1,24 +1,24 @@
 package com.smthbig.shadow.launcher.apps;
 
-import android.graphics.Color;
 import android.os.Bundle;
-import android.view.WindowInsetsController;
-import android.widget.ListView;
+import android.text.InputType;
+import android.widget.FrameLayout;
 
 import androidx.appcompat.app.AppCompatActivity;
 
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
+import com.google.android.material.textfield.TextInputEditText;
 import com.smthbig.shadow.R;
 import com.smthbig.shadow.data.limits.AppLimitStore;
+import com.smthbig.shadow.databinding.ActivityAppLimitBinding;
+import com.smthbig.shadow.di.ServiceLocator;
+import com.smthbig.shadow.repository.AppRepository;
 import com.smthbig.shadow.theme.ThemeManager;
-import com.smthbig.shadow.theme.ThemeMode;
 
 import android.content.pm.ApplicationInfo;
 import android.content.pm.PackageManager;
 
 import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Comparator;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 
@@ -26,7 +26,7 @@ public final class AppLimitActivity extends AppCompatActivity {
 
     private AppLimitStore limitStore;
     private PackageManager pm;
-
+    private AppRepository appRepository;
     private final List<AppItem> appList = new ArrayList<>();
     private AppLimitAdapter adapter;
 
@@ -35,135 +35,87 @@ public final class AppLimitActivity extends AppCompatActivity {
         ThemeManager.applyTheme(this);
         super.onCreate(savedInstanceState);
 
-        setContentView(R.layout.activity_app_limit);
+        ActivityAppLimitBinding binding = ActivityAppLimitBinding.inflate(getLayoutInflater());
+        setContentView(binding.getRoot());
         ThemeManager.applyWallpaper(this);
 
-        limitStore = new AppLimitStore(this);
+        ServiceLocator locator = ServiceLocator.getInstance();
+        limitStore = locator.getAppLimitStore();
+        appRepository = locator.getAppRepository();
         pm = getPackageManager();
 
-        ListView listView = findViewById(R.id.app_list);
-
         adapter = new AppLimitAdapter(this, appList);
-        listView.setAdapter(adapter);
+        binding.appList.setAdapter(adapter);
+        binding.appList.setOnItemClickListener((p, v, i, id) -> showLimitPicker(appList.get(i).packageName));
 
-        listView.setOnItemClickListener(
-                (p, v, i, id) -> showLimitPicker(appList.get(i).packageName));
-
-        loadApps(); // load after adapter bind
+        loadApps();
     }
 
-    /* ---------- LOAD APPS ---------- */
-
     private void loadApps() {
-
         appList.clear();
 
-        List<ApplicationInfo> apps = pm.getInstalledApplications(0);
-
-        List<ApplicationInfo> launchable = new ArrayList<>();
+        List<ApplicationInfo> apps = appRepository.getLaunchableApps();
 
         for (ApplicationInfo app : apps) {
-            if (pm.getLaunchIntentForPackage(app.packageName) != null) {
-                launchable.add(app);
-            }
-        }
-
-        Collections.sort(
-                launchable,
-                Comparator.comparing(a -> pm.getApplicationLabel(a).toString().toLowerCase()));
-
-        for (ApplicationInfo app : launchable) {
-
             String label = pm.getApplicationLabel(app).toString();
             long limit = limitStore.getLimitMs(app.packageName);
-
             appList.add(new AppItem(label, app.packageName, limit));
         }
 
-        if (adapter != null) {
-            adapter.notifyDataSetChanged();
-        }
+        if (adapter != null) adapter.notifyDataSetChanged();
     }
 
-    /* ---------- LIMIT PICKER ---------- */
-
     private void showLimitPicker(String pkg) {
-
-        String[] options = {"Unlimited", "15 min", "30 min", "1 hour", "2 hours", "Custom"};
+        String[] options = {"No limit", "15 min", "30 min", "1 hour", "2 hours", "Custom"};
 
         new MaterialAlertDialogBuilder(this)
-                .setTitle("Set limit")
-                .setItems(
-                        options,
-                        (d, which) -> {
-                            d.dismiss(); // 🔥 IMPORTANT FIX
-
-                            switch (which) {
-                                case 0:
-                                    limitStore.setLimitMs(pkg, -1);
-                                    refresh();
-                                    break;
-
-                                case 1:
-                                    save(pkg, 15);
-                                    refresh();
-                                    break;
-
-                                case 2:
-                                    save(pkg, 30);
-                                    refresh();
-                                    break;
-
-                                case 3:
-                                    save(pkg, 60);
-                                    refresh();
-                                    break;
-
-                                case 4:
-                                    save(pkg, 120);
-                                    refresh();
-                                    break;
-
-                                case 5:
-                                    // 🔥 delay to avoid window conflict
-                                    new android.os.Handler(android.os.Looper.getMainLooper())
-                                            .post(() -> showCustomPicker(pkg));
-                                    break;
-                            }
-                        })
+                .setTitle("Set limit for " + getAppLabel(pkg))
+                .setItems(options, (d, which) -> {
+                    d.dismiss();
+                    switch (which) {
+                        case 0:
+                            limitStore.clearLimit(pkg);
+                            refresh();
+                            break;
+                        case 1: save(pkg, 15); refresh(); break;
+                        case 2: save(pkg, 30); refresh(); break;
+                        case 3: save(pkg, 60); refresh(); break;
+                        case 4: save(pkg, 120); refresh(); break;
+                        case 5:
+                            new android.os.Handler(android.os.Looper.getMainLooper())
+                                    .post(() -> showCustomPicker(pkg));
+                            break;
+                    }
+                })
                 .show();
     }
 
     private void showCustomPicker(String pkg) {
+        TextInputEditText input = new TextInputEditText(this);
+        input.setInputType(InputType.TYPE_CLASS_NUMBER);
+        input.setHint("Minutes (min 1)");
 
-        com.google.android.material.textfield.TextInputEditText input = 
-                new com.google.android.material.textfield.TextInputEditText(this);
-        input.setInputType(android.text.InputType.TYPE_CLASS_NUMBER);
-        input.setHint("Minutes");
-
-        android.widget.FrameLayout container = new android.widget.FrameLayout(this);
-        android.widget.FrameLayout.LayoutParams params = new  android.widget.FrameLayout.LayoutParams(
-                android.view.ViewGroup.LayoutParams.MATCH_PARENT, 
-                android.view.ViewGroup.LayoutParams.WRAP_CONTENT);
+        FrameLayout container = new FrameLayout(this);
+        FrameLayout.LayoutParams params = new FrameLayout.LayoutParams(
+                FrameLayout.LayoutParams.MATCH_PARENT,
+                FrameLayout.LayoutParams.WRAP_CONTENT);
         params.leftMargin = dpToPx(24);
         params.rightMargin = dpToPx(24);
         input.setLayoutParams(params);
         container.addView(input);
 
         new MaterialAlertDialogBuilder(this)
-                .setTitle("Custom limit")
+                .setTitle("Custom limit (minutes)")
                 .setView(container)
-                .setPositiveButton(
-                        "Save",
-                        (d, w) -> {
-                            try {
-                                String val = input.getText().toString();
-                                if (!val.isEmpty()) {
-                                    save(pkg, Integer.parseInt(val));
-                                    refresh();
-                                }
-                            } catch (Exception ignored) {}
-                        })
+                .setPositiveButton("Save", (d, w) -> {
+                    try {
+                        int minutes = Integer.parseInt(input.getText().toString());
+                        if (minutes > 0) {
+                            save(pkg, minutes);
+                            refresh();
+                        }
+                    } catch (NumberFormatException ignored) {}
+                })
                 .setNegativeButton("Cancel", null)
                 .show();
     }
@@ -172,10 +124,16 @@ public final class AppLimitActivity extends AppCompatActivity {
         return (int) (dp * getResources().getDisplayMetrics().density);
     }
 
-    /* ---------- HELPERS ---------- */
+    private String getAppLabel(String pkg) {
+        try {
+            return pm.getApplicationLabel(pm.getApplicationInfo(pkg, 0)).toString();
+        } catch (Exception e) {
+            return pkg;
+        }
+    }
 
     private void save(String pkg, int minutes) {
-        limitStore.setLimitMs(pkg, TimeUnit.MINUTES.toMillis(minutes));
+        limitStore.setLimitMs(pkg, TimeUnit.MINUTES.toMillis(Math.max(1, minutes)));
     }
 
     private void refresh() {

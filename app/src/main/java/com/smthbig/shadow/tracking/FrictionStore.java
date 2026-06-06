@@ -1,21 +1,14 @@
 package com.smthbig.shadow.tracking;
 
-import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
-/**
- * Maintenance singleton to store volatile friction state.
- * This ensures that "Launch Heat" and "Cooldowns" survive HomeActivity recreation
- * (e.g. on configuration changes or theme switches).
- */
 public final class FrictionStore {
 
     private static FrictionStore instance;
 
-    private final Map<String, Long> lastLaunchMap = new HashMap<>();
-    private final Map<String, Long> heatMap = new HashMap<>();
-    
-    // Safety check for UsageMonitorService to prevent overlapping overlays
+    private final Map<String, Long> lastLaunchMap = new ConcurrentHashMap<>();
+    private final Map<String, Long> heatMap = new ConcurrentHashMap<>();
     private String activeDelayPackage = null;
 
     private FrictionStore() {}

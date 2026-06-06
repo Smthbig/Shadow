@@ -9,18 +9,16 @@ import android.view.View;
 import androidx.annotation.Nullable;
 
 import java.util.Calendar;
-import com.smthbig.shadow.R;
 
 public class DoomsdayView extends View {
 
     private Paint paintActive;
     private Paint paintInactive;
     private DoomsdayStore store;
-    
+
     private int totalDots = 0;
     private int activeDots = 0;
 
-    // Cached drawing metrics
     private float cachedSpacing = 0;
     private float cachedRadius = 0;
     private int cachedCols = 0;
@@ -45,12 +43,8 @@ public class DoomsdayView extends View {
         int active = store.getActiveColor();
         int inactive = store.getInactiveColor();
 
-        if (active == 0) {
-            active = getThemeColor(R.attr.doomsdayActive);
-        }
-        if (inactive == 0) {
-            inactive = getThemeColor(R.attr.doomsdayInactive);
-        }
+        if (active == 0) active = getThemeColor(com.smthbig.shadow.R.attr.doomsdayActive);
+        if (inactive == 0) inactive = getThemeColor(com.smthbig.shadow.R.attr.doomsdayInactive);
 
         paintActive.setColor(active);
         paintInactive.setColor(inactive);
@@ -63,7 +57,8 @@ public class DoomsdayView extends View {
         switch (scale) {
             case WEEK:
                 totalDots = 7;
-                activeDots = calendar.get(Calendar.DAY_OF_WEEK);
+                int dow = calendar.get(Calendar.DAY_OF_WEEK);
+                activeDots = ((dow + 5) % 7) + 1;
                 break;
             case MONTH:
                 totalDots = calendar.getActualMaximum(Calendar.DAY_OF_MONTH);
@@ -74,8 +69,10 @@ public class DoomsdayView extends View {
                 activeDots = calendar.get(Calendar.DAY_OF_YEAR);
                 break;
             case CUSTOM:
-                totalDots = store.getCustomDays();
-                activeDots = 1;
+                totalDots = Math.max(1, store.getCustomDays());
+                int dayOfYear = calendar.get(Calendar.DAY_OF_YEAR);
+                int daysInYear = calendar.getActualMaximum(Calendar.DAY_OF_YEAR);
+                activeDots = Math.max(1, (int) ((float) dayOfYear / daysInYear * totalDots));
                 break;
         }
 
@@ -89,17 +86,17 @@ public class DoomsdayView extends View {
     @Override
     protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec) {
         int width = MeasureSpec.getSize(widthMeasureSpec);
-        if (width == 0) {
+        if (width == 0 || totalDots <= 0) {
             setMeasuredDimension(0, 0);
             return;
         }
-        
+
         cachedCols = (totalDots > 14) ? 20 : totalDots;
         int rows = (int) Math.ceil((float) totalDots / cachedCols);
 
         cachedSpacing = (float) width / (cachedCols + 1);
         cachedRadius = cachedSpacing / 3.5f;
-        
+
         int desiredHeight = (int) ((cachedRadius * 3) + (rows * cachedRadius * 3.5f));
         setMeasuredDimension(width, desiredHeight);
     }

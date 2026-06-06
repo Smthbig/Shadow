@@ -1,6 +1,8 @@
 package com.smthbig.shadow;
 
 import android.app.Application;
+
+import com.smthbig.shadow.di.ServiceLocator;
 import com.smthbig.shadow.theme.ThemeManager;
 
 public class App extends Application {
@@ -9,7 +11,7 @@ public class App extends Application {
     public void onCreate() {
         super.onCreate();
 
-        // 🔥 Apply theme globally BEFORE any activity
+        ServiceLocator.init(this);
         ThemeManager.applyGlobal(this);
     }
 }
