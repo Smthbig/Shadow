@@ -21,7 +21,7 @@ env:
 jobs:
   nightly:
     name: Build Nightly APK
-    if: vars.NIGHTLY_ENABLED == 'true' || github.event_name == 'workflow_dispatch'
+    if: github.event_name == 'push' || github.event_name == 'workflow_dispatch' || vars.NIGHTLY_ENABLED == 'true'
     runs-on: ubuntu-latest
     timeout-minutes: 30
 
