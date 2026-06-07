@@ -14,6 +14,16 @@
         <item name="fluxToday">@color/flux_today</item>
         <item name="doomsdayActive">?attr/colorPrimary</item>
         <item name="doomsdayInactive">?attr/colorSurfaceVariant</item>
+        <item name="fluxRingFocus">@color/flux_ring_focus</item>
+        <item name="fluxRingStreak">@color/flux_ring_streak</item>
+        <item name="fluxRingTasks">@color/flux_ring_tasks</item>
+        <item name="fluxRingHours">@color/flux_ring_hours</item>
+        <item name="fluxRingTrack">@color/flux_ring_track</item>
+        <item name="fluxGlassBackground">@color/flux_glass_background</item>
+        <item name="fluxGlassStroke">@color/flux_glass_stroke</item>
+        <item name="fluxAuraPrimary">@color/flux_aura_primary</item>
+        <item name="fluxAuraSecondary">@color/flux_aura_secondary</item>
+        <item name="fluxCommandBarBackground">@color/flux_command_bar_background</item>
     </style>
 
     <style name="Theme.Flux.Dark" parent="Theme.Flux.Base">

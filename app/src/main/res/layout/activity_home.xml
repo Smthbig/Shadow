@@ -4,355 +4,514 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:id="@+id/root"
     android:layout_width="match_parent"
-    android:layout_height="match_parent">
+    android:layout_height="match_parent"
+    android:background="?attr/android:colorBackground">
 
-    <View
-        android:id="@+id/background_layer"
+    <com.smthbig.shadow.launcher.home.AuraGradientView
+        android:id="@+id/aura_background"
         android:layout_width="match_parent"
         android:layout_height="match_parent" />
 
-    <FrameLayout
-        android:id="@+id/content_container"
+    <androidx.core.widget.NestedScrollView
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:clickable="true"
-        android:focusable="true">
+        android:clipToPadding="false"
+        android:paddingBottom="24dp"
+        android:fillViewport="true"
+        android:overScrollMode="never">
 
         <LinearLayout
             android:layout_width="match_parent"
-            android:layout_height="match_parent"
+            android:layout_height="wrap_content"
             android:orientation="vertical"
-            android:gravity="center_horizontal"
-            android:paddingTop="56dp"
-            android:paddingBottom="32dp"
-            android:clipToPadding="false">
+            android:paddingStart="20dp"
+            android:paddingEnd="20dp"
+            android:paddingTop="56dp">
 
+            <!-- === HEADER: Greeting + Clock + Date === -->
             <LinearLayout
-                android:layout_width="wrap_content"
-                android:layout_height="0dp"
-                android:layout_weight="1"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
                 android:orientation="vertical"
-                android:gravity="center">
+                android:gravity="start"
+                android:layout_marginBottom="24dp">
 
-                <!-- Clock -->
+                <TextView
+                    android:id="@+id/greeting"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:textSize="13sp"
+                    android:letterSpacing="0.08"
+                    android:textColor="?attr/colorOnSurfaceVariant"
+                    android:fontFamily="sans-serif-medium"
+                    android:alpha="0.6" />
+
                 <TextClock
                     android:id="@+id/clock"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:format12Hour="hh:mm"
                     android:format24Hour="HH:mm"
-                    android:textSize="56sp"
+                    android:textSize="64sp"
                     android:textColor="?attr/colorOnSurface"
                     android:fontFamily="sans-serif-thin"
-                    android:letterSpacing="-0.02" />
+                    android:letterSpacing="-0.03"
+                    android:includeFontPadding="false"
+                    android:layout_marginTop="-8dp" />
 
-                <!-- Date -->
                 <TextView
                     android:id="@+id/date_label"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:textSize="11sp"
+                    android:letterSpacing="0.05"
                     android:textColor="?attr/colorOnSurfaceVariant"
-                    android:letterSpacing="0.06"
-                    android:layout_marginTop="4dp" />
+                    android:alpha="0.45"
+                    android:layout_marginTop="2dp" />
+            </LinearLayout>
 
-                <!-- Greeting -->
-                <TextView
-                    android:id="@+id/greeting"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:textSize="12sp"
-                    android:textColor="?attr/colorOnSurfaceVariant"
-                    android:layout_marginTop="20dp"
-                    android:alpha="0.5" />
+            <!-- === AI INSIGHT CARD === -->
+            <com.google.android.material.card.MaterialCardView
+                android:id="@+id/insight_card"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="16dp"
+                app:cardCornerRadius="16dp"
+                app:cardElevation="0dp"
+                app:strokeWidth="1dp"
+                app:strokeColor="?attr/fluxGlassStroke"
+                app:cardBackgroundColor="?attr/fluxGlassBackground">
 
-                <!-- Intention + Goal Card -->
-                <com.google.android.material.card.MaterialCardView
-                    android:id="@+id/goal_card"
+                <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:layout_marginHorizontal="24dp"
-                    android:layout_marginTop="20dp"
-                    app:cardCornerRadius="16dp"
+                    android:orientation="horizontal"
+                    android:gravity="center_vertical"
+                    android:padding="14dp">
+
+                    <TextView
+                        android:id="@+id/insight_icon"
+                        android:layout_width="32dp"
+                        android:layout_height="32dp"
+                        android:textSize="16sp"
+                        android:gravity="center"
+                        android:text="✦"
+                        android:textColor="?attr/colorPrimary"
+                        android:alpha="0.8" />
+
+                    <TextView
+                        android:id="@+id/insight_text"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:layout_marginStart="10dp"
+                        android:textSize="12sp"
+                        android:textColor="?attr/colorOnSurface"
+                        android:alpha="0.7"
+                        android:letterSpacing="0.02"
+                        android:maxLines="2"
+                        android:ellipsize="end" />
+                </LinearLayout>
+            </com.google.android.material.card.MaterialCardView>
+
+            <!-- === PRODUCTIVITY RINGS (2x2 grid) === -->
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Today"
+                android:textSize="10sp"
+                android:letterSpacing="0.12"
+                android:textColor="?attr/colorOnSurfaceVariant"
+                android:fontFamily="sans-serif-medium"
+                android:alpha="0.4"
+                android:layout_marginBottom="12dp" />
+
+            <GridLayout
+                android:id="@+id/rings_grid"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:columnCount="4"
+                android:rowCount="1"
+                android:layout_marginBottom="20dp">
+
+                <com.smthbig.shadow.launcher.home.CircularProgressRingView
+                    android:id="@+id/ring_focus"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_columnWeight="1"
+                    android:minHeight="80dp" />
+
+                <com.smthbig.shadow.launcher.home.CircularProgressRingView
+                    android:id="@+id/ring_streak"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_columnWeight="1"
+                    android:minHeight="80dp" />
+
+                <com.smthbig.shadow.launcher.home.CircularProgressRingView
+                    android:id="@+id/ring_tasks"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_columnWeight="1"
+                    android:minHeight="80dp" />
+
+                <com.smthbig.shadow.launcher.home.CircularProgressRingView
+                    android:id="@+id/ring_hours"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_columnWeight="1"
+                    android:minHeight="80dp" />
+            </GridLayout>
+
+            <!-- === GOAL PROGRESS === -->
+            <com.google.android.material.card.MaterialCardView
+                android:id="@+id/goal_card"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="16dp"
+                app:cardCornerRadius="16dp"
+                app:cardElevation="0dp"
+                app:strokeWidth="1dp"
+                app:strokeColor="?attr/colorOutline"
+                app:cardBackgroundColor="?attr/colorSurface">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    android:padding="16dp">
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="horizontal"
+                        android:gravity="center_vertical">
+
+                        <TextView
+                            android:id="@+id/goal_label"
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1"
+                            android:text="@string/today_goal_label"
+                            android:textSize="10sp"
+                            android:letterSpacing="0.1"
+                            android:textColor="?attr/colorOnSurfaceVariant"
+                            android:fontFamily="sans-serif-medium" />
+
+                        <TextView
+                            android:id="@+id/goal_progress_text"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:textSize="10sp"
+                            android:textColor="?attr/colorSecondary"
+                            android:fontFamily="sans-serif-medium" />
+                    </LinearLayout>
+
+                    <TextView
+                        android:id="@+id/intention_text"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:textSize="15sp"
+                        android:textColor="?attr/colorOnSurface"
+                        android:layout_marginTop="8dp"
+                        android:maxLines="1"
+                        android:ellipsize="end"
+                        android:fontFamily="sans-serif"
+                        android:textStyle="bold"
+                        android:background="?attr/selectableItemBackground"
+                        android:paddingVertical="2dp"
+                        android:paddingHorizontal="2dp"
+                        android:gravity="start" />
+
+                    <LinearLayout
+                        android:id="@+id/progress_section"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="vertical"
+                        android:layout_marginTop="10dp">
+
+                        <ProgressBar
+                            android:id="@+id/goal_progress"
+                            style="?android:attr/progressBarStyleHorizontal"
+                            android:layout_width="match_parent"
+                            android:layout_height="3dp"
+                            android:max="100"
+                            android:progress="0"
+                            android:progressTint="?attr/colorPrimary"
+                            android:progressBackgroundTint="?attr/colorSurfaceVariant" />
+
+                        <TextView
+                            android:id="@+id/goal_minutes_label"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:textSize="10sp"
+                            android:textColor="?attr/colorOnSurfaceVariant"
+                            android:layout_marginTop="3dp"
+                            android:alpha="0.5" />
+                    </LinearLayout>
+
+                    <LinearLayout
+                        android:id="@+id/timer_row"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="horizontal"
+                        android:gravity="center_vertical"
+                        android:layout_marginTop="10dp">
+
+                        <TextView
+                            android:id="@+id/timer_display"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:textSize="22sp"
+                            android:textColor="?attr/colorPrimary"
+                            android:fontFamily="sans-serif-medium" />
+
+                        <TextView
+                            android:id="@+id/timer_label"
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1"
+                            android:text="focus"
+                            android:textSize="12sp"
+                            android:textColor="?attr/colorOnSurfaceVariant"
+                            android:layout_marginStart="6dp"
+                            android:alpha="0.5" />
+
+                        <ImageButton
+                            android:id="@+id/timer_btn"
+                            android:layout_width="36dp"
+                            android:layout_height="36dp"
+                            android:padding="6dp"
+                            android:background="?attr/selectableItemBackgroundBorderless"
+                            android:alpha="0.7"
+                            android:scaleType="centerInside" />
+                    </LinearLayout>
+                </LinearLayout>
+            </com.google.android.material.card.MaterialCardView>
+
+            <!-- === CONTRIBUTION HEATMAP === -->
+            <com.smthbig.shadow.launcher.home.ContributionView
+                android:id="@+id/contribution_grid"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="16dp" />
+
+            <!-- === QUICK ACTIONS === -->
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Quick Actions"
+                android:textSize="10sp"
+                android:letterSpacing="0.12"
+                android:textColor="?attr/colorOnSurfaceVariant"
+                android:fontFamily="sans-serif-medium"
+                android:alpha="0.4"
+                android:layout_marginBottom="10dp" />
+
+            <LinearLayout
+                android:id="@+id/quick_actions"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:gravity="center"
+                android:weightSum="3"
+                android:layout_marginBottom="20dp">
+
+                <com.google.android.material.card.MaterialCardView
+                    android:id="@+id/action_task"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:layout_marginEnd="6dp"
+                    app:cardCornerRadius="14dp"
                     app:cardElevation="0dp"
                     app:strokeWidth="1dp"
-                    app:strokeColor="?attr/colorOutline"
-                    app:cardBackgroundColor="?attr/colorSurface">
+                    app:strokeColor="?attr/fluxGlassStroke"
+                    app:cardBackgroundColor="?attr/fluxGlassBackground"
+                    android:clickable="true"
+                    android:focusable="true"
+                    android:foreground="?attr/selectableItemBackground">
 
                     <LinearLayout
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:orientation="vertical"
-                        android:padding="16dp">
+                        android:gravity="center"
+                        android:paddingVertical="14dp"
+                        android:paddingHorizontal="8dp">
 
-                        <!-- Top row: label + progress text -->
-                        <LinearLayout
-                            android:layout_width="match_parent"
-                            android:layout_height="wrap_content"
-                            android:orientation="horizontal"
-                            android:gravity="center_vertical">
-
-                            <TextView
-                                android:id="@+id/goal_label"
-                                android:layout_width="0dp"
-                                android:layout_height="wrap_content"
-                                android:layout_weight="1"
-                                android:text="@string/today_goal_label"
-                                android:textSize="10sp"
-                                android:textColor="?attr/colorOnSurfaceVariant"
-                                android:letterSpacing="0.1"
-                                android:fontFamily="sans-serif-medium" />
-
-                            <TextView
-                                android:id="@+id/goal_progress_text"
-                                android:layout_width="wrap_content"
-                                android:layout_height="wrap_content"
-                                android:textSize="10sp"
-                                android:textColor="?attr/colorSecondary"
-                                android:fontFamily="sans-serif-medium"
-                                android:text="0 / 120 min" />
-                        </LinearLayout>
-
-                        <!-- Intention -->
                         <TextView
-                            android:id="@+id/intention_text"
-                            android:layout_width="match_parent"
+                            android:layout_width="32dp"
+                            android:layout_height="32dp"
+                            android:gravity="center"
+                            android:textSize="16sp"
+                            android:text="+"
+                            android:textColor="?attr/colorPrimary"
+                            android:alpha="0.8" />
+
+                        <TextView
+                            android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:textSize="15sp"
-                            android:textColor="?attr/colorOnSurface"
-                            android:layout_marginTop="8dp"
-                            android:maxLines="1"
-                            android:ellipsize="end"
-                            android:fontFamily="sans-serif"
-                            android:textStyle="bold"
-                            android:background="?attr/selectableItemBackground"
-                            android:paddingVertical="2dp"
-                            android:paddingHorizontal="2dp"
-                            android:gravity="start" />
-
-                        <!-- Progress bar -->
-                        <LinearLayout
-                            android:id="@+id/progress_section"
-                            android:layout_width="match_parent"
-                            android:layout_height="wrap_content"
-                            android:orientation="vertical"
-                            android:layout_marginTop="10dp">
-
-                            <ProgressBar
-                                android:id="@+id/goal_progress"
-                                style="?android:attr/progressBarStyleHorizontal"
-                                android:layout_width="match_parent"
-                                android:layout_height="3dp"
-                                android:max="100"
-                                android:progress="0"
-                                android:progressTint="?attr/colorSecondary"
-                                android:progressBackgroundTint="?attr/colorSurfaceVariant" />
-
-                            <TextView
-                                android:id="@+id/goal_minutes_label"
-                                android:layout_width="wrap_content"
-                                android:layout_height="wrap_content"
-                                android:textSize="10sp"
-                                android:textColor="?attr/colorOnSurfaceVariant"
-                                android:layout_marginTop="3dp"
-                                android:alpha="0.5"
-                                android:text="0% of daily goal" />
-                        </LinearLayout>
-
-                        <!-- Timer -->
-                        <LinearLayout
-                            android:id="@+id/timer_row"
-                            android:layout_width="match_parent"
-                            android:layout_height="wrap_content"
-                            android:orientation="horizontal"
-                            android:gravity="center_vertical"
-                            android:layout_marginTop="10dp">
-
-                            <TextView
-                                android:id="@+id/timer_display"
-                                android:layout_width="wrap_content"
-                                android:layout_height="wrap_content"
-                                android:textSize="22sp"
-                                android:textColor="?attr/colorPrimary"
-                                android:fontFamily="sans-serif-medium"
-                                android:text="25:00" />
-
-                            <TextView
-                                android:id="@+id/timer_label"
-                                android:layout_width="0dp"
-                                android:layout_height="wrap_content"
-                                android:layout_weight="1"
-                                android:text="focus"
-                                android:textSize="12sp"
-                                android:textColor="?attr/colorOnSurfaceVariant"
-                                android:layout_marginStart="6dp"
-                                android:alpha="0.5" />
-
-                            <ImageButton
-                                android:id="@+id/timer_btn"
-                                android:layout_width="36dp"
-                                android:layout_height="36dp"
-                                android:padding="6dp"
-                                android:background="?attr/selectableItemBackgroundBorderless"
-                                android:alpha="0.7"
-                                android:scaleType="centerInside" />
-                        </LinearLayout>
-
+                            android:text="Task"
+                            android:textSize="9sp"
+                            android:textColor="?attr/colorOnSurfaceVariant"
+                            android:alpha="0.5"
+                            android:layout_marginTop="4dp"
+                            android:letterSpacing="0.05" />
                     </LinearLayout>
                 </com.google.android.material.card.MaterialCardView>
 
-                <!-- Stats Row -->
-                <LinearLayout
-                    android:id="@+id/stats_row"
-                    android:layout_width="match_parent"
+                <com.google.android.material.card.MaterialCardView
+                    android:id="@+id/action_focus"
+                    android:layout_width="0dp"
                     android:layout_height="wrap_content"
-                    android:layout_marginHorizontal="24dp"
-                    android:layout_marginTop="16dp"
-                    android:orientation="horizontal"
-                    android:gravity="center">
+                    android:layout_weight="1"
+                    android:layout_marginHorizontal="3dp"
+                    app:cardCornerRadius="14dp"
+                    app:cardElevation="0dp"
+                    app:strokeWidth="1dp"
+                    app:strokeColor="?attr/fluxGlassStroke"
+                    app:cardBackgroundColor="?attr/fluxGlassBackground"
+                    android:clickable="true"
+                    android:focusable="true"
+                    android:foreground="?attr/selectableItemBackground">
 
                     <LinearLayout
-                        android:id="@+id/stat_focus"
-                        android:layout_width="0dp"
+                        android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:layout_weight="1"
                         android:orientation="vertical"
                         android:gravity="center"
-                        android:paddingVertical="8dp">
+                        android:paddingVertical="14dp"
+                        android:paddingHorizontal="8dp">
 
                         <TextView
-                            android:id="@+id/stat_focus_value"
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:textSize="18sp"
-                            android:textColor="?attr/colorOnSurface"
-                            android:fontFamily="sans-serif-medium"
-                            android:text="0" />
+                            android:layout_width="32dp"
+                            android:layout_height="32dp"
+                            android:gravity="center"
+                            android:textSize="16sp"
+                            android:text="▶"
+                            android:textColor="?attr/colorSecondary"
+                            android:alpha="0.8" />
 
                         <TextView
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:textSize="10sp"
+                            android:text="Focus"
+                            android:textSize="9sp"
                             android:textColor="?attr/colorOnSurfaceVariant"
-                            android:text="@string/stats_focus"
                             android:alpha="0.5"
-                            android:layout_marginTop="1dp" />
+                            android:layout_marginTop="4dp"
+                            android:letterSpacing="0.05" />
                     </LinearLayout>
+                </com.google.android.material.card.MaterialCardView>
 
-                    <View
-                        android:layout_width="1dp"
-                        android:layout_height="24dp"
-                        android:background="?attr/colorOutline"
-                        android:alpha="0.2" />
+                <com.google.android.material.card.MaterialCardView
+                    android:id="@+id/action_insights"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:layout_marginStart="6dp"
+                    app:cardCornerRadius="14dp"
+                    app:cardElevation="0dp"
+                    app:strokeWidth="1dp"
+                    app:strokeColor="?attr/fluxGlassStroke"
+                    app:cardBackgroundColor="?attr/fluxGlassBackground"
+                    android:clickable="true"
+                    android:focusable="true"
+                    android:foreground="?attr/selectableItemBackground">
 
                     <LinearLayout
-                        android:id="@+id/stat_sessions"
-                        android:layout_width="0dp"
+                        android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:layout_weight="1"
                         android:orientation="vertical"
                         android:gravity="center"
-                        android:paddingVertical="8dp">
+                        android:paddingVertical="14dp"
+                        android:paddingHorizontal="8dp">
 
                         <TextView
-                            android:id="@+id/stat_sessions_value"
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:textSize="18sp"
-                            android:textColor="?attr/colorOnSurface"
-                            android:fontFamily="sans-serif-medium"
-                            android:text="0" />
+                            android:layout_width="32dp"
+                            android:layout_height="32dp"
+                            android:gravity="center"
+                            android:textSize="16sp"
+                            android:text="✦"
+                            android:textColor="#BC8CFF"
+                            android:alpha="0.8" />
 
                         <TextView
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:textSize="10sp"
+                            android:text="Stats"
+                            android:textSize="9sp"
                             android:textColor="?attr/colorOnSurfaceVariant"
-                            android:text="@string/stats_sessions"
                             android:alpha="0.5"
-                            android:layout_marginTop="1dp" />
+                            android:layout_marginTop="4dp"
+                            android:letterSpacing="0.05" />
                     </LinearLayout>
-
-                    <View
-                        android:layout_width="1dp"
-                        android:layout_height="24dp"
-                        android:background="?attr/colorOutline"
-                        android:alpha="0.2" />
-
-                    <LinearLayout
-                        android:id="@+id/stat_blocks"
-                        android:layout_width="0dp"
-                        android:layout_height="wrap_content"
-                        android:layout_weight="1"
-                        android:orientation="vertical"
-                        android:gravity="center"
-                        android:paddingVertical="8dp">
-
-                        <TextView
-                            android:id="@+id/stat_blocks_value"
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:textSize="18sp"
-                            android:textColor="?attr/colorOnSurface"
-                            android:fontFamily="sans-serif-medium"
-                            android:text="0" />
-
-                        <TextView
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:textSize="10sp"
-                            android:textColor="?attr/colorOnSurfaceVariant"
-                            android:text="@string/stats_blocked"
-                            android:alpha="0.5"
-                            android:layout_marginTop="1dp" />
-                    </LinearLayout>
-
-                </LinearLayout>
-
+                </com.google.android.material.card.MaterialCardView>
             </LinearLayout>
 
-            <!-- Contribution Grid -->
-            <com.smthbig.shadow.launcher.home.ContributionView
-                android:id="@+id/contribution_grid"
+            <!-- === COMMAND SEARCH BAR === -->
+            <com.google.android.material.card.MaterialCardView
+                android:id="@+id/command_bar"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginHorizontal="24dp"
-                android:layout_marginBottom="8dp" />
+                app:cardCornerRadius="14dp"
+                app:cardElevation="0dp"
+                app:strokeWidth="0dp"
+                app:cardBackgroundColor="?attr/fluxCommandBarBackground"
+                android:clickable="true"
+                android:focusable="true"
+                android:foreground="?attr/selectableItemBackground">
 
-            <!-- Search -->
-            <TextView
-                android:id="@+id/search_hint"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="@string/search_hint"
-                android:textSize="13sp"
-                android:textColor="?attr/colorOnSurfaceVariant"
-                android:alpha="0.35"
-                android:letterSpacing="0.06"
-                android:paddingHorizontal="20dp"
-                android:paddingVertical="10dp"
-                android:background="?attr/selectableItemBackground"
-                android:drawablePadding="6dp"
-                android:drawableStart="@android:drawable/ic_menu_search"
-                android:drawableTint="?attr/colorOnSurfaceVariant" />
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+                    android:gravity="center_vertical"
+                    android:paddingHorizontal="16dp"
+                    android:paddingVertical="12dp">
+
+                    <TextView
+                        android:id="@+id/search_icon"
+                        android:layout_width="18dp"
+                        android:layout_height="18dp"
+                        android:gravity="center"
+                        android:textSize="14sp"
+                        android:text="⌘"
+                        android:textColor="?attr/colorOnSurfaceVariant"
+                        android:alpha="0.4" />
+
+                    <TextView
+                        android:id="@+id/search_hint"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:layout_marginStart="12dp"
+                        android:text="@string/search_hint"
+                        android:textSize="13sp"
+                        android:textColor="?attr/colorOnSurfaceVariant"
+                        android:alpha="0.35"
+                        android:letterSpacing="0.02"
+                        android:singleLine="true" />
+                </LinearLayout>
+            </com.google.android.material.card.MaterialCardView>
 
         </LinearLayout>
+    </androidx.core.widget.NestedScrollView>
 
-        <!-- Settings -->
-        <ImageView
-            android:id="@+id/settings_btn"
-            android:layout_width="40dp"
-            android:layout_height="40dp"
-            android:padding="10dp"
-            android:layout_marginTop="8dp"
-            android:layout_marginEnd="4dp"
-            android:background="?attr/selectableItemBackgroundBorderless"
-            android:src="@drawable/ic_settings_gear"
-            app:tint="?attr/colorOnSurfaceVariant"
-            android:layout_gravity="top|end"
-            android:alpha="0.4" />
-
-    </FrameLayout>
+    <!-- Settings button -->
+    <ImageView
+        android:id="@+id/settings_btn"
+        android:layout_width="36dp"
+        android:layout_height="36dp"
+        android:padding="8dp"
+        android:layout_marginTop="12dp"
+        android:layout_marginEnd="12dp"
+        android:background="?attr/selectableItemBackgroundBorderless"
+        android:src="@drawable/ic_settings_gear"
+        app:tint="?attr/colorOnSurfaceVariant"
+        android:layout_gravity="top|end"
+        android:alpha="0.3" />
 
     <View
         android:id="@+id/blur_overlay"

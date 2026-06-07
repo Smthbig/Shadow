@@ -50,4 +50,15 @@
     <color name="scrim_light">#4D000000</color>
     <color name="glass_adaptive">@color/glass_white</color>
     <color name="scrim_adaptive">@color/scrim_dark</color>
+
+    <color name="flux_ring_focus">#58A6FF</color>
+    <color name="flux_ring_streak">#3FB950</color>
+    <color name="flux_ring_tasks">#D29922</color>
+    <color name="flux_ring_hours">#BC8CFF</color>
+    <color name="flux_ring_track">#21262D</color>
+    <color name="flux_glass_background">#1AFFFFFF</color>
+    <color name="flux_glass_stroke">#33FFFFFF</color>
+    <color name="flux_aura_primary">#1A58A6FF</color>
+    <color name="flux_aura_secondary">#0A3FB950</color>
+    <color name="flux_command_bar_background">#21262D</color>
 </resources>

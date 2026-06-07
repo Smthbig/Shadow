@@ -4,27 +4,25 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:layout_marginVertical="4dp"
-    app:cardCornerRadius="16dp"
-    app:cardElevation="0dp"
-    app:strokeWidth="1dp"
+    android:layout_marginVertical="@dimen/space_xs"
+    app:cardCornerRadius="@dimen/card_radius_md"
+    app:cardElevation="@dimen/elevation_none"
+    app:strokeWidth="@dimen/stroke_thin"
     app:strokeColor="?attr/colorOutline"
-    app:cardBackgroundColor="?attr/colorSurface"
-    android:clickable="false"
-    android:focusable="false">
+    app:cardBackgroundColor="?attr/colorSurface">
 
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="horizontal"
         android:gravity="center_vertical"
-        android:padding="14dp">
+        android:padding="@dimen/space_lg">
 
         <ImageView
             android:id="@+id/app_icon"
-            android:layout_width="28dp"
-            android:layout_height="28dp"
-            android:layout_marginEnd="14dp"
+            android:layout_width="@dimen/icon_app_limit"
+            android:layout_height="@dimen/icon_app_limit"
+            android:layout_marginEnd="@dimen/space_lg"
             android:scaleType="fitCenter" />
 
         <LinearLayout
@@ -39,7 +37,7 @@
                 android:layout_height="wrap_content"
                 style="@style/TextAppearance.Material3.TitleMedium"
                 android:textColor="?attr/colorOnSurface"
-                android:textStyle="bold"/>
+                android:textStyle="bold" />
 
             <com.google.android.material.textview.MaterialTextView
                 android:id="@+id/app_limit"
@@ -47,13 +45,13 @@
                 android:layout_height="wrap_content"
                 style="@style/TextAppearance.Material3.BodySmall"
                 android:textColor="?attr/colorOnSurfaceVariant"
-                android:layout_marginTop="2dp"/>
+                android:layout_marginTop="@dimen/space_xxs" />
 
         </LinearLayout>
 
         <ImageView
-            android:layout_width="14dp"
-            android:layout_height="14dp"
+            android:layout_width="@dimen/icon_small"
+            android:layout_height="@dimen/icon_small"
             android:src="@drawable/ic_settings_gear"
             android:alpha="0.2"
             app:tint="?attr/colorOnSurface" />

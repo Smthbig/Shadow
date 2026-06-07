@@ -8,6 +8,7 @@ import androidx.lifecycle.LiveData;
 import androidx.lifecycle.MutableLiveData;
 
 import com.smthbig.shadow.data.FeatureStore;
+import com.smthbig.shadow.data.limits.AppLimitStore;
 import com.smthbig.shadow.di.ServiceLocator;
 import com.smthbig.shadow.repository.AppRepository;
 import com.smthbig.shadow.tracking.UsageTracker;

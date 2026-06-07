@@ -65,14 +65,14 @@ public final class PermissionActivity extends AppCompatActivity {
         binding.actionButton.setOnClickListener(v ->
                 startActivity(UsagePermissionHelper.getUsageAccessIntent()));
         binding.skipButton.setVisibility(View.VISIBLE);
-        binding.skipButton.setText("Open App Info");
+        binding.skipButton.setText("App Settings");
         binding.skipButton.setOnClickListener(v ->
                 startActivity(UsagePermissionHelper.getAppDetailsIntent(this)));
     }
 
     private void showHomeStep() {
         binding.statusText.setText(
-                "Set Shadow as default launcher.\n\n" +
+                "Set Flux as default launcher.\n\n" +
                 "This step is mandatory for full functionality.");
         binding.actionButton.setText("Set Default Launcher");
         binding.actionButton.setOnClickListener(v -> requestHomeRole());

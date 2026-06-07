@@ -4,28 +4,25 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:id="@+id/root"
     android:layout_width="match_parent"
-    android:layout_height="match_parent">
+    android:layout_height="match_parent"
+    android:background="?attr/android:colorBackground">
 
-    <View
-        android:id="@+id/background_layer"
-        android:layout_width="match_parent"
-        android:layout_height="match_parent" />
-
-    <FrameLayout
+    <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:padding="16dp"
-        android:clipToPadding="false">
+        android:gravity="center"
+        android:padding="@dimen/space_lg"
+        android:clipToPadding="false"
+        android:orientation="vertical">
 
         <com.google.android.material.card.MaterialCardView
             android:id="@+id/card"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_gravity="center"
-            android:layout_margin="8dp"
-            app:cardCornerRadius="24dp"
-            app:cardElevation="0dp"
-            app:strokeWidth="1dp"
+            android:layout_margin="@dimen/space_sm"
+            app:cardCornerRadius="@dimen/card_radius_xl"
+            app:cardElevation="@dimen/elevation_none"
+            app:strokeWidth="@dimen/stroke_thin"
             app:strokeColor="?attr/colorOutline"
             app:cardBackgroundColor="?attr/colorSurface">
 
@@ -34,7 +31,7 @@
                 android:layout_height="wrap_content"
                 android:orientation="vertical"
                 android:gravity="center_horizontal"
-                android:padding="24dp">
+                android:padding="@dimen/space_xxl">
 
                 <com.google.android.material.textview.MaterialTextView
                     android:id="@+id/title"
@@ -44,7 +41,7 @@
                     android:text="@string/permissions_title"
                     android:textStyle="bold"
                     android:textColor="?attr/colorOnSurface"
-                    android:layout_marginBottom="8dp"/>
+                    android:layout_marginBottom="@dimen/space_sm" />
 
                 <com.google.android.material.textview.MaterialTextView
                     android:id="@+id/status_text"
@@ -56,22 +53,22 @@
                     android:alpha="0.8"
                     android:gravity="center"
                     android:lineSpacingExtra="4dp"
-                    android:paddingHorizontal="8dp"/>
+                    android:paddingHorizontal="@dimen/space_sm" />
 
                 <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:orientation="vertical"
-                    android:layout_marginTop="24dp"
+                    android:layout_marginTop="@dimen/space_xxl"
                     android:gravity="center">
 
                     <com.google.android.material.button.MaterialButton
                         android:id="@+id/action_button"
                         style="@style/Widget.Material3.Button"
                         android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
+                        android:layout_height="@dimen/button_height"
                         android:text="@string/continue_button"
-                        app:cornerRadius="14dp"/>
+                        app:cornerRadius="@dimen/button_radius" />
 
                     <com.google.android.material.button.MaterialButton
                         android:id="@+id/skip_button"
@@ -79,14 +76,10 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:text="@string/permissions_skip"
-                        android:layout_marginTop="8dp"/>
-
+                        android:layout_marginTop="@dimen/space_sm" />
                 </LinearLayout>
-
             </LinearLayout>
-
         </com.google.android.material.card.MaterialCardView>
-
-    </FrameLayout>
+    </LinearLayout>
 
 </FrameLayout>

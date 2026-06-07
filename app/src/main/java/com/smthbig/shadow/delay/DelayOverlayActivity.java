@@ -85,7 +85,7 @@ public final class DelayOverlayActivity extends AppCompatActivity {
 
         viewModel.initialize(pkg, delay, additionalExtension);
 
-        binding.title.setText("Shadow Friction");
+        binding.title.setText("Flux Friction");
         binding.subtitle.setText(viewModel.getQuote().getValue());
         binding.btnCancel.setOnClickListener(v -> finish());
 

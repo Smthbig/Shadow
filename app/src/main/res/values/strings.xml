@@ -9,9 +9,9 @@
     <string name="settings_title">Settings</string>
     <string name="app_limits_title">App Limits</string>
     <string name="setting_placeholder">Setting Title</string>
-    <string name="theme_dialog_title">Select Theme</string>
-    <string name="reset_usage_title">Reset Today\'s Extensions?</string>
-    <string name="reset_usage_message">This will clear all extension time granted for today.</string>
+    <string name="theme_dialog_title">Theme</string>
+    <string name="reset_usage_title">Reset Extensions?</string>
+    <string name="reset_usage_message">Clear all extension time granted today?</string>
     <string name="friction_title">Flux Friction</string>
     <string name="wait_message">Wait or add extension</string>
     <string name="add_extension">Add +5m</string>
@@ -41,4 +41,14 @@
     <string name="delay_processing">Pause before opening...</string>
     <string name="delay_extend">Get 5 min extension</string>
     <string name="delay_cancel">Cancel and close</string>
+    <string name="insight_empty">No focus yet today. Start a session to build momentum.</string>
+    <string name="quick_task">Task</string>
+    <string name="quick_focus">Focus</string>
+    <string name="quick_stats">Stats</string>
+    <string name="section_today">Today</string>
+    <string name="section_quick_actions">Quick Actions</string>
+    <string name="ring_focus">focus</string>
+    <string name="ring_streak">streak</string>
+    <string name="ring_sessions">sessions</string>
+    <string name="ring_hours">hours</string>
 </resources>

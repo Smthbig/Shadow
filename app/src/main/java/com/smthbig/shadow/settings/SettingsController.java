@@ -62,7 +62,7 @@ public class SettingsController {
     private void openDoomsdayConfig(Activity activity) {
         String[] options = {"Change Scale", "Custom Day Count", "Active Dot Color", "Inactive Dot Color"};
         new MaterialAlertDialogBuilder(activity)
-                .setTitle("Doomsday Engine")
+                .setTitle("Doomsday View")
                 .setItems(options, (d, which) -> {
                     if (which == 0) openDoomsdayScalePicker(activity);
                     if (which == 1) openCustomDaysPicker(activity);
@@ -114,8 +114,8 @@ public class SettingsController {
     }
 
     private void openDoomsdayColorPicker(Activity activity, boolean active) {
-        String[] names = {"Reset to Theme Default", "Classic White", "Focus Purple",
-                "Shadow Dark", "Emerald", "Amber", "Crimson", "Ocean Blue"};
+        String[] names = {"Theme Default", "Classic White", "Focus Purple",
+                "Flux Dark", "Emerald", "Amber", "Crimson", "Ocean Blue"};
         int[] colors = {0, 0xCCFFFFFF, 0xCC6750A4, 0xCC121212, 0xCC2E7D32, 0xCCFF8F00, 0xCCB71C1C, 0xCC1565C0};
         DoomsdayStore store = new DoomsdayStore(activity);
         new MaterialAlertDialogBuilder(activity)
@@ -157,8 +157,8 @@ public class SettingsController {
     }
 
     private void openBackgroundGallery(Activity activity) {
-        String[] options = {"Classic Shadow", "Distorted Mesh", "Midnight Mesh",
-                "Aurora Glow", "System Wallpaper"};
+        String[] options = {"Gradient", "Distorted", "Mesh",
+                "Aurora", "System Wallpaper"};
         String[] types = {FeatureStore.BG_DEFAULT, FeatureStore.BG_DISTORTED,
                 FeatureStore.BG_MESH, FeatureStore.BG_AURORA, FeatureStore.BG_SYSTEM_WALLPAPER};
 

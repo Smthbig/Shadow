@@ -88,19 +88,11 @@ public class ThemeAdapter extends BaseAdapter {
         /* ---------- VISUAL STATE ---------- */
 
         if (isSelected) {
-            holder.root.setStrokeWidth(2);
-            holder.root.setStrokeColor(
-                    context.getColor(R.color.md_primary)
-            );
-
-            holder.root.setCardElevation(4f);
+            holder.root.setStrokeWidth((int) (2 * context.getResources().getDisplayMetrics().density));
+            holder.root.setStrokeColor(context.getColor(R.color.md_primary));
         } else {
-            holder.root.setStrokeWidth(1);
-            holder.root.setStrokeColor(
-                    context.getColor(R.color.md_outline)
-            );
-
-            holder.root.setCardElevation(0f);
+            holder.root.setStrokeWidth((int) (1 * context.getResources().getDisplayMetrics().density));
+            holder.root.setStrokeColor(context.getColor(R.color.md_outline));
         }
 
         /* ---------- CLICK ---------- */
@@ -142,21 +134,6 @@ public class ThemeAdapter extends BaseAdapter {
 
             case ThemeMode.DARK:
                 return "Always dark mode";
-
-            case ThemeMode.DYNAMIC:
-                return "Material You colors";
-
-            case ThemeMode.SHADOW:
-                return "Deep dark aesthetic";
-
-            case ThemeMode.GLASS:
-                return "Transparent glass UI";
-
-            case ThemeMode.GLASS_LIGHT:
-                return "Light glass aesthetic";
-
-            case ThemeMode.GLASS_DARK:
-                return "Dark glass aesthetic";
 
             default:
                 return "";

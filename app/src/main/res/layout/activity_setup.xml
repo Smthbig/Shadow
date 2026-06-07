@@ -3,71 +3,62 @@
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
-    android:layout_height="match_parent">
-
-    <View
-        android:id="@+id/background_layer"
-        android:layout_width="match_parent"
-        android:layout_height="match_parent" />
+    android:layout_height="match_parent"
+    android:background="?attr/android:colorBackground">
 
     <androidx.core.widget.NestedScrollView
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:fillViewport="true">
+        android:fillViewport="true"
+        android:clipToPadding="false"
+        android:padding="@dimen/space_xxl">
 
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="vertical"
-            android:padding="24dp">
+            android:gravity="center"
+            android:layout_marginTop="48dp">
 
-            <LinearLayout
-                android:layout_width="match_parent"
+            <ImageView
+                android:layout_width="64dp"
+                android:layout_height="64dp"
+                android:src="@drawable/ic_shadow_fg"
+                android:alpha="0.8" />
+
+            <com.google.android.material.textview.MaterialTextView
+                android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:orientation="vertical"
-                android:gravity="center"
-                android:layout_marginTop="32dp"
-                android:layout_marginBottom="32dp">
+                android:text="@string/app_name"
+                style="@style/TextAppearance.Material3.HeadlineMedium"
+                android:textStyle="bold"
+                android:textColor="?attr/colorOnSurface"
+                android:layout_marginTop="@dimen/space_md" />
 
-                <ImageView
-                    android:layout_width="64dp"
-                    android:layout_height="64dp"
-                    android:src="@mipmap/ic_shadow"
-                    android:alpha="0.8" />
-
-                <com.google.android.material.textview.MaterialTextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="@string/app_name"
-                    style="@style/TextAppearance.Material3.HeadlineMedium"
-                    android:textStyle="bold"
-                    android:textColor="?attr/colorOnSurface"
-                    android:layout_marginTop="12dp" />
-
-                <com.google.android.material.textview.MaterialTextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="@string/welcome_subtitle"
-                    style="@style/TextAppearance.Material3.BodyMedium"
-                    android:textColor="?attr/colorOnSurfaceVariant"
-                    android:alpha="0.7" />
-            </LinearLayout>
+            <com.google.android.material.textview.MaterialTextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/welcome_subtitle"
+                style="@style/TextAppearance.Material3.BodyMedium"
+                android:textColor="?attr/colorOnSurfaceVariant"
+                android:alpha="0.7"
+                android:layout_marginBottom="@dimen/space_xxl" />
 
             <com.google.android.material.card.MaterialCardView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                app:cardCornerRadius="20dp"
-                app:cardElevation="0dp"
-                app:strokeWidth="1dp"
+                app:cardCornerRadius="@dimen/card_radius_lg"
+                app:cardElevation="@dimen/elevation_none"
+                app:strokeWidth="@dimen/stroke_thin"
                 app:strokeColor="?attr/colorOutline"
                 app:cardBackgroundColor="?attr/colorSurface"
-                android:layout_marginBottom="24dp">
+                android:layout_marginBottom="@dimen/space_xxl">
 
                 <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:orientation="vertical"
-                    android:padding="20dp">
+                    android:padding="@dimen/space_xl">
 
                     <com.google.android.material.textview.MaterialTextView
                         android:layout_width="wrap_content"
@@ -76,7 +67,7 @@
                         style="@style/TextAppearance.Material3.TitleMedium"
                         android:textColor="?attr/colorOnSurface"
                         android:textStyle="bold"
-                        android:layout_marginBottom="12dp"/>
+                        android:layout_marginBottom="@dimen/space_md" />
 
                     <com.google.android.material.textview.MaterialTextView
                         android:id="@+id/privacy_text"
@@ -87,7 +78,6 @@
                         android:textColor="?attr/colorOnSurfaceVariant"
                         android:lineSpacingExtra="4dp"
                         android:alpha="0.8" />
-
                 </LinearLayout>
             </com.google.android.material.card.MaterialCardView>
 
@@ -98,19 +88,15 @@
                 android:text="@string/agree_checkbox"
                 style="@style/Widget.Material3.CompoundButton.CheckBox"
                 android:textColor="?attr/colorOnSurface"
-                android:layout_marginBottom="24dp" />
+                android:layout_marginBottom="@dimen/space_xxl" />
 
             <com.google.android.material.button.MaterialButton
                 android:id="@+id/button_continue"
                 android:layout_width="match_parent"
-                android:layout_height="56dp"
+                android:layout_height="@dimen/button_height"
                 android:text="@string/continue_button"
-                app:cornerRadius="16dp"
+                app:cornerRadius="@dimen/button_radius"
                 style="@style/Widget.Material3.Button" />
-
-            <View
-                android:layout_width="match_parent"
-                android:layout_height="32dp" />
 
         </LinearLayout>
     </androidx.core.widget.NestedScrollView>

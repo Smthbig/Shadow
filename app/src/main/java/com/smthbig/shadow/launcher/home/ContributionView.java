@@ -28,6 +28,7 @@ public class ContributionView extends View {
     private final Paint cellPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
     private final Paint labelPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
     private final Paint todayRingPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
+    private final Paint todayFillPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
     private final RectF cellRect = new RectF();
 
     private FocusStore focusStore;
@@ -41,7 +42,9 @@ public class ContributionView extends View {
 
     private int todayIndex = -1;
     private float ringProgress = 0f;
+    private float ringScale = 1f;
     private ValueAnimator pulseAnimator;
+    private ValueAnimator breatheAnimator;
     private long lastRenderTime = 0;
 
     private final String[] dayLabels = {"", "Mon", "", "Wed", "", "Fri", ""};
@@ -68,8 +71,25 @@ public class ContributionView extends View {
         todayRingPaint.setStrokeWidth(dpToPx(2));
         todayRingPaint.setAntiAlias(true);
 
+        todayFillPaint.setStyle(Paint.Style.FILL);
+        todayFillPaint.setAntiAlias(true);
+
         startPulseAnimation();
+        startBreatheAnimation();
         updateData();
+    }
+
+    private void startBreatheAnimation() {
+        breatheAnimator = ValueAnimator.ofFloat(1f, 1.12f);
+        breatheAnimator.setDuration(2000);
+        breatheAnimator.setRepeatCount(ValueAnimator.INFINITE);
+        breatheAnimator.setRepeatMode(ValueAnimator.REVERSE);
+        breatheAnimator.setInterpolator(new DecelerateInterpolator());
+        breatheAnimator.addUpdateListener(a -> {
+            ringScale = (float) a.getAnimatedValue();
+            invalidate();
+        });
+        breatheAnimator.start();
     }
 
     private int getThemeAttrColor(int attr) {
@@ -212,13 +232,19 @@ public class ContributionView extends View {
 
         float cx = startX + col * (cellSize + cellGap) + cellSize / 2;
         float cy = startY + row * (cellSize + cellGap) + cellSize / 2;
+        float r = cellSize / 2;
+        float scaledR = r * ringScale;
 
-        todayRingPaint.setColor(getThemeAttrColor(R.attr.fluxToday));
+        int todayColor = getThemeAttrColor(R.attr.fluxToday);
+        todayFillPaint.setColor(todayColor);
+        todayFillPaint.setAlpha(15);
+        canvas.drawCircle(cx, cy, scaledR + dpToPx(4), todayFillPaint);
 
-        float radius = cellSize / 2 + dpToPx(2) + ringProgress * dpToPx(3);
-        int alpha = (int) (100 + (1 - ringProgress) * 155);
+        todayRingPaint.setColor(todayColor);
+        float ringR = r + dpToPx(2) + ringProgress * dpToPx(3);
+        int alpha = (int) (80 + (1 - ringProgress) * 175);
         todayRingPaint.setAlpha(alpha);
-        canvas.drawCircle(cx, cy, radius, todayRingPaint);
+        canvas.drawCircle(cx, cy, ringR, todayRingPaint);
     }
 
     private int dpToPx(int dp) {
@@ -231,6 +257,10 @@ public class ContributionView extends View {
         if (pulseAnimator != null) {
             pulseAnimator.cancel();
             pulseAnimator = null;
+        }
+        if (breatheAnimator != null) {
+            breatheAnimator.cancel();
+            breatheAnimator = null;
         }
     }
 }

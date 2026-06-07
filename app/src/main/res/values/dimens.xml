@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Spacing scale (4dp grid) -->
+    <dimen name="space_xxs">2dp</dimen>
+    <dimen name="space_xs">4dp</dimen>
+    <dimen name="space_sm">8dp</dimen>
+    <dimen name="space_md">12dp</dimen>
+    <dimen name="space_lg">16dp</dimen>
+    <dimen name="space_xl">20dp</dimen>
+    <dimen name="space_xxl">24dp</dimen>
+    <dimen name="space_xxxl">32dp</dimen>
+
+    <!-- Card corner radii -->
+    <dimen name="card_radius_sm">12dp</dimen>
+    <dimen name="card_radius_md">16dp</dimen>
+    <dimen name="card_radius_lg">20dp</dimen>
+    <dimen name="card_radius_xl">24dp</dimen>
+
+    <!-- Button corner radii -->
+    <dimen name="button_radius">14dp</dimen>
+    <dimen name="button_height">48dp</dimen>
+
+    <!-- Typography sizes -->
+    <dimen name="text_clock">64sp</dimen>
+    <dimen name="text_timer">22sp</dimen>
+    <dimen name="text_title_large">20sp</dimen>
+    <dimen name="text_title">16sp</dimen>
+    <dimen name="text_body">14sp</dimen>
+    <dimen name="text_body_small">13sp</dimen>
+    <dimen name="text_caption">12sp</dimen>
+    <dimen name="text_label">11sp</dimen>
+    <dimen name="text_label_small">10sp</dimen>
+    <dimen name="text_micro">9sp</dimen>
+
+    <!-- Icon sizes -->
+    <dimen name="icon_settings">36dp</dimen>
+    <dimen name="icon_small">14dp</dimen>
+    <dimen name="icon_medium">24dp</dimen>
+    <dimen name="icon_app_suggestion">44dp</dimen>
+    <dimen name="icon_app_limit">28dp</dimen>
+
+    <!-- Ring sizes -->
+    <dimen name="ring_min_size">80dp</dimen>
+    <dimen name="ring_stroke">4dp</dimen>
+
+    <!-- Contribution grid -->
+    <dimen name="cell_gap">3dp</dimen>
+    <dimen name="cell_label_size">9sp</dimen>
+
+    <!-- Stroke widths -->
+    <dimen name="stroke_thin">1dp</dimen>
+    <dimen name="stroke_focused">2dp</dimen>
+
+    <!-- Elevation -->
+    <dimen name="elevation_none">0dp</dimen>
+    <dimen name="elevation_card">2dp</dimen>
+    <dimen name="elevation_dialog">12dp</dimen>
+    <dimen name="elevation_search">30dp</dimen>
+</resources>

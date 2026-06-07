@@ -3,107 +3,115 @@
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
-    android:layout_height="match_parent">
+    android:layout_height="match_parent"
+    android:background="?attr/android:colorBackground">
 
-    <View
-        android:id="@+id/background_layer"
+    <com.smthbig.shadow.launcher.home.AuraGradientView
         android:layout_width="match_parent"
         android:layout_height="match_parent" />
 
-    <com.google.android.material.card.MaterialCardView
-        android:id="@+id/container"
+    <LinearLayout
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_gravity="center"
-        android:layout_margin="20dp"
-        app:cardCornerRadius="24dp"
-        app:cardElevation="0dp"
-        app:strokeWidth="1dp"
-        app:strokeColor="?attr/colorOutline"
-        app:cardBackgroundColor="?attr/colorSurface">
+        android:layout_height="match_parent"
+        android:gravity="center"
+        android:orientation="vertical"
+        android:padding="@dimen/space_xl">
 
-        <LinearLayout
+        <com.google.android.material.card.MaterialCardView
+            android:id="@+id/container"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:orientation="vertical"
-            android:gravity="center"
-            android:padding="28dp">
-
-            <FrameLayout
-                android:layout_width="120dp"
-                android:layout_height="120dp">
-
-                <com.google.android.material.progressindicator.CircularProgressIndicator
-                    android:id="@+id/progress"
-                    android:layout_width="match_parent"
-                    android:layout_height="match_parent"
-                    android:indeterminate="false"
-                    app:indicatorSize="120dp"
-                    app:trackThickness="6dp"
-                    app:trackColor="?attr/colorSurfaceVariant"
-                    app:indicatorColor="?attr/colorPrimary"
-                    app:trackCornerRadius="3dp" />
-
-                <TextView
-                    android:id="@+id/timer"
-                    android:layout_width="match_parent"
-                    android:layout_height="match_parent"
-                    android:gravity="center"
-                    android:text="0s"
-                    style="@style/TextAppearance.Material3.HeadlineLarge"
-                    android:textStyle="bold"
-                    android:textColor="?attr/colorOnSurface"/>
-            </FrameLayout>
-
-            <com.google.android.material.textview.MaterialTextView
-                android:id="@+id/title"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                style="@style/TextAppearance.Material3.TitleMedium"
-                android:layout_marginTop="24dp"
-                android:text="@string/delay_wait"
-                android:textColor="?attr/colorOnSurface"
-                android:textStyle="bold"/>
-
-            <com.google.android.material.textview.MaterialTextView
-                android:id="@+id/subtitle"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                style="@style/TextAppearance.Material3.BodyMedium"
-                android:layout_marginTop="6dp"
-                android:text="@string/delay_processing"
-                android:textColor="?attr/colorOnSurfaceVariant"
-                android:alpha="0.7"
-                android:gravity="center"/>
+            android:layout_gravity="center"
+            android:layout_margin="@dimen/space_xl"
+            app:cardCornerRadius="@dimen/card_radius_xl"
+            app:cardElevation="@dimen/elevation_none"
+            app:strokeWidth="@dimen/stroke_thin"
+            app:strokeColor="?attr/colorOutline"
+            app:cardBackgroundColor="?attr/fluxGlassBackground">
 
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="28dp"
                 android:orientation="vertical"
-                android:gravity="center">
+                android:gravity="center"
+                android:padding="@dimen/space_xxl">
 
-                <com.google.android.material.button.MaterialButton
-                    android:id="@+id/btn_extend"
+                <FrameLayout
+                    android:layout_width="120dp"
+                    android:layout_height="120dp">
+
+                    <com.google.android.material.progressindicator.CircularProgressIndicator
+                        android:id="@+id/progress"
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"
+                        android:indeterminate="false"
+                        app:indicatorSize="120dp"
+                        app:trackThickness="@dimen/ring_stroke"
+                        app:trackColor="?attr/colorSurfaceVariant"
+                        app:indicatorColor="?attr/colorPrimary"
+                        app:trackCornerRadius="3dp" />
+
+                    <TextView
+                        android:id="@+id/timer"
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"
+                        android:gravity="center"
+                        android:text="0s"
+                        style="@style/TextAppearance.Material3.HeadlineLarge"
+                        android:textStyle="bold"
+                        android:textColor="?attr/colorOnSurface" />
+                </FrameLayout>
+
+                <com.google.android.material.textview.MaterialTextView
+                    android:id="@+id/title"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    style="@style/TextAppearance.Material3.TitleMedium"
+                    android:layout_marginTop="@dimen/space_xxl"
+                    android:text="@string/delay_wait"
+                    android:textColor="?attr/colorOnSurface"
+                    android:textStyle="bold" />
+
+                <com.google.android.material.textview.MaterialTextView
+                    android:id="@+id/subtitle"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    style="@style/TextAppearance.Material3.BodyMedium"
+                    android:layout_marginTop="6dp"
+                    android:text="@string/delay_processing"
+                    android:textColor="?attr/colorOnSurfaceVariant"
+                    android:alpha="0.7"
+                    android:gravity="center" />
+
+                <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    style="@style/Widget.Material3.Button"
-                    android:text="@string/delay_extend"
-                    app:cornerRadius="14dp" />
+                    android:layout_marginTop="@dimen/space_xxl"
+                    android:orientation="vertical"
+                    android:gravity="center">
 
-                <com.google.android.material.button.MaterialButton
-                    android:id="@+id/btn_cancel"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    style="@style/Widget.Material3.Button.TextButton"
-                    android:layout_marginTop="8dp"
-                    android:text="@string/delay_cancel"
-                    android:textColor="?attr/colorError" />
+                    <com.google.android.material.button.MaterialButton
+                        android:id="@+id/btn_extend"
+                        android:layout_width="match_parent"
+                        android:layout_height="@dimen/button_height"
+                        style="@style/Widget.Material3.Button"
+                        android:text="@string/delay_extend"
+                        app:cornerRadius="@dimen/button_radius" />
+
+                    <com.google.android.material.button.MaterialButton
+                        android:id="@+id/btn_cancel"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        style="@style/Widget.Material3.Button.TextButton"
+                        android:layout_marginTop="@dimen/space_sm"
+                        android:text="@string/delay_cancel"
+                        android:textColor="?attr/colorError" />
+                </LinearLayout>
 
             </LinearLayout>
 
-        </LinearLayout>
+        </com.google.android.material.card.MaterialCardView>
 
-    </com.google.android.material.card.MaterialCardView>
+    </LinearLayout>
 
 </FrameLayout>

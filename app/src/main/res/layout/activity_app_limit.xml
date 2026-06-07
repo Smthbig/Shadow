@@ -3,18 +3,14 @@
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
-    android:layout_height="match_parent">
-
-    <View
-        android:id="@+id/background_layer"
-        android:layout_width="match_parent"
-        android:layout_height="match_parent" />
+    android:layout_height="match_parent"
+    android:background="?attr/android:colorBackground">
 
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:orientation="vertical"
-        android:padding="16dp">
+        android:padding="@dimen/space_lg">
 
         <com.google.android.material.textview.MaterialTextView
             android:id="@+id/title"
@@ -24,8 +20,8 @@
             style="@style/TextAppearance.Material3.HeadlineMedium"
             android:textStyle="bold"
             android:textColor="?attr/colorOnSurface"
-            android:layout_marginTop="24dp"
-            android:layout_marginBottom="20dp"/>
+            android:layout_marginTop="@dimen/space_xxl"
+            android:layout_marginBottom="@dimen/space_xl" />
 
         <ListView
             android:id="@+id/app_list"
@@ -34,8 +30,8 @@
             android:divider="@android:color/transparent"
             android:dividerHeight="0dp"
             android:scrollbars="none"
-            android:paddingBottom="32dp"
-            android:clipToPadding="false" />
+            android:clipToPadding="false"
+            android:paddingBottom="@dimen/space_xxxl" />
 
     </LinearLayout>
 

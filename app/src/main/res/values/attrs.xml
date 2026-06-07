@@ -11,4 +11,14 @@
     <attr name="fluxToday" format="color"/>
     <attr name="doomsdayActive" format="color"/>
     <attr name="doomsdayInactive" format="color"/>
+    <attr name="fluxRingFocus" format="color"/>
+    <attr name="fluxRingStreak" format="color"/>
+    <attr name="fluxRingTasks" format="color"/>
+    <attr name="fluxRingHours" format="color"/>
+    <attr name="fluxRingTrack" format="color"/>
+    <attr name="fluxGlassBackground" format="color"/>
+    <attr name="fluxGlassStroke" format="color"/>
+    <attr name="fluxAuraPrimary" format="color"/>
+    <attr name="fluxAuraSecondary" format="color"/>
+    <attr name="fluxCommandBarBackground" format="color"/>
 </resources>

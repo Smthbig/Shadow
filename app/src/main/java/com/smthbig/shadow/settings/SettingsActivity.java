@@ -69,9 +69,9 @@ public class SettingsActivity extends AppCompatActivity {
         items.add(new SettingsItem("App Limits", SettingsItem.TYPE_APP_LIMIT));
         items.add(new SettingsItem("Default Launcher", SettingsItem.TYPE_DEFAULT_LAUNCHER));
         items.add(new SettingsItem("Usage Access Permission", SettingsItem.TYPE_USAGE_ACCESS));
-        items.add(new SettingsItem("Reset Today's Extensions", SettingsItem.TYPE_RESET_USAGE));
+        items.add(new SettingsItem("Reset Extensions", SettingsItem.TYPE_RESET_USAGE));
         items.add(new SettingsItem("Doomsday Engine", SettingsItem.TYPE_DOOMSDAY_CONFIG));
-        items.add(new SettingsItem("Shadow Backgrounds", SettingsItem.TYPE_BACKGROUND_GALLERY));
+        items.add(new SettingsItem("Backgrounds", SettingsItem.TYPE_BACKGROUND_GALLERY));
         items.add(new SettingsItem("Deep Focus Mode", SettingsItem.TYPE_DEEP_FOCUS));
         items.add(new SettingsItem("Edit Whitelist", SettingsItem.TYPE_WHITELIST));
     }
@@ -134,14 +134,14 @@ public class SettingsActivity extends AppCompatActivity {
         int count = interventions != null ? interventions : 0;
 
         TextView score = new TextView(this);
-        score.setText(count + " Shadow Interventions");
+        score.setText(count + " Interventions");
         score.setTextSize(22);
         score.setTypeface(null, android.graphics.Typeface.BOLD);
         score.setTextColor(onSurface);
         score.setPadding(0, dpToPx(8), 0, 0);
 
         TextView desc = new TextView(this);
-        desc.setText("Times Shadow added friction to keep you intentional.");
+        desc.setText("Times Flux added friction to keep you intentional.");
         desc.setTextSize(13);
         desc.setTextColor(onSurfaceVariant);
         desc.setPadding(0, dpToPx(4), 0, 0);
@@ -166,10 +166,8 @@ public class SettingsActivity extends AppCompatActivity {
     }
 
     public void openThemeDialog() {
-        String[] names = {"System Default", "Light", "Dark", "Dynamic", "Shadow", "Glass",
-                "Transparent Light", "Transparent Dark"};
-        String[] values = {ThemeMode.SYSTEM, ThemeMode.LIGHT, ThemeMode.DARK, ThemeMode.DYNAMIC,
-                ThemeMode.SHADOW, ThemeMode.GLASS, ThemeMode.TRANSPARENT_LIGHT, ThemeMode.TRANSPARENT_DARK};
+        String[] names = {"System Default", "Dark Mode", "Light Mode"};
+        String[] values = {ThemeMode.SYSTEM, ThemeMode.DARK, ThemeMode.LIGHT};
 
         ThemeAdapter adapter = new ThemeAdapter(this, names, values,
                 controller.getCurrentTheme(this),
@@ -180,7 +178,7 @@ public class SettingsActivity extends AppCompatActivity {
                 });
 
         dialog = new MaterialAlertDialogBuilder(this)
-                .setTitle("Select Theme")
+                .setTitle("Theme")
                 .setAdapter(adapter, null)
                 .setNegativeButton("Cancel", null)
                 .create();

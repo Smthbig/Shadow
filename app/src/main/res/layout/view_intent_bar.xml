@@ -5,13 +5,13 @@
     <androidx.constraintlayout.widget.ConstraintLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:padding="12dp">
+        android:padding="@dimen/space_md">
 
         <androidx.recyclerview.widget.RecyclerView
             android:id="@+id/suggestions_list"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginBottom="4dp"
+            android:layout_marginBottom="@dimen/space_xs"
             android:visibility="gone"
             app:layout_constraintBottom_toTopOf="@id/input_layout"
             app:layout_constraintStart_toStartOf="parent"
@@ -21,13 +21,13 @@
             android:id="@+id/empty_state"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginBottom="4dp"
+            android:layout_marginBottom="@dimen/space_xs"
             android:gravity="center"
             android:text="@string/no_apps_found"
-            android:textSize="14sp"
+            android:textSize="@dimen/text_body"
             android:textColor="?attr/colorOnSurfaceVariant"
             android:visibility="gone"
-            android:paddingVertical="12dp"
+            android:paddingVertical="@dimen/space_md"
             app:layout_constraintBottom_toTopOf="@id/input_layout"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintEnd_toEndOf="parent" />
@@ -50,11 +50,11 @@
                 android:hint="@string/input_hint"
                 android:textColor="?attr/colorOnSurface"
                 android:textColorHint="?attr/colorOnSurfaceVariant"
-                android:textSize="16sp"
+                android:textSize="@dimen/text_body"
                 android:singleLine="true"
                 android:inputType="text"
                 android:background="@null"
-                android:paddingVertical="8dp" />
+                android:paddingVertical="@dimen/space_sm" />
         </com.google.android.material.textfield.TextInputLayout>
 
     </androidx.constraintlayout.widget.ConstraintLayout>
