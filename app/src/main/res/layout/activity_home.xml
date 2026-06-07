@@ -14,22 +14,25 @@
     <FrameLayout
         android:id="@+id/content_container"
         android:layout_width="match_parent"
-        android:layout_height="match_parent">
+        android:layout_height="match_parent"
+        android:clickable="true"
+        android:focusable="true">
 
-        <ScrollView
+        <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="match_parent"
-            android:fillViewport="true"
-            android:overScrollMode="never"
-            android:scrollbars="none">
+            android:orientation="vertical"
+            android:gravity="center_horizontal"
+            android:paddingTop="56dp"
+            android:paddingBottom="32dp"
+            android:clipToPadding="false">
 
             <LinearLayout
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
+                android:layout_width="wrap_content"
+                android:layout_height="0dp"
+                android:layout_weight="1"
                 android:orientation="vertical"
-                android:gravity="center_horizontal"
-                android:paddingTop="24dp"
-                android:paddingBottom="120dp">
+                android:gravity="center">
 
                 <!-- Clock -->
                 <TextClock
@@ -38,9 +41,8 @@
                     android:layout_height="wrap_content"
                     android:format12Hour="hh:mm"
                     android:format24Hour="HH:mm"
-                    android:textSize="72sp"
+                    android:textSize="56sp"
                     android:textColor="?attr/colorOnSurface"
-                    android:alpha="0.9"
                     android:fontFamily="sans-serif-thin"
                     android:letterSpacing="-0.02" />
 
@@ -49,31 +51,29 @@
                     android:id="@+id/date_label"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:textSize="12sp"
-                    android:textColor="?attr/colorOnSurface"
-                    android:alpha="0.35"
-                    android:letterSpacing="0.08"
-                    android:layout_marginTop="2dp"
-                    android:fontFamily="sans-serif-medium" />
+                    android:textSize="11sp"
+                    android:textColor="?attr/colorOnSurfaceVariant"
+                    android:letterSpacing="0.06"
+                    android:layout_marginTop="4dp" />
 
                 <!-- Greeting -->
                 <TextView
                     android:id="@+id/greeting"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:textSize="13sp"
+                    android:textSize="12sp"
                     android:textColor="?attr/colorOnSurfaceVariant"
-                    android:layout_marginTop="16dp"
-                    android:alpha="0.6" />
+                    android:layout_marginTop="20dp"
+                    android:alpha="0.5" />
 
-                <!-- Goal Card -->
+                <!-- Intention + Goal Card -->
                 <com.google.android.material.card.MaterialCardView
                     android:id="@+id/goal_card"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:layout_marginHorizontal="20dp"
-                    android:layout_marginTop="24dp"
-                    app:cardCornerRadius="20dp"
+                    android:layout_marginHorizontal="24dp"
+                    android:layout_marginTop="20dp"
+                    app:cardCornerRadius="16dp"
                     app:cardElevation="0dp"
                     app:strokeWidth="1dp"
                     app:strokeColor="?attr/colorOutline"
@@ -83,9 +83,9 @@
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:orientation="vertical"
-                        android:padding="20dp">
+                        android:padding="16dp">
 
-                        <!-- Goal Label + Edit -->
+                        <!-- Top row: label + progress text -->
                         <LinearLayout
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
@@ -98,53 +98,51 @@
                                 android:layout_height="wrap_content"
                                 android:layout_weight="1"
                                 android:text="@string/today_goal_label"
-                                android:textSize="11sp"
+                                android:textSize="10sp"
                                 android:textColor="?attr/colorOnSurfaceVariant"
-                                android:alpha="0.6"
-                                android:letterSpacing="0.12"
+                                android:letterSpacing="0.1"
                                 android:fontFamily="sans-serif-medium" />
 
                             <TextView
                                 android:id="@+id/goal_progress_text"
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
-                                android:textSize="11sp"
+                                android:textSize="10sp"
                                 android:textColor="?attr/colorSecondary"
-                                android:fontFamily="sans-serif-medium" />
+                                android:fontFamily="sans-serif-medium"
+                                android:text="0 / 120 min" />
                         </LinearLayout>
 
-                        <!-- Intention Text -->
+                        <!-- Intention -->
                         <TextView
                             android:id="@+id/intention_text"
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
-                            android:textSize="18sp"
+                            android:textSize="15sp"
                             android:textColor="?attr/colorOnSurface"
-                            android:alpha="0.9"
                             android:layout_marginTop="8dp"
-                            android:maxLines="2"
+                            android:maxLines="1"
                             android:ellipsize="end"
                             android:fontFamily="sans-serif"
                             android:textStyle="bold"
-                            android:visibility="gone"
                             android:background="?attr/selectableItemBackground"
-                            android:paddingVertical="4dp"
-                            android:paddingHorizontal="2dp" />
+                            android:paddingVertical="2dp"
+                            android:paddingHorizontal="2dp"
+                            android:gravity="start" />
 
-                        <!-- Progress Bar -->
+                        <!-- Progress bar -->
                         <LinearLayout
                             android:id="@+id/progress_section"
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
                             android:orientation="vertical"
-                            android:layout_marginTop="12dp"
-                            android:visibility="gone">
+                            android:layout_marginTop="10dp">
 
                             <ProgressBar
                                 android:id="@+id/goal_progress"
                                 style="?android:attr/progressBarStyleHorizontal"
                                 android:layout_width="match_parent"
-                                android:layout_height="4dp"
+                                android:layout_height="3dp"
                                 android:max="100"
                                 android:progress="0"
                                 android:progressTint="?attr/colorSecondary"
@@ -154,47 +152,47 @@
                                 android:id="@+id/goal_minutes_label"
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
-                                android:textSize="12sp"
+                                android:textSize="10sp"
                                 android:textColor="?attr/colorOnSurfaceVariant"
-                                android:layout_marginTop="4dp"
-                                android:alpha="0.5" />
+                                android:layout_marginTop="3dp"
+                                android:alpha="0.5"
+                                android:text="0% of daily goal" />
                         </LinearLayout>
 
-                        <!-- Timer Row -->
+                        <!-- Timer -->
                         <LinearLayout
                             android:id="@+id/timer_row"
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
                             android:orientation="horizontal"
                             android:gravity="center_vertical"
-                            android:layout_marginTop="12dp"
-                            android:visibility="gone">
+                            android:layout_marginTop="10dp">
 
                             <TextView
                                 android:id="@+id/timer_display"
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
-                                android:textSize="28sp"
+                                android:textSize="22sp"
                                 android:textColor="?attr/colorPrimary"
                                 android:fontFamily="sans-serif-medium"
-                                android:alpha="0.9" />
+                                android:text="25:00" />
 
                             <TextView
                                 android:id="@+id/timer_label"
                                 android:layout_width="0dp"
                                 android:layout_height="wrap_content"
                                 android:layout_weight="1"
-                                android:text="@string/left"
-                                android:textSize="13sp"
+                                android:text="focus"
+                                android:textSize="12sp"
                                 android:textColor="?attr/colorOnSurfaceVariant"
                                 android:layout_marginStart="6dp"
                                 android:alpha="0.5" />
 
                             <ImageButton
                                 android:id="@+id/timer_btn"
-                                android:layout_width="40dp"
-                                android:layout_height="40dp"
-                                android:padding="8dp"
+                                android:layout_width="36dp"
+                                android:layout_height="36dp"
+                                android:padding="6dp"
                                 android:background="?attr/selectableItemBackgroundBorderless"
                                 android:alpha="0.7"
                                 android:scaleType="centerInside" />
@@ -208,11 +206,10 @@
                     android:id="@+id/stats_row"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:layout_marginHorizontal="20dp"
+                    android:layout_marginHorizontal="24dp"
                     android:layout_marginTop="16dp"
                     android:orientation="horizontal"
-                    android:gravity="center"
-                    android:visibility="gone">
+                    android:gravity="center">
 
                     <LinearLayout
                         android:id="@+id/stat_focus"
@@ -221,14 +218,13 @@
                         android:layout_weight="1"
                         android:orientation="vertical"
                         android:gravity="center"
-                        android:background="?attr/selectableItemBackground"
-                        android:paddingVertical="12dp">
+                        android:paddingVertical="8dp">
 
                         <TextView
                             android:id="@+id/stat_focus_value"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:textSize="20sp"
+                            android:textSize="18sp"
                             android:textColor="?attr/colorOnSurface"
                             android:fontFamily="sans-serif-medium"
                             android:text="0" />
@@ -236,18 +232,18 @@
                         <TextView
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:textSize="11sp"
+                            android:textSize="10sp"
                             android:textColor="?attr/colorOnSurfaceVariant"
                             android:text="@string/stats_focus"
                             android:alpha="0.5"
-                            android:layout_marginTop="2dp" />
+                            android:layout_marginTop="1dp" />
                     </LinearLayout>
 
                     <View
                         android:layout_width="1dp"
-                        android:layout_height="32dp"
+                        android:layout_height="24dp"
                         android:background="?attr/colorOutline"
-                        android:alpha="0.3" />
+                        android:alpha="0.2" />
 
                     <LinearLayout
                         android:id="@+id/stat_sessions"
@@ -256,14 +252,13 @@
                         android:layout_weight="1"
                         android:orientation="vertical"
                         android:gravity="center"
-                        android:background="?attr/selectableItemBackground"
-                        android:paddingVertical="12dp">
+                        android:paddingVertical="8dp">
 
                         <TextView
                             android:id="@+id/stat_sessions_value"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:textSize="20sp"
+                            android:textSize="18sp"
                             android:textColor="?attr/colorOnSurface"
                             android:fontFamily="sans-serif-medium"
                             android:text="0" />
@@ -271,18 +266,18 @@
                         <TextView
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:textSize="11sp"
+                            android:textSize="10sp"
                             android:textColor="?attr/colorOnSurfaceVariant"
                             android:text="@string/stats_sessions"
                             android:alpha="0.5"
-                            android:layout_marginTop="2dp" />
+                            android:layout_marginTop="1dp" />
                     </LinearLayout>
 
                     <View
                         android:layout_width="1dp"
-                        android:layout_height="32dp"
+                        android:layout_height="24dp"
                         android:background="?attr/colorOutline"
-                        android:alpha="0.3" />
+                        android:alpha="0.2" />
 
                     <LinearLayout
                         android:id="@+id/stat_blocks"
@@ -291,14 +286,13 @@
                         android:layout_weight="1"
                         android:orientation="vertical"
                         android:gravity="center"
-                        android:background="?attr/selectableItemBackground"
-                        android:paddingVertical="12dp">
+                        android:paddingVertical="8dp">
 
                         <TextView
                             android:id="@+id/stat_blocks_value"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:textSize="20sp"
+                            android:textSize="18sp"
                             android:textColor="?attr/colorOnSurface"
                             android:fontFamily="sans-serif-medium"
                             android:text="0" />
@@ -306,63 +300,60 @@
                         <TextView
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:textSize="11sp"
+                            android:textSize="10sp"
                             android:textColor="?attr/colorOnSurfaceVariant"
                             android:text="@string/stats_blocked"
                             android:alpha="0.5"
-                            android:layout_marginTop="2dp" />
+                            android:layout_marginTop="1dp" />
                     </LinearLayout>
 
                 </LinearLayout>
 
-                <!-- Contribution Grid -->
-                <com.smthbig.shadow.launcher.home.ContributionView
-                    android:id="@+id/contribution_grid"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:layout_marginHorizontal="20dp"
-                    android:layout_marginTop="20dp" />
-
-                <!-- Search Hint -->
-                <TextView
-                    android:id="@+id/search_hint"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="@string/search_hint"
-                    android:textSize="14sp"
-                    android:textColor="?attr/colorOnSurfaceVariant"
-                    android:alpha="0.4"
-                    android:letterSpacing="0.08"
-                    android:layout_marginTop="20dp"
-                    android:paddingHorizontal="24dp"
-                    android:paddingVertical="12dp"
-                    android:background="?attr/selectableItemBackground"
-                    android:drawablePadding="8dp"
-                    android:drawableStart="@android:drawable/ic_menu_search"
-                    android:drawableTint="?attr/colorOnSurfaceVariant" />
-
             </LinearLayout>
 
-        </ScrollView>
+            <!-- Contribution Grid -->
+            <com.smthbig.shadow.launcher.home.ContributionView
+                android:id="@+id/contribution_grid"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginHorizontal="24dp"
+                android:layout_marginBottom="8dp" />
 
-        <!-- Settings Button -->
+            <!-- Search -->
+            <TextView
+                android:id="@+id/search_hint"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/search_hint"
+                android:textSize="13sp"
+                android:textColor="?attr/colorOnSurfaceVariant"
+                android:alpha="0.35"
+                android:letterSpacing="0.06"
+                android:paddingHorizontal="20dp"
+                android:paddingVertical="10dp"
+                android:background="?attr/selectableItemBackground"
+                android:drawablePadding="6dp"
+                android:drawableStart="@android:drawable/ic_menu_search"
+                android:drawableTint="?attr/colorOnSurfaceVariant" />
+
+        </LinearLayout>
+
+        <!-- Settings -->
         <ImageView
             android:id="@+id/settings_btn"
-            android:layout_width="48dp"
-            android:layout_height="48dp"
-            android:padding="14dp"
-            android:layout_marginTop="12dp"
-            android:layout_marginEnd="8dp"
+            android:layout_width="40dp"
+            android:layout_height="40dp"
+            android:padding="10dp"
+            android:layout_marginTop="8dp"
+            android:layout_marginEnd="4dp"
             android:background="?attr/selectableItemBackgroundBorderless"
             android:src="@drawable/ic_settings_gear"
             app:tint="?attr/colorOnSurfaceVariant"
             android:layout_gravity="top|end"
-            android:alpha="0.6"
-            android:elevation="4dp" />
+            android:alpha="0.4" />
 
     </FrameLayout>
 
-    <!-- Blur Overlay -->
     <View
         android:id="@+id/blur_overlay"
         android:layout_width="match_parent"
@@ -372,7 +363,6 @@
         android:visibility="gone"
         android:elevation="10dp" />
 
-    <!-- Intent Bar -->
     <com.smthbig.shadow.launcher.home.IntentBarView
         android:id="@+id/intent_bar"
         android:layout_width="match_parent"

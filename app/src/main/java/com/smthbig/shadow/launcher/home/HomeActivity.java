@@ -64,7 +64,7 @@ public class HomeActivity extends AppCompatActivity {
         setupStats();
         setupGoalProgress();
         setupContributionGrid();
-        setupSearchHint();
+        setupSearch();
         setupSettings();
         setupIntentBar();
         setupBackHandler();
@@ -91,9 +91,10 @@ public class HomeActivity extends AppCompatActivity {
         viewModel.getIntention().observe(this, text -> {
             if (text != null && !text.isEmpty()) {
                 binding.intentionText.setText(text);
-                binding.intentionText.setVisibility(View.VISIBLE);
+                binding.intentionText.setAlpha(0.9f);
             } else {
-                binding.intentionText.setVisibility(View.GONE);
+                binding.intentionText.setText("Set today's goal");
+                binding.intentionText.setAlpha(0.35f);
             }
         });
 
@@ -123,20 +124,14 @@ public class HomeActivity extends AppCompatActivity {
                 || binding.timerBtn == null) return;
 
         viewModel.getTimerRunning().observe(this, running -> {
-            binding.timerRow.setVisibility(View.VISIBLE);
-            if (binding.progressSection != null) {
-                binding.progressSection.setVisibility(View.VISIBLE);
-            }
-            if (binding.statsRow != null) {
-                binding.statsRow.setVisibility(View.VISIBLE);
-            }
             updateTimerButtonIcon(running);
+            binding.timerLabel.setText(running ? "focusing..." : "focus");
         });
 
         viewModel.getTimerRemainingSecs().observe(this, secs -> {
             int mins = secs / 60;
-            int remainingSecs = secs % 60;
-            binding.timerDisplay.setText(String.format("%d:%02d", mins, remainingSecs));
+            int sec = secs % 60;
+            binding.timerDisplay.setText(String.format("%d:%02d", mins, sec));
         });
 
         binding.timerBtn.setOnClickListener(v -> {
@@ -216,9 +211,11 @@ public class HomeActivity extends AppCompatActivity {
         binding.contributionGrid.updateData();
     }
 
-    private void setupSearchHint() {
-        if (binding.searchHint == null) return;
-        binding.searchHint.setOnClickListener(v -> showSearch());
+    private void setupSearch() {
+        if (binding.searchHint != null) {
+            binding.searchHint.setOnClickListener(v -> showSearch());
+        }
+        binding.contentContainer.setOnClickListener(v -> showSearch());
     }
 
     private void setupSettings() {
