@@ -18,6 +18,9 @@
     <color name="md_outline">@color/brand_outline</color>
     <color name="md_surface">@color/brand_surface_raised</color>
     <color name="md_on_surface">@color/brand_on_surface</color>
+    <color name="md_background">@color/brand_surface</color>
+    <color name="md_surface_variant">@color/brand_surface_overlay</color>
+    <color name="md_on_surface_variant">@color/brand_on_surface_muted</color>
 
     <color name="md_light_background">#F6F8FA</color>
     <color name="md_light_surface">#FFFFFF</color>
