@@ -13,6 +13,12 @@
     <color name="brand_outline">#30363D</color>
     <color name="brand_outline_focus">#58A6FF</color>
 
+    <color name="md_primary">@color/brand_primary</color>
+    <color name="md_on_primary">@color/brand_surface</color>
+    <color name="md_outline">@color/brand_outline</color>
+    <color name="md_surface">@color/brand_surface_raised</color>
+    <color name="md_on_surface">@color/brand_on_surface</color>
+
     <color name="md_light_background">#F6F8FA</color>
     <color name="md_light_surface">#FFFFFF</color>
     <color name="md_light_on_surface">#24292F</color>
