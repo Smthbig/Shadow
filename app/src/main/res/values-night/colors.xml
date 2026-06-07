@@ -1,13 +1,11 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <!-- Dark Mode Specific Overrides -->
-    <color name="md_primary">#D0BCFF</color>
-    <color name="md_on_primary">#381E72</color>
-    <color name="md_surface">#0A0A0F</color>
-    <color name="md_on_surface">#E6E1E5</color>
-    <color name="md_outline">#49454F</color>
-
-    <!-- Glass & Scrim (Adaptive) -->
+    <color name="md_background">@color/md_dark_background</color>
+    <color name="md_surface">@color/md_dark_surface</color>
+    <color name="md_on_surface">@color/md_dark_on_surface</color>
+    <color name="md_surface_variant">@color/md_dark_surface_variant</color>
+    <color name="md_on_surface_variant">@color/md_dark_on_surface_variant</color>
+    <color name="md_outline">@color/md_dark_outline</color>
     <color name="glass_adaptive">@color/glass_white</color>
     <color name="scrim_adaptive">@color/scrim_dark</color>
 </resources>

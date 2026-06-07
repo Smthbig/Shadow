@@ -3,16 +3,20 @@ package com.smthbig.shadow.launcher.home;
 import android.content.Intent;
 import android.graphics.RenderEffect;
 import android.graphics.Shader;
+import android.graphics.drawable.Drawable;
 import android.os.Build;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.HapticFeedbackConstants;
 import android.view.View;
 import android.view.Window;
+import android.widget.EditText;
+import android.widget.Toast;
 
 import androidx.activity.OnBackPressedCallback;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.content.ContextCompat;
 import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowCompat;
 import androidx.core.view.WindowInsetsAnimationCompat;
@@ -20,6 +24,7 @@ import androidx.core.view.WindowInsetsCompat;
 import androidx.core.view.WindowInsetsControllerCompat;
 import androidx.lifecycle.ViewModelProvider;
 
+import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 import com.smthbig.shadow.databinding.ActivityHomeBinding;
 import com.smthbig.shadow.launcher.core.LauncherController;
 import com.smthbig.shadow.settings.SettingsActivity;
@@ -52,14 +57,173 @@ public class HomeActivity extends AppCompatActivity {
         setContentView(binding.getRoot());
         ThemeManager.applyWallpaper(this);
 
-        if (binding.doomsday != null) binding.doomsday.updateState();
-        binding.settingsBtn.setOnClickListener(v -> openSettings());
-        binding.contentContainer.setOnClickListener(v -> showSearch());
-        binding.blurOverlay.setOnClickListener(v -> hideSearch());
-
+        setupDateText();
+        setupGreeting();
+        setupIntention();
+        setupTimer();
+        setupStats();
+        setupGoalProgress();
+        setupContributionGrid();
+        setupSearchHint();
+        setupSettings();
         setupIntentBar();
         setupBackHandler();
         setupKeyboardAnimation();
+    }
+
+    private void setupDateText() {
+        if (binding.dateLabel == null) return;
+        viewModel.getDateText().observe(this, text -> {
+            if (text != null) binding.dateLabel.setText(text);
+        });
+    }
+
+    private void setupGreeting() {
+        if (binding.greeting == null) return;
+        viewModel.getGreeting().observe(this, text -> {
+            if (text != null) binding.greeting.setText(text);
+        });
+    }
+
+    private void setupIntention() {
+        if (binding.intentionText == null) return;
+
+        viewModel.getIntention().observe(this, text -> {
+            if (text != null && !text.isEmpty()) {
+                binding.intentionText.setText(text);
+                binding.intentionText.setVisibility(View.VISIBLE);
+            } else {
+                binding.intentionText.setVisibility(View.GONE);
+            }
+        });
+
+        binding.intentionText.setOnClickListener(v -> showIntentionDialog());
+    }
+
+    private void showIntentionDialog() {
+        EditText input = new EditText(this);
+        String current = viewModel.getIntention().getValue();
+        if (current != null) input.setText(current);
+        input.setSelection(input.getText().length());
+        input.setHint(getString(com.smthbig.shadow.R.string.goal_hint));
+
+        new MaterialAlertDialogBuilder(this)
+                .setTitle(com.smthbig.shadow.R.string.today_goal_label)
+                .setView(input)
+                .setPositiveButton(com.smthbig.shadow.R.string.set_intention, (d, w) -> {
+                    String text = input.getText().toString().trim();
+                    viewModel.setIntention(text);
+                })
+                .setNegativeButton(com.smthbig.shadow.R.string.clear_intention, (d, w) -> viewModel.setIntention(""))
+                .show();
+    }
+
+    private void setupTimer() {
+        if (binding.timerRow == null || binding.timerDisplay == null
+                || binding.timerBtn == null) return;
+
+        viewModel.getTimerRunning().observe(this, running -> {
+            binding.timerRow.setVisibility(View.VISIBLE);
+            if (binding.progressSection != null) {
+                binding.progressSection.setVisibility(View.VISIBLE);
+            }
+            if (binding.statsRow != null) {
+                binding.statsRow.setVisibility(View.VISIBLE);
+            }
+            updateTimerButtonIcon(running);
+        });
+
+        viewModel.getTimerRemainingSecs().observe(this, secs -> {
+            int mins = secs / 60;
+            int remainingSecs = secs % 60;
+            binding.timerDisplay.setText(String.format("%d:%02d", mins, remainingSecs));
+        });
+
+        binding.timerBtn.setOnClickListener(v -> {
+            Boolean running = viewModel.getTimerRunning().getValue();
+            if (running != null && running) {
+                viewModel.pauseTimer();
+                Toast.makeText(this, com.smthbig.shadow.R.string.focus_paused, Toast.LENGTH_SHORT).show();
+            } else {
+                if (viewModel.getTimerRemainingSecs().getValue() == null
+                        || viewModel.getTimerRemainingSecs().getValue() <= 0) {
+                    viewModel.setBaseMinutes(25);
+                }
+                viewModel.startTimer();
+                Toast.makeText(this, com.smthbig.shadow.R.string.focus_started, Toast.LENGTH_SHORT).show();
+            }
+        });
+
+        binding.timerDisplay.setOnLongClickListener(v -> {
+            viewModel.resetTimer();
+            Toast.makeText(this, com.smthbig.shadow.R.string.focus_reset, Toast.LENGTH_SHORT).show();
+            return true;
+        });
+    }
+
+    private void updateTimerButtonIcon(boolean running) {
+        if (binding.timerBtn == null) return;
+        Drawable icon;
+        if (running) {
+            icon = ContextCompat.getDrawable(this, android.R.drawable.ic_media_pause);
+        } else {
+            icon = ContextCompat.getDrawable(this, android.R.drawable.ic_media_play);
+        }
+        binding.timerBtn.setImageDrawable(icon);
+    }
+
+    private void setupStats() {
+        if (binding.statsRow == null) return;
+
+        viewModel.getFocusMinutes().observe(this, mins -> {
+            if (binding.statFocusValue != null) {
+                binding.statFocusValue.setText(String.valueOf(mins));
+            }
+        });
+
+        viewModel.getFocusSessions().observe(this, sessions -> {
+            if (binding.statSessionsValue != null) {
+                binding.statSessionsValue.setText(String.valueOf(sessions));
+            }
+        });
+
+        viewModel.getBlocksToday().observe(this, blocks -> {
+            if (binding.statBlocksValue != null) {
+                binding.statBlocksValue.setText(String.valueOf(blocks));
+            }
+        });
+    }
+
+    private void setupGoalProgress() {
+        if (binding.goalProgress == null || binding.goalProgressText == null
+                || binding.goalMinutesLabel == null) return;
+
+        viewModel.getGoalProgress().observe(this, progress -> {
+            binding.goalProgress.setProgress(progress != null ? progress : 0);
+        });
+
+        viewModel.getFocusMinutes().observe(this, mins -> {
+            Integer goal = viewModel.getDailyGoal().getValue();
+            if (goal == null) goal = 120;
+            int m = mins != null ? mins : 0;
+            binding.goalProgressText.setText(String.format("%d / %d min", m, goal));
+            binding.goalMinutesLabel.setText(String.format("%d%% of daily goal", goal > 0 ? (m * 100 / goal) : 0));
+        });
+    }
+
+    private void setupContributionGrid() {
+        if (binding.contributionGrid == null) return;
+        binding.contributionGrid.updateData();
+    }
+
+    private void setupSearchHint() {
+        if (binding.searchHint == null) return;
+        binding.searchHint.setOnClickListener(v -> showSearch());
+    }
+
+    private void setupSettings() {
+        if (binding.settingsBtn == null) return;
+        binding.settingsBtn.setOnClickListener(v -> openSettings());
     }
 
     private void setupKeyboardAnimation() {
@@ -90,7 +254,8 @@ public class HomeActivity extends AppCompatActivity {
     protected void onResume() {
         super.onResume();
         ThemeManager.applyWallpaper(this);
-        if (binding.doomsday != null) binding.doomsday.updateState();
+        viewModel.refreshStats();
+        if (binding.contributionGrid != null) binding.contributionGrid.updateData();
     }
 
     private void setupIntentBar() {
@@ -100,7 +265,11 @@ public class HomeActivity extends AppCompatActivity {
             public void onIntentEntered(String text) {
                 Log.d(TAG, "Intent entered: " + text);
                 hideSearch();
-                viewModel.handleIntent(text);
+                if (isInFocusSession()) {
+                    showFocusWarning(text);
+                } else {
+                    viewModel.handleIntent(text);
+                }
             }
 
             @Override
@@ -110,12 +279,26 @@ public class HomeActivity extends AppCompatActivity {
         });
     }
 
+    private boolean isInFocusSession() {
+        Boolean running = viewModel.getTimerRunning().getValue();
+        return running != null && running;
+    }
+
+    private void showFocusWarning(String query) {
+        new MaterialAlertDialogBuilder(this)
+                .setTitle(com.smthbig.shadow.R.string.focus_warning_title)
+                .setMessage(com.smthbig.shadow.R.string.focus_warning_message)
+                .setPositiveButton(com.smthbig.shadow.R.string.launch_anyway, (d, w) -> viewModel.handleIntent(query))
+                .setNegativeButton(android.R.string.cancel, null)
+                .show();
+    }
+
     private void showSearch() {
         if (isAnimating || binding.intentBar.getVisibility() == View.VISIBLE) return;
         isAnimating = true;
         viewModel.setSearchVisible(true);
 
-        binding.contentContainer.performHapticFeedback(HapticFeedbackConstants.KEYBOARD_TAP);
+        binding.getRoot().performHapticFeedback(HapticFeedbackConstants.KEYBOARD_TAP);
 
         applyBlur(12f);
         binding.intentBar.setVisibility(View.VISIBLE);

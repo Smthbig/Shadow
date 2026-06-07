@@ -1,10 +1,14 @@
 <resources>
-
     <attr name="shadowGlass" format="color"/>
     <attr name="shadowGlassStrong" format="color"/>
-    <attr name="shadowGlassSoft" format="color"/>
     <attr name="shadowGlow" format="color"/>
     <attr name="shadowScrim" format="color"/>
+    <attr name="fluxLevel0" format="color"/>
+    <attr name="fluxLevel1" format="color"/>
+    <attr name="fluxLevel2" format="color"/>
+    <attr name="fluxLevel3" format="color"/>
+    <attr name="fluxLevel4" format="color"/>
+    <attr name="fluxToday" format="color"/>
     <attr name="doomsdayActive" format="color"/>
     <attr name="doomsdayInactive" format="color"/>
-    </resources>
+</resources>

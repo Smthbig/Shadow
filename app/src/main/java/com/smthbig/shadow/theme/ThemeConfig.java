@@ -27,21 +27,29 @@ final class ThemeConfig {
     }
 
     static int getPerfectTheme(String themeMode, String backgroundType) {
-        // 🚀 THEME IS NOW THE ONLY TRUTH
+        boolean isTransparent = backgroundType != null && "system_wallpaper".equals(backgroundType);
+
         switch (themeMode) {
             case ThemeMode.TRANSPARENT_LIGHT:
-                return R.style.Theme_Shadow_Transparent_Light;
+                return isTransparent ? R.style.Theme_Flux_Light : R.style.Theme_Flux_Light;
             case ThemeMode.TRANSPARENT_DARK:
-                return R.style.Theme_Shadow_Transparent;
-            
-            case ThemeMode.LIGHT: return R.style.Theme_Shadow_Light;
-            case ThemeMode.DARK: return R.style.Theme_Shadow_Dark;
-            case ThemeMode.SHADOW: return R.style.Theme_Shadow_Legacy;
-            case ThemeMode.GLASS: return R.style.Theme_Shadow_Glass;
-            case ThemeMode.GLASS_LIGHT: return R.style.Theme_Shadow_Glass_Light;
-            case ThemeMode.GLASS_DARK: return R.style.Theme_Shadow_Glass_Dark;
-            case ThemeMode.DYNAMIC: return R.style.Theme_Shadow_Dynamic;
-            default: return R.style.Theme_Shadow_Base;
+                return isTransparent ? R.style.Theme_Flux_Dark : R.style.Theme_Flux_Dark;
+
+            case ThemeMode.LIGHT:
+            case ThemeMode.GLASS_LIGHT:
+                return R.style.Theme_Flux_Light;
+
+            case ThemeMode.DARK:
+            case ThemeMode.SHADOW:
+            case ThemeMode.GLASS:
+            case ThemeMode.GLASS_DARK:
+                return R.style.Theme_Flux_Dark;
+
+            case ThemeMode.DYNAMIC:
+                return R.style.Theme_Flux_Dark;
+
+            default:
+                return R.style.Theme_Flux_Dark;
         }
     }
 }

@@ -5,14 +5,11 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent">
 
-    <!-- 1. Background -->
     <View
         android:id="@+id/background_layer"
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:background="@drawable/bg_shadow_gradient" />
+        android:layout_height="match_parent" />
 
-    <!-- 2. Content -->
     <androidx.core.widget.NestedScrollView
         android:layout_width="match_parent"
         android:layout_height="match_parent"
@@ -24,29 +21,28 @@
             android:orientation="vertical"
             android:padding="24dp">
 
-            <!-- BRANDING -->
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:orientation="vertical"
                 android:gravity="center"
-                android:layout_marginTop="48dp"
-                android:layout_marginBottom="40dp">
+                android:layout_marginTop="32dp"
+                android:layout_marginBottom="32dp">
 
                 <ImageView
-                    android:layout_width="80dp"
-                    android:layout_height="80dp"
-                    android:src="@drawable/ic_shadow_fg"
-                    app:tint="?attr/colorPrimary" />
+                    android:layout_width="64dp"
+                    android:layout_height="64dp"
+                    android:src="@mipmap/ic_shadow"
+                    android:alpha="0.8" />
 
                 <com.google.android.material.textview.MaterialTextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text="@string/app_name"
-                    style="@style/TextAppearance.Material3.HeadlineLarge"
+                    style="@style/TextAppearance.Material3.HeadlineMedium"
                     android:textStyle="bold"
                     android:textColor="?attr/colorOnSurface"
-                    android:layout_marginTop="16dp" />
+                    android:layout_marginTop="12dp" />
 
                 <com.google.android.material.textview.MaterialTextView
                     android:layout_width="wrap_content"
@@ -57,11 +53,10 @@
                     android:alpha="0.7" />
             </LinearLayout>
 
-            <!-- PRIVACY CARD -->
             <com.google.android.material.card.MaterialCardView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                app:cardCornerRadius="24dp"
+                app:cardCornerRadius="20dp"
                 app:cardElevation="0dp"
                 app:strokeWidth="1dp"
                 app:strokeColor="?attr/colorOutline"
@@ -72,16 +67,16 @@
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:orientation="vertical"
-                    android:padding="24dp">
+                    android:padding="20dp">
 
                     <com.google.android.material.textview.MaterialTextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:text="@string/privacy_policy_title"
-                        style="@style/TextAppearance.Material3.TitleLarge"
+                        style="@style/TextAppearance.Material3.TitleMedium"
                         android:textColor="?attr/colorOnSurface"
                         android:textStyle="bold"
-                        android:layout_marginBottom="16dp"/>
+                        android:layout_marginBottom="12dp"/>
 
                     <com.google.android.material.textview.MaterialTextView
                         android:id="@+id/privacy_text"
@@ -90,12 +85,12 @@
                         android:text="@string/privacy_policy_content"
                         style="@style/TextAppearance.Material3.BodyMedium"
                         android:textColor="?attr/colorOnSurfaceVariant"
-                        android:lineSpacingExtra="4dp" />
+                        android:lineSpacingExtra="4dp"
+                        android:alpha="0.8" />
 
                 </LinearLayout>
             </com.google.android.material.card.MaterialCardView>
 
-            <!-- CONSENT -->
             <com.google.android.material.checkbox.MaterialCheckBox
                 android:id="@+id/checkbox_accept"
                 android:layout_width="match_parent"
@@ -103,20 +98,19 @@
                 android:text="@string/agree_checkbox"
                 style="@style/Widget.Material3.CompoundButton.CheckBox"
                 android:textColor="?attr/colorOnSurface"
-                android:layout_marginBottom="32dp" />
+                android:layout_marginBottom="24dp" />
 
-            <!-- ACTION -->
             <com.google.android.material.button.MaterialButton
                 android:id="@+id/button_continue"
                 android:layout_width="match_parent"
-                android:layout_height="64dp"
+                android:layout_height="56dp"
                 android:text="@string/continue_button"
-                app:cornerRadius="20dp"
+                app:cornerRadius="16dp"
                 style="@style/Widget.Material3.Button" />
 
             <View
                 android:layout_width="match_parent"
-                android:layout_height="40dp" />
+                android:layout_height="32dp" />
 
         </LinearLayout>
     </androidx.core.widget.NestedScrollView>

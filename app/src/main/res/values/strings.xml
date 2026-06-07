@@ -1,23 +1,44 @@
 <resources>
-    <string name="app_name">Shadow</string>
-    <string name="welcome_title">Welcome to Shadow</string>
-    <string name="welcome_subtitle">Control your app usage intentionally</string>
+    <string name="app_name">Flux</string>
+    <string name="welcome_title">Welcome to Flux</string>
+    <string name="welcome_subtitle">Your productivity launcher. Flow state, every day.</string>
     <string name="privacy_policy_title">Privacy &amp; Transparency</string>
-    <string name="privacy_policy_content"><![CDATA[<b>Data Collection:</b> Shadow does not collect, transmit, or store any personal data. We believe your usage habits are your own business.<br/><br/><b>Local Processing:</b> All app usage tracking is performed locally on your device using Android\'s standard UsageStats APIs. This data never leaves your device and is not shared with any third parties.<br/><br/><b>Permissions:</b> Shadow requires Usage Access to calculate friction delays and enforce intentionality. This permission is used solely for the core functionality of the app.<br/><br/><b>Security:</b> Because we do not use servers or cloud storage, your data is as secure as your physical device.]]></string>
+    <string name="privacy_policy_content"><![CDATA[<b>Data Collection:</b> Flux does not collect, transmit, or store any personal data. Your usage habits stay on your device.<br/><br/><b>Local Processing:</b> All app usage tracking is performed locally on your device using Android\'s standard UsageStats APIs. This data never leaves your device.<br/><br/><b>Permissions:</b> Flux requires Usage Access to calculate friction delays and enforce intentionality.<br/><br/><b>Security:</b> No servers, no cloud, no tracking. Your data is as secure as your physical device.]]></string>
     <string name="agree_checkbox">I agree to the Privacy Policy</string>
-    <string name="continue_button">Continue</string>
-    
-    <!-- Settings -->
+    <string name="continue_button">Start Focusing</string>
     <string name="settings_title">Settings</string>
     <string name="app_limits_title">App Limits</string>
     <string name="setting_placeholder">Setting Title</string>
     <string name="theme_dialog_title">Select Theme</string>
     <string name="reset_usage_title">Reset Today\'s Extensions?</string>
     <string name="reset_usage_message">This will clear all extension time granted for today.</string>
-    
-    <!-- Friction -->
-    <string name="friction_title">Shadow Friction</string>
+    <string name="friction_title">Flux Friction</string>
     <string name="wait_message">Wait or add extension</string>
     <string name="add_extension">Add +5m</string>
     <string name="cancel_close">Cancel and close</string>
+    <string name="today_goal_label">Today\'s Goal</string>
+    <string name="goal_hint">What do you want to achieve today?</string>
+    <string name="focus_started">Focus started</string>
+    <string name="focus_paused">Focus paused</string>
+    <string name="focus_reset">Timer reset</string>
+    <string name="focus_warning_title">Focus Mode Active</string>
+    <string name="focus_warning_message">You\'re in a focus session. Launch this app anyway?</string>
+    <string name="launch_anyway">Launch anyway</string>
+    <string name="stats_focus">focus</string>
+    <string name="stats_sessions">sessions</string>
+    <string name="stats_blocked">blocked</string>
+    <string name="search_hint">Search apps &amp; commands...</string>
+    <string name="input_hint">Type app\u2026</string>
+    <string name="no_apps_found">No apps found</string>
+    <string name="set_intention">Set intention</string>
+    <string name="clear_intention">Clear</string>
+    <string name="minutes">min</string>
+    <string name="left">left</string>
+    <string name="permissions_title">Permissions Required</string>
+    <string name="permissions_checking">Checking permissions...</string>
+    <string name="permissions_skip">Skip for now</string>
+    <string name="delay_wait">Take a breath</string>
+    <string name="delay_processing">Pause before opening...</string>
+    <string name="delay_extend">Get 5 min extension</string>
+    <string name="delay_cancel">Cancel and close</string>
 </resources>

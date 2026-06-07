@@ -6,62 +6,363 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent">
 
-    <!-- 1. BACKGROUND -->
     <View
         android:id="@+id/background_layer"
         android:layout_width="match_parent"
         android:layout_height="match_parent" />
 
-    <!-- 2. CONTENT (Can be blurred) -->
     <FrameLayout
         android:id="@+id/content_container"
         android:layout_width="match_parent"
         android:layout_height="match_parent">
 
-        <LinearLayout
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_gravity="center"
-            android:orientation="vertical"
-            android:gravity="center">
-
-            <TextClock
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:format12Hour="hh:mm"
-                android:format24Hour="HH:mm"
-                android:textSize="80sp"
-                android:textColor="?attr/colorOnSurface"
-                android:alpha="0.8"
-                android:fontFamily="sans-serif-thin" />
-
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="Tap to search"
-                android:textSize="14sp"
-                android:textColor="?attr/colorOnSurface"
-                android:alpha="0.4"
-                android:layout_marginTop="8dp"
-                android:letterSpacing="0.1" />
-
-            <com.smthbig.shadow.launcher.home.DoomsdayView
-                android:id="@+id/doomsday"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="24dp" />
-
-        </LinearLayout>
-
-        <View
-            android:id="@+id/base_overlay"
+        <ScrollView
             android:layout_width="match_parent"
             android:layout_height="match_parent"
-            android:background="?attr/colorSurface"
-            android:alpha="0.02" />
+            android:fillViewport="true"
+            android:overScrollMode="never"
+            android:scrollbars="none">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:gravity="center_horizontal"
+                android:paddingTop="24dp"
+                android:paddingBottom="120dp">
+
+                <!-- Clock -->
+                <TextClock
+                    android:id="@+id/clock"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:format12Hour="hh:mm"
+                    android:format24Hour="HH:mm"
+                    android:textSize="72sp"
+                    android:textColor="?attr/colorOnSurface"
+                    android:alpha="0.9"
+                    android:fontFamily="sans-serif-thin"
+                    android:letterSpacing="-0.02" />
+
+                <!-- Date -->
+                <TextView
+                    android:id="@+id/date_label"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:textSize="12sp"
+                    android:textColor="?attr/colorOnSurface"
+                    android:alpha="0.35"
+                    android:letterSpacing="0.08"
+                    android:layout_marginTop="2dp"
+                    android:fontFamily="sans-serif-medium" />
+
+                <!-- Greeting -->
+                <TextView
+                    android:id="@+id/greeting"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:textSize="13sp"
+                    android:textColor="?attr/colorOnSurfaceVariant"
+                    android:layout_marginTop="16dp"
+                    android:alpha="0.6" />
+
+                <!-- Goal Card -->
+                <com.google.android.material.card.MaterialCardView
+                    android:id="@+id/goal_card"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginHorizontal="20dp"
+                    android:layout_marginTop="24dp"
+                    app:cardCornerRadius="20dp"
+                    app:cardElevation="0dp"
+                    app:strokeWidth="1dp"
+                    app:strokeColor="?attr/colorOutline"
+                    app:cardBackgroundColor="?attr/colorSurface">
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="vertical"
+                        android:padding="20dp">
+
+                        <!-- Goal Label + Edit -->
+                        <LinearLayout
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:orientation="horizontal"
+                            android:gravity="center_vertical">
+
+                            <TextView
+                                android:id="@+id/goal_label"
+                                android:layout_width="0dp"
+                                android:layout_height="wrap_content"
+                                android:layout_weight="1"
+                                android:text="@string/today_goal_label"
+                                android:textSize="11sp"
+                                android:textColor="?attr/colorOnSurfaceVariant"
+                                android:alpha="0.6"
+                                android:letterSpacing="0.12"
+                                android:fontFamily="sans-serif-medium" />
+
+                            <TextView
+                                android:id="@+id/goal_progress_text"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:textSize="11sp"
+                                android:textColor="?attr/colorSecondary"
+                                android:fontFamily="sans-serif-medium" />
+                        </LinearLayout>
+
+                        <!-- Intention Text -->
+                        <TextView
+                            android:id="@+id/intention_text"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:textSize="18sp"
+                            android:textColor="?attr/colorOnSurface"
+                            android:alpha="0.9"
+                            android:layout_marginTop="8dp"
+                            android:maxLines="2"
+                            android:ellipsize="end"
+                            android:fontFamily="sans-serif"
+                            android:textStyle="bold"
+                            android:visibility="gone"
+                            android:background="?attr/selectableItemBackground"
+                            android:paddingVertical="4dp"
+                            android:paddingHorizontal="2dp" />
+
+                        <!-- Progress Bar -->
+                        <LinearLayout
+                            android:id="@+id/progress_section"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:orientation="vertical"
+                            android:layout_marginTop="12dp"
+                            android:visibility="gone">
+
+                            <ProgressBar
+                                android:id="@+id/goal_progress"
+                                style="?android:attr/progressBarStyleHorizontal"
+                                android:layout_width="match_parent"
+                                android:layout_height="4dp"
+                                android:max="100"
+                                android:progress="0"
+                                android:progressTint="?attr/colorSecondary"
+                                android:progressBackgroundTint="?attr/colorSurfaceVariant" />
+
+                            <TextView
+                                android:id="@+id/goal_minutes_label"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:textSize="12sp"
+                                android:textColor="?attr/colorOnSurfaceVariant"
+                                android:layout_marginTop="4dp"
+                                android:alpha="0.5" />
+                        </LinearLayout>
+
+                        <!-- Timer Row -->
+                        <LinearLayout
+                            android:id="@+id/timer_row"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:orientation="horizontal"
+                            android:gravity="center_vertical"
+                            android:layout_marginTop="12dp"
+                            android:visibility="gone">
+
+                            <TextView
+                                android:id="@+id/timer_display"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:textSize="28sp"
+                                android:textColor="?attr/colorPrimary"
+                                android:fontFamily="sans-serif-medium"
+                                android:alpha="0.9" />
+
+                            <TextView
+                                android:id="@+id/timer_label"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="@string/left"
+                                android:textSize="13sp"
+                                android:textColor="?attr/colorOnSurfaceVariant"
+                                android:layout_marginStart="6dp"
+                                android:layout_marginEnd="auto"
+                                android:alpha="0.5" />
+
+                            <ImageButton
+                                android:id="@+id/timer_btn"
+                                android:layout_width="40dp"
+                                android:layout_height="40dp"
+                                android:padding="8dp"
+                                android:background="?attr/selectableItemBackgroundBorderless"
+                                android:alpha="0.7"
+                                android:scaleType="centerInside" />
+                        </LinearLayout>
+
+                    </LinearLayout>
+                </com.google.android.material.card.MaterialCardView>
+
+                <!-- Stats Row -->
+                <LinearLayout
+                    android:id="@+id/stats_row"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginHorizontal="20dp"
+                    android:layout_marginTop="16dp"
+                    android:orientation="horizontal"
+                    android:gravity="center"
+                    android:visibility="gone">
+
+                    <LinearLayout
+                        android:id="@+id/stat_focus"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:orientation="vertical"
+                        android:gravity="center"
+                        android:background="?attr/selectableItemBackground"
+                        android:paddingVertical="12dp">
+
+                        <TextView
+                            android:id="@+id/stat_focus_value"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:textSize="20sp"
+                            android:textColor="?attr/colorOnSurface"
+                            android:fontFamily="sans-serif-medium"
+                            android:text="0" />
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:textSize="11sp"
+                            android:textColor="?attr/colorOnSurfaceVariant"
+                            android:text="@string/stats_focus"
+                            android:alpha="0.5"
+                            android:layout_marginTop="2dp" />
+                    </LinearLayout>
+
+                    <View
+                        android:layout_width="1dp"
+                        android:layout_height="32dp"
+                        android:background="?attr/colorOutline"
+                        android:alpha="0.3" />
+
+                    <LinearLayout
+                        android:id="@+id/stat_sessions"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:orientation="vertical"
+                        android:gravity="center"
+                        android:background="?attr/selectableItemBackground"
+                        android:paddingVertical="12dp">
+
+                        <TextView
+                            android:id="@+id/stat_sessions_value"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:textSize="20sp"
+                            android:textColor="?attr/colorOnSurface"
+                            android:fontFamily="sans-serif-medium"
+                            android:text="0" />
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:textSize="11sp"
+                            android:textColor="?attr/colorOnSurfaceVariant"
+                            android:text="@string/stats_sessions"
+                            android:alpha="0.5"
+                            android:layout_marginTop="2dp" />
+                    </LinearLayout>
+
+                    <View
+                        android:layout_width="1dp"
+                        android:layout_height="32dp"
+                        android:background="?attr/colorOutline"
+                        android:alpha="0.3" />
+
+                    <LinearLayout
+                        android:id="@+id/stat_blocks"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:orientation="vertical"
+                        android:gravity="center"
+                        android:background="?attr/selectableItemBackground"
+                        android:paddingVertical="12dp">
+
+                        <TextView
+                            android:id="@+id/stat_blocks_value"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:textSize="20sp"
+                            android:textColor="?attr/colorOnSurface"
+                            android:fontFamily="sans-serif-medium"
+                            android:text="0" />
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:textSize="11sp"
+                            android:textColor="?attr/colorOnSurfaceVariant"
+                            android:text="@string/stats_blocked"
+                            android:alpha="0.5"
+                            android:layout_marginTop="2dp" />
+                    </LinearLayout>
+
+                </LinearLayout>
+
+                <!-- Contribution Grid -->
+                <com.smthbig.shadow.launcher.home.ContributionView
+                    android:id="@+id/contribution_grid"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginHorizontal="20dp"
+                    android:layout_marginTop="20dp" />
+
+                <!-- Search Hint -->
+                <TextView
+                    android:id="@+id/search_hint"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/search_hint"
+                    android:textSize="14sp"
+                    android:textColor="?attr/colorOnSurfaceVariant"
+                    android:alpha="0.4"
+                    android:letterSpacing="0.08"
+                    android:layout_marginTop="20dp"
+                    android:paddingHorizontal="24dp"
+                    android:paddingVertical="12dp"
+                    android:background="?attr/selectableItemBackground"
+                    android:drawablePadding="8dp"
+                    android:drawableStart="@android:drawable/ic_menu_search"
+                    android:drawableTint="?attr/colorOnSurfaceVariant" />
+
+            </LinearLayout>
+
+        </ScrollView>
+
+        <!-- Settings Button -->
+        <ImageView
+            android:id="@+id/settings_btn"
+            android:layout_width="48dp"
+            android:layout_height="48dp"
+            android:padding="14dp"
+            android:layout_marginTop="12dp"
+            android:layout_marginEnd="8dp"
+            android:background="?attr/selectableItemBackgroundBorderless"
+            android:src="@drawable/ic_settings_gear"
+            app:tint="?attr/colorOnSurfaceVariant"
+            android:layout_gravity="top|end"
+            android:alpha="0.6"
+            android:elevation="4dp" />
+
     </FrameLayout>
 
-    <!-- 3. DIM LAYER (Only visible during search) -->
+    <!-- Blur Overlay -->
     <View
         android:id="@+id/blur_overlay"
         android:layout_width="match_parent"
@@ -71,29 +372,14 @@
         android:visibility="gone"
         android:elevation="10dp" />
 
-    <!-- 4. SETTINGS BUTTON (Top Layer) -->
-    <ImageView
-        android:id="@+id/settings_btn"
-        android:layout_width="56dp"
-        android:layout_height="56dp"
-        android:padding="16dp"
-        android:layout_marginTop="24dp"
-        android:layout_marginEnd="16dp"
-        android:background="?attr/selectableItemBackgroundBorderless"
-        android:src="@drawable/ic_settings_gear"
-        app:tint="?attr/colorOnSurface"
-        android:layout_gravity="top|end"
-        android:elevation="20dp" />
-
-    <!-- 5. INTENT BAR (Fixed at bottom) -->
+    <!-- Intent Bar -->
     <com.smthbig.shadow.launcher.home.IntentBarView
         android:id="@+id/intent_bar"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_gravity="bottom"
-        android:layout_marginStart="16dp"
-        android:layout_marginEnd="16dp"
-        android:layout_marginBottom="28dp"
+        android:layout_marginHorizontal="12dp"
+        android:layout_marginBottom="16dp"
         android:visibility="gone"
         android:elevation="30dp" />
 

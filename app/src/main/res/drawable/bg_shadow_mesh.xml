@@ -12,7 +12,7 @@
                 android:gradientRadius="800dp"
                 android:centerX="0.0"
                 android:centerY="1.0"
-                android:startColor="#1A6750A4"
+                android:startColor="#1A58A6FF"
                 android:endColor="#00000000" />
         </shape>
     </item>
@@ -23,7 +23,7 @@
                 android:gradientRadius="600dp"
                 android:centerX="1.0"
                 android:centerY="0.0"
-                android:startColor="#1A6750A4"
+                android:startColor="#1A3FB950"
                 android:endColor="#00000000" />
         </shape>
     </item>

@@ -1,107 +1,53 @@
-<?xml version="1.0" encoding="utf-8"?>
 <resources>
-
-    <!-- ================= BASE (INTERNAL) ================= -->
-    <style name="Theme.Shadow.Base" parent="Theme.Material3.DayNight.NoActionBar">
+    <style name="Theme.Flux.Base" parent="Theme.Material3.DayNight.NoActionBar">
         <item name="android:navigationBarColor">@android:color/transparent</item>
         <item name="android:statusBarColor">@android:color/transparent</item>
-        
-        <!-- Default Fallbacks -->
         <item name="shadowGlass">?attr/colorSurface</item>
         <item name="shadowGlassStrong">?attr/colorSurfaceVariant</item>
-        <item name="shadowGlassSoft">?attr/colorSurface</item>
         <item name="shadowGlow">@android:color/transparent</item>
         <item name="shadowScrim">@color/scrim_dark</item>
-        
+        <item name="fluxLevel0">@color/flux_level_0</item>
+        <item name="fluxLevel1">@color/flux_level_1</item>
+        <item name="fluxLevel2">@color/flux_level_2</item>
+        <item name="fluxLevel3">@color/flux_level_3</item>
+        <item name="fluxLevel4">@color/flux_level_4</item>
+        <item name="fluxToday">@color/flux_today</item>
         <item name="doomsdayActive">?attr/colorPrimary</item>
         <item name="doomsdayInactive">?attr/colorSurfaceVariant</item>
     </style>
 
-    <!-- ================= LIGHT ================= -->
-    <style name="Theme.Shadow.Light" parent="Theme.Shadow.Base">
-        <item name="colorPrimary">@color/md_light_primary</item>
-        <item name="colorOnPrimary">@color/md_light_on_primary</item>
-        <item name="android:colorBackground">@android:color/white</item>
+    <style name="Theme.Flux.Dark" parent="Theme.Flux.Base">
+        <item name="colorPrimary">@color/brand_primary</item>
+        <item name="colorOnPrimary">@color/brand_surface</item>
+        <item name="colorSecondary">@color/brand_secondary</item>
+        <item name="android:colorBackground">@color/brand_surface</item>
+        <item name="colorSurface">@color/brand_surface_raised</item>
+        <item name="colorOnSurface">@color/brand_on_surface</item>
+        <item name="colorSurfaceVariant">@color/brand_surface_overlay</item>
+        <item name="colorOnSurfaceVariant">@color/brand_on_surface_muted</item>
+        <item name="colorOutline">@color/brand_outline</item>
+        <item name="colorError">@color/brand_error</item>
+        <item name="android:windowLightStatusBar">false</item>
+        <item name="shadowScrim">@color/scrim_dark</item>
+        <item name="doomsdayActive">@color/brand_primary</item>
+        <item name="doomsdayInactive">@color/brand_surface_overlay</item>
+    </style>
+
+    <style name="Theme.Flux.Light" parent="Theme.Flux.Base">
+        <item name="colorPrimary">@color/brand_primary</item>
+        <item name="colorOnPrimary">#FFFFFF</item>
+        <item name="colorSecondary">@color/brand_secondary</item>
+        <item name="android:colorBackground">@color/md_light_background</item>
         <item name="colorSurface">@color/md_light_surface</item>
         <item name="colorOnSurface">@color/md_light_on_surface</item>
         <item name="colorSurfaceVariant">@color/md_light_surface_variant</item>
         <item name="colorOnSurfaceVariant">@color/md_light_on_surface_variant</item>
         <item name="colorOutline">@color/md_light_outline</item>
         <item name="android:windowLightStatusBar">true</item>
-        <item name="shadowGlow">@color/glow_light</item>
         <item name="shadowScrim">@color/scrim_light</item>
-        
-        <item name="doomsdayActive">@color/md_light_primary</item>
-        <item name="doomsdayInactive">#26000000</item>
+        <item name="doomsdayActive">@color/brand_primary</item>
+        <item name="doomsdayInactive">#1A000000</item>
     </style>
 
-    <!-- ================= DARK ================= -->
-    <style name="Theme.Shadow.Dark" parent="Theme.Shadow.Base">
-        <item name="colorPrimary">@color/md_dark_primary</item>
-        <item name="colorOnPrimary">@color/md_dark_on_primary</item>
-        <item name="android:colorBackground">@color/brand_shadow</item>
-        <item name="colorSurface">@color/md_dark_surface</item>
-        <item name="colorOnSurface">@color/md_dark_on_surface</item>
-        <item name="colorSurfaceVariant">@color/md_dark_surface_variant</item>
-        <item name="colorOnSurfaceVariant">@color/md_dark_on_surface_variant</item>
-        <item name="colorOutline">@color/md_dark_outline</item>
-        <item name="android:windowLightStatusBar">false</item>
-        <item name="shadowGlow">@color/glow_dark</item>
-        <item name="shadowScrim">@color/scrim_dark</item>
-        
-        <item name="doomsdayActive">@color/md_dark_primary</item>
-        <item name="doomsdayInactive">#26FFFFFF</item>
-    </style>
-
-    <!-- ================= GLASS ================= -->
-    <style name="Theme.Shadow.Glass" parent="Theme.Shadow.Dark">
-        <item name="shadowGlass">@color/glass_white</item>
-        <item name="shadowGlassSoft">@color/glass_white</item>
-        <item name="colorSurface">@color/md_dark_surface_variant</item>
-        
-        <item name="doomsdayActive">@android:color/white</item>
-        <item name="doomsdayInactive">#33FFFFFF</item>
-    </style>
-
-    <style name="Theme.Shadow.Glass.Light" parent="Theme.Shadow.Light">
-        <item name="shadowGlass">@color/glass_black</item>
-        <item name="shadowGlassSoft">@color/glass_black</item>
-        
-        <item name="doomsdayActive">@android:color/black</item>
-        <item name="doomsdayInactive">#26000000</item>
-    </style>
-
-    <style name="Theme.Shadow.Glass.Dark" parent="Theme.Shadow.Glass" />
-
-    <!-- ================= TRANSPARENT ================= -->
-    <style name="Theme.Shadow.Transparent" parent="Theme.Shadow.Dark">
-        <item name="android:windowBackground">@android:color/transparent</item>
-        <item name="android:windowIsTranslucent">true</item>
-        <item name="android:windowShowWallpaper">true</item>
-        <item name="colorSurface">@android:color/transparent</item>
-        <item name="colorOnSurface">@android:color/white</item>
-        <item name="shadowGlass">@color/glass_white</item>
-        <item name="shadowScrim">@color/scrim_dark</item>
-        
-        <item name="doomsdayActive">@android:color/white</item>
-        <item name="doomsdayInactive">#40FFFFFF</item>
-    </style>
-
-    <!-- ================= TRANSPARENT LIGHT ================= -->
-    <style name="Theme.Shadow.Transparent.Light" parent="Theme.Shadow.Light">
-        <item name="android:windowBackground">@android:color/transparent</item>
-        <item name="android:windowIsTranslucent">true</item>
-        <item name="android:windowShowWallpaper">true</item>
-        <item name="colorSurface">@android:color/transparent</item>
-        <item name="colorOnSurface">@android:color/black</item>
-        <item name="shadowGlass">@color/glass_black</item>
-        <item name="shadowScrim">@color/scrim_light</item>
-        
-        <item name="doomsdayActive">@android:color/black</item>
-        <item name="doomsdayInactive">#26000000</item>
-    </style>
-
-    <style name="Theme.Shadow.Dynamic" parent="Theme.Shadow.Base" />
-    <style name="Theme.Shadow.Legacy" parent="Theme.Shadow.Dark" />
-
+    <style name="Theme.Flux" parent="Theme.Flux.Dark" />
 </resources>

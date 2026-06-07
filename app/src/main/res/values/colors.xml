@@ -1,48 +1,44 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <!-- 🚀 Core Brand -->
-    <color name="brand_shadow">#050507</color>
-    <color name="brand_obsidian">#0A0A0F</color>
-    <color name="brand_focus">#6750A4</color>
-    <color name="brand_neon">#D0BCFF</color>
+    <color name="brand_surface">#0D1117</color>
+    <color name="brand_surface_raised">#161B22</color>
+    <color name="brand_surface_overlay">#21262D</color>
+    <color name="brand_primary">#58A6FF</color>
+    <color name="brand_secondary">#3FB950</color>
+    <color name="brand_accent">#00BFA5</color>
+    <color name="brand_error">#F85149</color>
+    <color name="brand_warning">#D29922</color>
+    <color name="brand_on_surface">#F0F6FC</color>
+    <color name="brand_on_surface_muted">#8B949E</color>
+    <color name="brand_outline">#30363D</color>
+    <color name="brand_outline_focus">#58A6FF</color>
 
-    <!-- ☀️ Light Theme Tonal Palette -->
-    <color name="md_light_primary">#6750A4</color>
-    <color name="md_light_on_primary">#FFFFFF</color>
-    <color name="md_light_surface">#FFFBFF</color>
-    <color name="md_light_on_surface">#1C1B1F</color>
-    <color name="md_light_surface_variant">#E7E0EB</color>
-    <color name="md_light_on_surface_variant">#49454E</color>
-    <color name="md_light_outline">#7A757F</color>
+    <color name="md_light_background">#F6F8FA</color>
+    <color name="md_light_surface">#FFFFFF</color>
+    <color name="md_light_on_surface">#24292F</color>
+    <color name="md_light_surface_variant">#F3F4F6</color>
+    <color name="md_light_on_surface_variant">#57606A</color>
+    <color name="md_light_outline">#D0D7DE</color>
 
-    <!-- 🌙 Dark Theme Tonal Palette -->
-    <color name="md_dark_primary">#D0BCFF</color>
-    <color name="md_dark_on_primary">#381E72</color>
-    <color name="md_dark_surface">#0A0A0F</color>
-    <color name="md_dark_on_surface">#E6E1E5</color>
-    <color name="md_dark_surface_variant">#1C1B23</color>
-    <color name="md_dark_on_surface_variant">#CAC4D0</color>
-    <color name="md_dark_outline">#49454F</color>
+    <color name="md_dark_background">@color/brand_surface</color>
+    <color name="md_dark_surface">@color/brand_surface_raised</color>
+    <color name="md_dark_on_surface">@color/brand_on_surface</color>
+    <color name="md_dark_surface_variant">@color/brand_surface_overlay</color>
+    <color name="md_dark_on_surface_variant">@color/brand_on_surface_muted</color>
+    <color name="md_dark_outline">@color/brand_outline</color>
 
-    <!-- 🌈 Universal Mapping (For Java safety and fallback) -->
-    <color name="md_primary">#6750A4</color>
-    <color name="md_on_primary">#FFFFFF</color>
-    <color name="md_surface">#FFFBFF</color>
-    <color name="md_on_surface">#1C1B1F</color>
-    <color name="md_outline">#7A757F</color>
+    <color name="flux_level_0">#161B22</color>
+    <color name="flux_level_1">#0E4429</color>
+    <color name="flux_level_2">#006D32</color>
+    <color name="flux_level_3">#26A641</color>
+    <color name="flux_level_4">#39D353</color>
+    <color name="flux_today">#58A6FF</color>
 
-    <!-- ✨ Transparency & Glass (Unified) -->
-    <color name="glass_white">#33FFFFFF</color>
-    <color name="glass_white_strong">#66FFFFFF</color>
+    <color name="glass_white">#1AFFFFFF</color>
+    <color name="glass_white_strong">#33FFFFFF</color>
     <color name="glass_black">#1A000000</color>
-    
+    <color name="scrim_dark">#9921262D</color>
     <color name="scrim_light">#4D000000</color>
-    <color name="scrim_dark">#99000000</color>
-
-    <color name="glow_light">#1A000000</color>
-    <color name="glow_dark">#26FFFFFF</color>
-
-    <!-- Adaptive (base value; overridden in values-night) -->
     <color name="glass_adaptive">@color/glass_white</color>
-    <color name="scrim_adaptive">@color/scrim_light</color>
+    <color name="scrim_adaptive">@color/scrim_dark</color>
 </resources>
