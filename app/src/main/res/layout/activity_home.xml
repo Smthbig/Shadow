@@ -181,13 +181,13 @@
 
                             <TextView
                                 android:id="@+id/timer_label"
-                                android:layout_width="wrap_content"
+                                android:layout_width="0dp"
                                 android:layout_height="wrap_content"
+                                android:layout_weight="1"
                                 android:text="@string/left"
                                 android:textSize="13sp"
                                 android:textColor="?attr/colorOnSurfaceVariant"
                                 android:layout_marginStart="6dp"
-                                android:layout_marginEnd="auto"
                                 android:alpha="0.5" />
 
                             <ImageButton
